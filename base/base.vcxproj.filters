@@ -23,9 +23,6 @@
     <ClInclude Include="unique_ptr_logging_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="macros.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="mappable.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -164,9 +161,6 @@
     <ClInclude Include="macos_allocator_replacement.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="cpuid.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="status_utilities.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -245,6 +239,18 @@
       <Filter>Header Files</Filter>
     </ClCompile>
     <ClCompile Include="pull_serializer_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="macros.hpp">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cpuid.ixx">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cpuid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cpuid_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

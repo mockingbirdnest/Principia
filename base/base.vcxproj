@@ -54,7 +54,6 @@
     <ClInclude Include="bundle.hpp" />
     <ClInclude Include="concepts.hpp" />
     <ClInclude Include="constant_function.hpp" />
-    <ClInclude Include="cpuid.hpp" />
     <ClInclude Include="disjoint_sets.hpp" />
     <ClInclude Include="disjoint_sets_body.hpp" />
     <ClInclude Include="encoder.hpp" />
@@ -74,7 +73,12 @@
     <ClInclude Include="hexadecimal.hpp" />
     <ClInclude Include="hexadecimal_body.hpp" />
     <ClInclude Include="macos_allocator_replacement.hpp" />
-    <ClInclude Include="macros.hpp" />
+    <ClCompile Include="cpuid.cpp" />
+    <ClCompile Include="cpuid.ixx" />
+    <ClCompile Include="cpuid_test.cpp" />
+    <ClCompile Include="macros.hpp">
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release_AVX_FMA|x64'">CompileAsHeaderUnit</CompileAs>
+    </ClCompile>
     <ClInclude Include="malloc_allocator.hpp" />
     <ClInclude Include="mappable.hpp" />
     <ClInclude Include="map_util.hpp" />

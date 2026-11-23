@@ -1,8 +1,5 @@
 #pragma once
 
-#include <cstdlib>
-#include <string>
-
 namespace principia {
 namespace base {
 
@@ -25,48 +22,48 @@ namespace base {
 #define PRINCIPIA_COMPILER_CLANG_CL 1
 #define PRINCIPIA_VECTORCALL
 #define PRINCIPIA_PRAGMA(...)
-char const* const CompilerName = "Clang-cl";
-char const* const CompilerVersion = __VERSION__;
+inline constexpr char const* const CompilerName = "Clang-cl";
+inline constexpr char const* const CompilerVersion = __VERSION__;
 #elif defined(__clang__)
 #define PRINCIPIA_COMPILER_CLANG 1
 #define PRINCIPIA_VECTORCALL
 #define PRINCIPIA_PRAGMA(...)
-char const* const CompilerName = "Clang";
-char const* const CompilerVersion = __VERSION__;
+inline constexpr char const* const CompilerName = "Clang";
+inline constexpr char const* const CompilerVersion = __VERSION__;
 #elif defined(_MSC_VER)
 #define PRINCIPIA_COMPILER_MSVC 1
 #define PRINCIPIA_VECTORCALL __vectorcall
 #define PRINCIPIA_PRAGMA(...) __pragma(__VA_ARGS__)
-char const* const CompilerName = "Microsoft Visual C++";
-char const* const CompilerVersion = STRINGIFY_EXPANSION(_MSC_FULL_VER);
+inline constexpr char const* const CompilerName = "Microsoft Visual C++";
+inline constexpr char const* const CompilerVersion = STRINGIFY_EXPANSION(_MSC_FULL_VER);
 #elif defined(__ICC) || defined(__INTEL_COMPILER)
 #define PRINCIPIA_COMPILER_ICC 1
 #define PRINCIPIA_VECTORCALL
 #define PRINCIPIA_PRAGMA(...)
-char const* const CompilerName = "Intel C++ Compiler";
-char const* const CompilerVersion = __VERSION__;
+inline constexpr char const* const CompilerName = "Intel C++ Compiler";
+inline constexpr char const* const CompilerVersion = __VERSION__;
 #elif defined(__GNUC__)
 #define PRINCIPIA_COMPILER_GCC 1
 #define PRINCIPIA_VECTORCALL
 #define PRINCIPIA_PRAGMA(...)
-char const* const CompilerName = "G++";
-char const* const CompilerVersion = __VERSION__;
+inline constexpr char const* const CompilerName = "G++";
+inline constexpr char const* const CompilerVersion = __VERSION__;
 #else
 #error "What is this, Borland C++?"
 #endif
 
 #if defined(__APPLE__)
 #define OS_MACOSX 1
-constexpr char const* OperatingSystem = "macOS";
+inline constexpr char const* OperatingSystem = "macOS";
 #elif defined(__linux__)
 #define OS_LINUX 1
-constexpr char const* OperatingSystem = "Linux";
+inline constexpr char const* OperatingSystem = "Linux";
 #elif defined(__FreeBSD__)
 #define OS_FREEBSD 1
-constexpr char const* OperatingSystem = "FreeBSD";
+inline constexpr char const* OperatingSystem = "FreeBSD";
 #elif defined(_WIN32)
 #define OS_WIN 1
-constexpr char const* OperatingSystem = "Windows";
+inline constexpr char const* OperatingSystem = "Windows";
 #else
 #error "Try OS/360."
 #endif
@@ -76,13 +73,13 @@ constexpr char const* OperatingSystem = "Windows";
 #define ARCH_CPU_X86 1
 #define ARCH_CPU_32_BITS 1
 #define ARCH_CPU_LITTLE_ENDIAN 1
-char const* const Architecture = "x86";
+inline constexpr char const* const Architecture = "x86";
 #elif defined(_M_X64) || defined(__x86_64__)
 #define ARCH_CPU_X86_FAMILY 1
 #define ARCH_CPU_X86_64 1
 #define ARCH_CPU_64_BITS 1
 #define ARCH_CPU_LITTLE_ENDIAN 1
-char const* const Architecture = "x86-64";
+inline constexpr char const* const Architecture = "x86-64";
 #else
 #error "Have you tried a Cray-1?"
 #endif

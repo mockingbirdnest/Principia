@@ -1,10 +1,10 @@
-#include "base/cpuid.hpp"
-
 #include "absl/log/check.h"
 #include "absl/log/globals.h"
 #include "absl/log/log.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+
+import principia.base.cpuid;
 
 namespace principia {
 namespace base {

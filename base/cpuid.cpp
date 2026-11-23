@@ -1,24 +1,19 @@
-#include "base/cpuid.hpp"
-
-#include <cstdint>
-#include <cstring>
-#include <ranges>
-#include <string>
-#include <string_view>
-#include <vector>
+module;
 
 #include "absl/log/check.h"
 #include "absl/log/log.h"
 #include "absl/strings/str_join.h"
-#include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
-#include "base/not_null.hpp"
+
+module principia.base.cpuid;
+import principia.base.not_null;
+
+import "base/macros.hpp";  // 🧙 For PRINCIPIA_COMPILER_MSVC.
 
 #if PRINCIPIA_COMPILER_MSVC
 #include <intrin.h>
 #else
 #include <cpuid.h>
 #endif
-
 
 namespace principia {
 namespace base {
