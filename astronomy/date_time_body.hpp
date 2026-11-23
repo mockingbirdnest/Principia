@@ -861,8 +861,8 @@ class JulianDateParser final {
 
   // Returns a `JulianDate` object corresponding to the given string interpreted
   // a Julian Date or a Modified Julian Date, respectively.
-  static constexpr JulianDate ParseJD(char const* str, std::size_t size);
-  static constexpr JulianDate ParseMJD(char const* str, std::size_t size);
+  static constexpr JulianDate ParseJD(std::string_view s);
+  static constexpr JulianDate ParseMJD(std::string_view s);
 
  private:
   constexpr JulianDateParser(std::int64_t digits,
@@ -872,8 +872,7 @@ class JulianDateParser final {
   // Returns a `JulianDateParser` describing the given string. Fails if the
   // string is not of the form [ddd] or [ddd.fff] or if it has too many digits
   // to fit in a std::int64_t.
-  static constexpr JulianDateParser ReadToEnd(char const* str,
-                                              std::size_t size);
+  static constexpr JulianDateParser ReadToEnd(std::string_view s);
   static constexpr JulianDateParser ReadToEnd(CStringIterator str,
                                               std::int64_t digits,
                                               int digit_count,
@@ -893,14 +892,12 @@ class JulianDateParser final {
   int const decimal_mark_index_;
 };
 
-constexpr JulianDate JulianDateParser::ParseJD(char const* const str,
-                                               std::size_t const size) {
-  return ReadToEnd(str, size).ToJD();
+constexpr JulianDate JulianDateParser::ParseJD(std::string_view const s) {
+  return ReadToEnd(s).ToJD();
 }
 
-constexpr JulianDate JulianDateParser::ParseMJD(char const* const str,
-                                                std::size_t const size) {
-  return ReadToEnd(str, size).ToMJD();
+constexpr JulianDate JulianDateParser::ParseMJD(std::string_view const s) {
+  return ReadToEnd(s).ToMJD();
 }
 
 constexpr JulianDateParser::JulianDateParser(std::int64_t const digits,
@@ -910,9 +907,8 @@ constexpr JulianDateParser::JulianDateParser(std::int64_t const digits,
       digit_count_(digit_count),
       decimal_mark_index_(decimal_mark_index) {}
 
-constexpr JulianDateParser JulianDateParser::ReadToEnd(char const* const str,
-                                                       std::size_t const size) {
-  return ReadToEnd(CStringIterator(str, size),
+constexpr JulianDateParser JulianDateParser::ReadToEnd(std::string_view const s) {
+  return ReadToEnd(CStringIterator(s.data(), s.size()),
                    /*digits=*/0,
                    /*digit_count*/ 0,
                    /*has_decimal_mark=*/false,
