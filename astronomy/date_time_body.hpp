@@ -538,7 +538,7 @@ constexpr DateParser DateParser::ReadToEnd(std::string_view::const_iterator begi
                                            int const second_hyphen_index,
                                            bool const has_w,
                                            int const w_index) {
-  if (str.at_end()) {
+  if (begin == end) {
     return DateParser{digits,
                       digit_count,
                       hyphens,
@@ -547,11 +547,11 @@ constexpr DateParser DateParser::ReadToEnd(std::string_view::const_iterator begi
                       has_w,
                       w_index};
   } else {
-    switch (*str) {
+    switch (*begin) {
       case '-':
         CONSTEXPR_CHECK(hyphens < 2);
         if (hyphens == 0) {
-          return ReadToEnd(str.next(),
+          return ReadToEnd(std::next(begin), end,
                            digits,
                            digit_count,
                            hyphens + 1,
@@ -560,7 +560,7 @@ constexpr DateParser DateParser::ReadToEnd(std::string_view::const_iterator begi
                            has_w,
                            w_index);
         } else {
-          return ReadToEnd(str.next(),
+          return ReadToEnd(std::next(begin), end,
                            digits,
                            digit_count,
                            hyphens + 1,
@@ -571,7 +571,7 @@ constexpr DateParser DateParser::ReadToEnd(std::string_view::const_iterator begi
         }
       case 'W':
         CONSTEXPR_CHECK(!has_w);
-        return ReadToEnd(str.next(),
+        return ReadToEnd(std::next(begin), end,
                          digits,
                          digit_count,
                          hyphens,
@@ -581,7 +581,7 @@ constexpr DateParser DateParser::ReadToEnd(std::string_view::const_iterator begi
                          /*w_index=*/str.index());
       case '0': case '1': case '2': case '3': case '4':
       case '5': case '6': case '7': case '8': case '9':
-        return ReadToEnd(str.next(),
+        return ReadToEnd(std::next(begin), end,
                          digits * 10 + *str - '0',
                          digit_count + 1,
                          hyphens,
@@ -725,7 +725,7 @@ constexpr TimeParser TimeParser::ReadToEnd(std::string_view::const_iterator begi
                                            int const second_colon_index,
                                            bool const has_decimal_mark,
                                            int const decimal_mark_index) {
-  if (str.at_end()) {
+  if (begin == end) {
     return TimeParser(digits,
                       digit_count,
                       colons,
@@ -734,11 +734,11 @@ constexpr TimeParser TimeParser::ReadToEnd(std::string_view::const_iterator begi
                       has_decimal_mark,
                       decimal_mark_index);
   } else {
-    switch (*str) {
+    switch (*begin) {
       case ':':
         CONSTEXPR_CHECK(colons < 2);
         if (colons == 0) {
-          return ReadToEnd(str.next(),
+          return ReadToEnd(std::next(begin), end,
                            digits,
                            digit_count,
                            colons + 1,
@@ -747,7 +747,7 @@ constexpr TimeParser TimeParser::ReadToEnd(std::string_view::const_iterator begi
                            has_decimal_mark,
                            decimal_mark_index);
         } else {
-          return ReadToEnd(str.next(),
+          return ReadToEnd(std::next(begin), end,
                            digits,
                            digit_count,
                            colons + 1,
@@ -759,7 +759,7 @@ constexpr TimeParser TimeParser::ReadToEnd(std::string_view::const_iterator begi
       case ',':
       case '.':
         CONSTEXPR_CHECK(!has_decimal_mark);
-        return ReadToEnd(str.next(),
+        return ReadToEnd(std::next(begin), end,
                          digits,
                          digit_count,
                          colons,
@@ -769,7 +769,7 @@ constexpr TimeParser TimeParser::ReadToEnd(std::string_view::const_iterator begi
                          /*decimal_mark_index=*/str.index());
       case '0': case '1': case '2': case '3': case '4':
       case '5': case '6': case '7': case '8': case '9':
-        return ReadToEnd(str.next(),
+        return ReadToEnd(std::next(begin), end,
                          digits * 10 + *str - '0',
                          digit_count + 1,
                          colons,
@@ -881,15 +881,15 @@ constexpr JulianDateParser JulianDateParser::ReadToEnd(
     int const digit_count,
     bool const has_decimal_mark,
     int const decimal_mark_index) {
-  if (str.at_end()) {
+  if (begin == end) {
     return JulianDateParser(digits,
                             digit_count,
                             decimal_mark_index);
   } else {
-    switch (*str) {
+    switch (*begin) {
       case '.':
         CONSTEXPR_CHECK(!has_decimal_mark);
-        return ReadToEnd(str.next(),
+        return ReadToEnd(std::next(begin), end,
                          digits,
                          digit_count,
                          /*has_decimal_mark=*/true,
@@ -898,7 +898,7 @@ constexpr JulianDateParser JulianDateParser::ReadToEnd(
       case '5': case '6': case '7': case '8': case '9':
         CONSTEXPR_CHECK(digits <=
                         std::numeric_limits<std::int64_t>::max() / 10 - 9);
-        return ReadToEnd(str.next(),
+        return ReadToEnd(std::next(begin), end,
                          digits * 10 + *str - '0',
                          digit_count + 1,
                          has_decimal_mark,
