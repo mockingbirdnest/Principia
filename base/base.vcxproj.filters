@@ -14,9 +14,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="not_null.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="not_null_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -48,9 +45,6 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="map_util.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="pull_serializer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="pull_serializer_body.hpp">
@@ -86,9 +80,6 @@
     <ClInclude Include="mod.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="not_constructible.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="function.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -118,9 +109,6 @@
     </ClInclude>
     <ClInclude Include="ranges_body.hpp">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="sink_source.hpp">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="sink_source_body.hpp">
       <Filter>Source Files</Filter>
@@ -156,9 +144,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="tags.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="traits.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="flags.hpp">

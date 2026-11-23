@@ -83,10 +83,8 @@
     <ClInclude Include="monostable.hpp" />
     <ClInclude Include="monostable_body.hpp" />
     <ClInclude Include="multiprecision.hpp" />
-    <ClInclude Include="not_null.hpp" />
     <ClInclude Include="not_null_body.hpp" />
     <ClInclude Include="optional_serialization.hpp" />
-    <ClInclude Include="pull_serializer.hpp" />
     <ClInclude Include="pull_serializer_body.hpp" />
     <ClInclude Include="push_deserializer.hpp" />
     <ClInclude Include="push_deserializer_body.hpp" />
@@ -100,9 +98,7 @@
     <ClInclude Include="recurring_thread_body.hpp" />
     <ClInclude Include="serialization.hpp" />
     <ClInclude Include="serialization_body.hpp" />
-    <ClInclude Include="sink_source.hpp" />
     <ClInclude Include="sink_source_body.hpp" />
-    <ClInclude Include="not_constructible.hpp" />
     <ClInclude Include="status_utilities.hpp" />
     <ClInclude Include="stoppable_thread.hpp" />
     <ClInclude Include="stoppable_thread_body.hpp" />
@@ -110,7 +106,6 @@
     <ClInclude Include="tags.hpp" />
     <ClInclude Include="thread_pool.hpp" />
     <ClInclude Include="thread_pool_body.hpp" />
-    <ClInclude Include="traits.hpp" />
     <ClInclude Include="unique_ptr_logging.hpp" />
     <ClInclude Include="unique_ptr_logging_body.hpp" />
     <ClInclude Include="version.hpp" />
