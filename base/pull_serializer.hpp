@@ -5,7 +5,6 @@ import std;
 import principia.base.array;
 import principia.base.not_null;
 
-/*
 namespace principia {
 namespace base {
 namespace _pull_serializer {
@@ -20,7 +19,7 @@ using ::google::compression::Compressor;
 // of the case where one array is full.  It calls the `on_full` function passed
 // at construction and proceeds with filling the array returned by that
 // function.
-class DelegatingArrayOutputStream
+export class DelegatingArrayOutputStream
     : public google::protobuf::io::ZeroCopyOutputStream {
  public:
   // The stream is supported by `bytes.data` which has size `bytes.size`.  Once
@@ -135,11 +134,10 @@ class PullSerializer final {
 
 }  // namespace internal
 
-using internal::PullSerializer;
+export using internal::PullSerializer;
 
 }  // namespace _pull_serializer
 }  // namespace base
 }  // namespace principia
 
 #include "base/pull_serializer_body.hpp"
-*/
