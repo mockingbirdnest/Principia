@@ -18,13 +18,14 @@ constexpr Product<T, U> InnerProduct(T const& left, U const& right) {
 }
 
 template<typename T>
-constexpr Norm²Type<T> Norm²(T const& x) {
+  requires(requires(T x) { x.Norm²(); })
+constexpr auto Norm²(T const& x) {
   return x.Norm²();
 }
 
 template<homogeneous_field T>
   requires std::totally_ordered<T>
-constexpr Norm²Type<T> Norm²(T const& x) {
+constexpr Square<T> Norm²(T const& x) {
   return x * x;
 }
 
