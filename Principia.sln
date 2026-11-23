@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.4.33403.182
+# Visual Studio Version 18
+VisualStudioVersion = 18.13.12412.241 insiders
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "quantities", "quantities\quantities.vcxproj", "{273987F9-5E73-43E6-868E-E9D3C137F01A}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -657,7 +657,6 @@ Global
 		shared\testing_utilities.vcxitems*{7b174b21-0837-4bee-864e-08ad3c74046a}*SharedItemsImports = 4
 		shared\base.vcxitems*{7cca653c-2e8f-4ffd-9e9f-bee590f3efab}*SharedItemsImports = 4
 		shared\numerics.vcxitems*{7cca653c-2e8f-4ffd-9e9f-bee590f3efab}*SharedItemsImports = 4
-		shared\numerics.vcxitems*{7e7cc89a-fc65-409c-a975-9c3a6a50786b}*SharedItemsImports = 4
 		shared\base.vcxitems*{83a31da7-3f62-464d-9f6b-09cce07a865a}*SharedItemsImports = 4
 		shared\geometry.vcxitems*{83a31da7-3f62-464d-9f6b-09cce07a865a}*SharedItemsImports = 4
 		shared\numerics.vcxitems*{83a31da7-3f62-464d-9f6b-09cce07a865a}*SharedItemsImports = 4

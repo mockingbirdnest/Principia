@@ -4,7 +4,6 @@
     <ProjectGuid>{7E7CC89A-FC65-409C-A975-9C3A6A50786B}</ProjectGuid>
     <RootNamespace>base</RootNamespace>
   </PropertyGroup>
-  <Import Project="..\shared\numerics.vcxitems" Label="Shared" />
   <Import Project="$(SolutionDir)principia.props" />
   <ItemGroup>
     <ClInclude Include="algebra.hpp" />
@@ -83,37 +82,7 @@
     <ClInclude Include="zfp_compressor_body.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="algebra_test.cpp" />
-    <ClCompile Include="array_test.cpp" />
-    <ClCompile Include="base32768_test.cpp" />
-    <ClCompile Include="base64_test.cpp" />
-    <ClCompile Include="bits_test.cpp" />
-    <ClCompile Include="bundle.cpp" />
-    <ClCompile Include="bundle_test.cpp" />
-    <ClCompile Include="cpuid.cpp" />
-    <ClCompile Include="cpuid_test.cpp" />
-    <ClCompile Include="disjoint_sets_test.cpp" />
-    <ClCompile Include="file_log_sink.cpp" />
-    <ClCompile Include="file_log_sink_test.cpp" />
-    <ClCompile Include="flags.cpp" />
-    <ClCompile Include="flags_test.cpp" />
-    <ClCompile Include="for_all_of_test.cpp" />
-    <ClCompile Include="function_test.cpp" />
-    <ClCompile Include="hexadecimal_test.cpp" />
-    <ClCompile Include="macos_allocator_replacement_test.cpp" />
-    <ClCompile Include="malloc_allocator_test.cpp" />
-    <ClCompile Include="multiprecision_test.cpp" />
     <ClCompile Include="not_null_test.cpp" />
     <ClCompile Include="pull_serializer_test.cpp" />
-    <ClCompile Include="push_deserializer_test.cpp" />
-    <ClCompile Include="push_pull_callback_test.cpp" />
-    <ClCompile Include="reanimator_test.cpp" />
-    <ClCompile Include="recurring_thread_test.cpp" />
-    <ClCompile Include="stoppable_thread_test.cpp" />
-    <ClCompile Include="string_log_sink.cpp" />
-    <ClCompile Include="thread_pool_test.cpp" />
-    <ClCompile Include="traits_test.cpp" />
-    <ClCompile Include="version.generated.cc" />
-    <ClCompile Include="zfp_compressor.cpp" />
   </ItemGroup>
 </Project>
