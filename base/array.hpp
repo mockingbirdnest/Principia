@@ -1,12 +1,6 @@
 #pragma once
 
-#include <array>
-#include <concepts>
-#include <cstdint>
-#include <cstddef>
-#include <memory>
-#include <string>
-#include <type_traits>
+import std;
 
 namespace principia {
 namespace base {
@@ -140,10 +134,10 @@ bool operator==(UniqueArray<LeftElement> const& left,
 
 }  // namespace internal
 
-using internal::Array;
-using internal::BoundedArray;
-using internal::operator==;
-using internal::UniqueArray;
+export using internal::Array;
+export using internal::BoundedArray;
+export using internal::operator==;
+export using internal::UniqueArray;
 
 }  // namespace _array
 }  // namespace base

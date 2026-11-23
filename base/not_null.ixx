@@ -1,0 +1,14 @@
+
+module;
+
+#include "absl/log/check.h"
+#include "absl/log/log.h"
+#include "base/not_constructible.hpp"
+#include "base/traits.hpp"
+// For body:
+#include "absl/log/check.h"
+#include "absl/log/log.h"
+
+export module principia.base.not_null;
+
+#include "base/not_null.hpp"

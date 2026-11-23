@@ -1,12 +1,6 @@
 #pragma once
 
-#include "base/pull_serializer.hpp"
-
-#include <algorithm>
-#include <memory>
-#include <utility>
-
-#include "base/sink_source.hpp"
+import principia.base.sink_source;
 
 namespace principia {
 namespace base {

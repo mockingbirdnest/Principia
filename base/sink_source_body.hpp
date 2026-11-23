@@ -1,9 +1,5 @@
 #pragma once
 
-#include "base/sink_source.hpp"
-
-#include <algorithm>
-
 namespace principia {
 namespace base {
 namespace _sink_source {

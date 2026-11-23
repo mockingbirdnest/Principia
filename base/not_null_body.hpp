@@ -1,14 +1,5 @@
 #pragma once
 
-#include "base/not_null.hpp"
-
-#include <algorithm>
-#include <memory>
-#include <utility>
-
-#include "absl/log/check.h"
-#include "absl/log/log.h"
-
 namespace principia {
 namespace base {
 namespace _not_null {

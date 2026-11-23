@@ -1,19 +1,5 @@
-#include "base/pull_serializer.hpp"
-
-#include <cstddef>
-#include <cstdint>
-#include <cstring>
-#include <functional>
-#include <list>
-#include <memory>
-#include <string>
-#include <utility>
-#include <vector>
-
 #include "absl/log/check.h"
 #include "absl/log/log.h"
-#include "base/array.hpp"
-#include "base/not_null.hpp"
 #include "gipfeli/compression.h"
 #include "gipfeli/gipfeli.h"
 #include "gmock/gmock.h"
@@ -21,6 +7,12 @@
 #include "serialization/geometry.pb.h"
 #include "serialization/physics.pb.h"
 #include "serialization/quantities.pb.h"
+
+import std;
+
+import principia.base.pull_serializer;
+import principia.base.array;
+import principia.base.not_null;
 
 namespace principia {
 namespace base {

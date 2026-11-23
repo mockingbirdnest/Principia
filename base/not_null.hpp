@@ -1,14 +1,9 @@
 #pragma once
 
-#include <algorithm>
-#include <memory>
-#include <type_traits>
-#include <utility>
+import std;
 
-#include "absl/log/check.h"
-#include "absl/log/log.h"
-#include "base/not_constructible.hpp"
-#include "base/traits.hpp"
+import principia.base.not_constructible;
+import principia.base.traits;
 
 // This file defines a pointer wrapper `not_null` that statically ensures
 // non-nullness where possible, and performs runtime checks at the point of
@@ -350,7 +345,7 @@ template<typename T, typename... Args>
 not_null<std::unique_ptr<T>> make_not_null_unique(Args&&... args);
 
 // For logging.
-template<typename Pointer>
+export template<typename Pointer>
 std::ostream& operator<<(std::ostream& stream,
                          not_null<Pointer> const& pointer);
 
@@ -362,12 +357,12 @@ not_null<Result> dynamic_cast_not_null(not_null<std::unique_ptr<T>>&& pointer);
 
 }  // namespace internal
 
-using internal::check_not_null;
-using internal::dynamic_cast_not_null;
-using internal::make_not_null_shared;
-using internal::make_not_null_unique;
-using internal::not_null;
-using internal::remove_not_null;
+export using internal::check_not_null;
+export using internal::dynamic_cast_not_null;
+export using internal::make_not_null_shared;
+export using internal::make_not_null_unique;
+export using internal::not_null;
+export using internal::remove_not_null;
 
 }  // namespace _not_null
 }  // namespace base

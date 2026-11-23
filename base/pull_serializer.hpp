@@ -1,18 +1,9 @@
 #pragma once
 
-#include <cstdint>
-#include <functional>
-#include <memory>
-#include <queue>
-#include <thread>
+import std;
 
-#include "absl/base/thread_annotations.h"
-#include "absl/synchronization/mutex.h"
-#include "base/array.hpp"
-#include "base/not_null.hpp"
-#include "gipfeli/compression.h"
-#include "google/protobuf/io/zero_copy_stream.h"
-#include "google/protobuf/message.h"
+import principia.base.array;
+import principia.base.not_null;
 
 namespace principia {
 namespace base {

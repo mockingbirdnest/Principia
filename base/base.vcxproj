@@ -5,6 +5,42 @@
     <RootNamespace>base</RootNamespace>
   </PropertyGroup>
   <Import Project="$(SolutionDir)principia.props" />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile />
+    <ClCompile>
+      <BuildStlModules>true</BuildStlModules>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_AVX_FMA|x64'">
+    <ClCompile />
+    <ClCompile>
+      <BuildStlModules>true</BuildStlModules>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile />
+    <ClCompile>
+      <BuildStlModules>true</BuildStlModules>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_AVX_FMA|x64'">
+    <ClCompile />
+    <ClCompile>
+      <BuildStlModules>true</BuildStlModules>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|x64'">
+    <ClCompile />
+    <ClCompile>
+      <BuildStlModules>true</BuildStlModules>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_LLVM_AVX_FMA|x64'">
+    <ClCompile />
+    <ClCompile>
+      <BuildStlModules>true</BuildStlModules>
+    </ClCompile>
+  </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="algebra.hpp" />
     <ClInclude Include="algebra_body.hpp" />
@@ -82,7 +118,13 @@
     <ClInclude Include="zfp_compressor_body.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="array.ixx" />
+    <ClCompile Include="not_constructible.ixx" />
+    <ClCompile Include="not_null.ixx" />
     <ClCompile Include="not_null_test.cpp" />
+    <ClCompile Include="pull_serializer.ixx" />
     <ClCompile Include="pull_serializer_test.cpp" />
+    <ClCompile Include="sink_source.ixx" />
+    <ClCompile Include="traits.ixx" />
   </ItemGroup>
 </Project>

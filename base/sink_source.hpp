@@ -1,10 +1,6 @@
 #pragma once
 
-#include <cstddef>
-#include <cstdint>
-
-#include "base/array.hpp"
-#include "gipfeli/sinksource.h"
+import principia.base.array;
 
 namespace principia {
 namespace base {
@@ -53,8 +49,8 @@ class ArraySink : public google::compression::Sink {
 
 }  // namespace internal
 
-using internal::ArraySink;
-using internal::ArraySource;
+export using internal::ArraySink;
+export using internal::ArraySource;
 
 }  // namespace _sink_source
 }  // namespace base

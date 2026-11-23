@@ -1,7 +1,6 @@
 #pragma once
 
-#include <type_traits>
-#include <utility>
+import std;
 
 namespace principia {
 namespace base {
