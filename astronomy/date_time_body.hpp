@@ -519,7 +519,7 @@ constexpr DateParser::DateParser(std::int64_t const digits,
       w_index_(w_index) {}
 
 constexpr DateParser DateParser::ReadToEnd(std::string_view s) {
-  return ReadToEnd(CStringIterator(s.data(), s.size()),
+  return ReadToEnd(s.begin(), s.end(),
                    /*digits=*/0,
                    /*digit_count=*/0,
                    /*hyphens=*/0,
@@ -706,7 +706,7 @@ constexpr TimeParser::TimeParser(std::int64_t const digits,
       decimal_mark_index_(decimal_mark_index) {}
 
 constexpr TimeParser TimeParser::ReadToEnd(std::string_view const s) {
-  return ReadToEnd(CStringIterator(s.data(), s.size()),
+  return ReadToEnd(s.begin(), s.end(),
                    /*digits=*/0,
                    /*digit_count*/ 0,
                    /*colons=*/0,
@@ -867,7 +867,7 @@ constexpr JulianDateParser::JulianDateParser(std::int64_t const digits,
       decimal_mark_index_(decimal_mark_index) {}
 
 constexpr JulianDateParser JulianDateParser::ReadToEnd(std::string_view const s) {
-  return ReadToEnd(CStringIterator(s.data(), s.size()),
+  return ReadToEnd(s.begin(), s.end(),
                    /*digits=*/0,
                    /*digit_count*/ 0,
                    /*has_decimal_mark=*/false,
