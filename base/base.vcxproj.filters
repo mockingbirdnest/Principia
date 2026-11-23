@@ -56,9 +56,6 @@
     <ClInclude Include="push_deserializer_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="array.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="array_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
