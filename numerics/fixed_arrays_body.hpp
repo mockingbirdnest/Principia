@@ -503,9 +503,18 @@ template<affine Scalar_, std::int64_t rows_, std::int64_t columns_,
 template<affine LScalar, affine RScalar, bool luh, bool ruh>
 Product<Scalar_, Product<LScalar, RScalar>>
 FixedMatrix<Scalar_, rows_, columns_, use_heap>::operator()(
-    FixedVector<LScalar, columns_, luh> const& left,
-    FixedVector<RScalar, rows_, ruh> const& right) const {
+    FixedVector<LScalar, rows_, luh> const& left,
+    FixedVector<RScalar, columns_, ruh> const& right) const {
   return TransposedView{left} * (*this * right);  // NOLINT
+}
+
+template<affine Scalar_, std::int64_t rows_, std::int64_t columns_,
+         bool use_heap>
+template<affine RScalar, bool ruh>
+FixedVector<Product<Scalar_, RScalar>, rows_, use_heap>
+FixedMatrix<Scalar_, rows_, columns_, use_heap>::operator()(
+    FixedVector<RScalar, columns_, ruh> const& right) const {
+  return *this * right;
 }
 
 template<affine Scalar_, std::int64_t rows_, std::int64_t columns_,

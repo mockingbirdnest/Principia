@@ -195,8 +195,12 @@ class FixedMatrix final {
   // `SymmetricBilinearForm`.  Prefer to use `TransposedView` and `operator*`.
   template<affine LScalar, affine RScalar, bool luh, bool ruh>
   Product<Scalar, Product<LScalar, RScalar>>
-      operator()(FixedVector<LScalar, columns_, luh> const& left,
-                 FixedVector<RScalar, rows_, ruh> const& right) const;
+      operator()(FixedVector<LScalar, rows_, luh> const& left,
+                 FixedVector<RScalar, columns_, ruh> const& right) const;
+
+  template<affine RScalar, bool ruh>
+  FixedVector<Product<Scalar, RScalar>, rows_, use_heap> operator()(
+      FixedVector<RScalar, columns_, ruh> const& right) const;
 
   static FixedMatrix Identity()
     requires(std::is_arithmetic_v<Scalar_> && rows_ == columns_);

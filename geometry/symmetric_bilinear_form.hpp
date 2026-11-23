@@ -61,7 +61,7 @@ class SymmetricBilinearForm<Scalar, MultivectorTag, Frame, Rank<rank>> {
       Multivector<LScalar, Frame, rank> const& left,
       Multivector<RScalar, Frame, rank> const& right) const;
 
-  // The form may be applied to a single multivector, yielding a linear form
+  // Application of the form to a single multivector, yielding a linear form
   // which we identify with a multivector of the same rank.
   template<quantity RScalar>
   Multivector<Product<Scalar, RScalar>, Frame, rank> operator()(
@@ -140,10 +140,17 @@ class SymmetricBilinearForm<Scalar, QuantityTag> {
 
   Scalar const& coordinates() const;
 
+  // Application of the form to a pair of quantities (considered as members of a
+  // vector space).
   template<quantity LScalar, quantity RScalar>
   Product<Scalar, Product<LScalar, RScalar>> operator()(
       LScalar const& left,
       RScalar const& right) const;
+
+  // Application of the form to a single multivector, yielding a linear form
+  // which we identify with an element of the quantities vector space.
+  template<quantity RScalar>
+  Product<Scalar, RScalar> operator()(RScalar const& right) const;
 
   // Returns a copy of this object.
   SymmetricBilinearForm<Scalar, QuantityTag> Diagonalize() const;
@@ -170,6 +177,8 @@ template<typename Frame, int rank>
 SymmetricBilinearForm<double, MultivectorTag, Frame, Rank<rank>> const&
 InnerProductForm();
 
+// Additive group.
+
 template<quantity Scalar, typename Tag, typename... Parameters>
 SymmetricBilinearForm<Scalar, Tag, Parameters...> operator+(
     SymmetricBilinearForm<Scalar, Tag, Parameters...> const& right);
@@ -185,6 +194,8 @@ template<quantity Scalar, typename Tag, typename... Parameters>
 SymmetricBilinearForm<Scalar, Tag, Parameters...> operator-(
     SymmetricBilinearForm<Scalar, Tag, Parameters...> const& left,
     SymmetricBilinearForm<Scalar, Tag, Parameters...> const& right);
+
+// Vector space.
 
 template<convertible_to_quantity LScalar,
          quantity RScalar,

@@ -317,6 +317,13 @@ SymmetricBilinearForm<Scalar, QuantityTag>::operator()(
 }
 
 template<quantity Scalar>
+template<quantity RScalar>
+Product<Scalar, RScalar> SymmetricBilinearForm<Scalar, QuantityTag>::operator()(
+    RScalar const& right) const {
+  return coordinates_ * right;
+}
+
+template<quantity Scalar>
 SymmetricBilinearForm<Scalar, QuantityTag>
 SymmetricBilinearForm<Scalar, QuantityTag>::Diagonalize() const {
   return *this;
