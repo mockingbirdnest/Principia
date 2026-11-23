@@ -162,7 +162,7 @@ TEST_F(MechanicalSystemTest, RigidTwoCubes) {
            2 * cube_mass * (Pow<2>(2 * cube_side) + Pow<2>(cube_side)) / 12})));
   EXPECT_THAT(
       system_.AngularMomentum(),
-      Eq(system_.InertiaTensor() * Identity<InertialFrame, SystemFrame>()(ω)));
+      Eq(system_.InertiaTensor()(Identity<InertialFrame, SystemFrame>()(ω))));
 }
 
 TEST_F(MechanicalSystemTest, NonRigidTwoCubes) {

@@ -544,7 +544,7 @@ Vector<Jerk, Frame> Ephemeris<Frame>::ComputeGravitationalJerkOnMasslessBody(
 
     auto const form = -VectorInnerProductForm<Frame>() / Δq_norm³ +
                       3 * SymmetricSquare(Δq) / Δq_norm⁵;
-    auto const vector = form * Δv;
+    auto const vector = form(Δv);
 
     jerk_on_b1 += μ2 * vector;
   }
@@ -1217,7 +1217,7 @@ void Ephemeris<Frame>::ComputeGravitationalJerkByMassiveBodyOnMassiveBodies(
 
     auto const form = -VectorInnerProductForm<Frame>() / Δq_norm³ +
                       3 * SymmetricSquare(Δq) / Δq_norm⁵;
-    auto const vector = form * Δv;
+    auto const vector = form(Δv);
 
     jerk_on_b2 -= μ1 * vector;
     jerk_on_b1 += μ2 * vector;
