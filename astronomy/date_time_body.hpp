@@ -1062,8 +1062,8 @@ inline std::ostream& operator<<(std::ostream& out, DateTime const& date_time) {
   return out << date_time.date() << "T" << date_time.time();
 }
 
-constexpr bool IsJulian(char const* const str, std::size_t const size) {
-  return starts_with(str, size, "JD", 2) || starts_with(str, size, "MJD", 3);
+constexpr bool IsJulian(std::string_view const s) {
+  return s.starts_with("JD") || s.starts_with("MJD");
 }
 
 consteval JulianDate operator""_Julian(char const* const str,
