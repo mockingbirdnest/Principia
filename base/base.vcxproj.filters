@@ -259,5 +259,8 @@
     <ClCompile Include="array_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="pull_serializer.ixx">
+      <Filter>Header Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

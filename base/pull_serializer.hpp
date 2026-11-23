@@ -5,6 +5,7 @@ import std;
 import principia.base.array;
 import principia.base.not_null;
 
+/*
 namespace principia {
 namespace base {
 namespace _pull_serializer {
@@ -141,3 +142,4 @@ using internal::PullSerializer;
 }  // namespace principia
 
 #include "base/pull_serializer_body.hpp"
+*/

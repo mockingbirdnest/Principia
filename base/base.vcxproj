@@ -123,6 +123,7 @@
     <ClCompile Include="not_constructible.ixx" />
     <ClCompile Include="not_null.ixx" />
     <ClCompile Include="not_null_test.cpp" />
+    <ClCompile Include="pull_serializer.ixx" />
     <ClCompile Include="sink_source.ixx" />
     <ClCompile Include="traits.ixx" />
   </ItemGroup>

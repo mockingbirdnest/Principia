@@ -109,11 +109,11 @@ struct tail<T, Ts...> {
 
 }  // namespace internal
 
-using internal::all_different_v;
-using internal::tail;
+export using internal::all_different_v;
+export using internal::tail;
 
 // True if and only if U is an instance of T.
-template<template<typename...> typename T, typename U>
+export template<template<typename...> typename T, typename U>
 inline constexpr bool is_instance_of_v = internal::is_instance_of<T, U>::value;
 
 // Note that the order of template parameters is backward from is_instance_of_v.
@@ -124,19 +124,19 @@ inline constexpr bool is_instance_of_v = internal::is_instance_of<T, U>::value;
 // but is_instance_of_v<T, U> should be preferred in boolean expressions.
 // An exception is when defining concepts; there we use instance<U, T> so as to
 // get concept-specific error messages.
-template<typename U, template<typename...> typename T>
+export template<typename U, template<typename...> typename T>
 concept instance = is_instance_of_v<T, U>;
 
 // True if and only if T and U are the same template.
-template<template<typename...> typename T, template<typename...> typename U>
+export template<template<typename...> typename T, template<typename...> typename U>
 inline constexpr bool is_same_template_v =
     internal::is_same_template<T, U>::value;
 
 // If T is T1, returns T2.  If T is T2, returns T1.  Otherwise fails.
-template<typename T, typename T1, typename T2>
+export template<typename T, typename T1, typename T2>
 using other_type_t = typename internal::other_type<T, T1, T2>::type;
 
-template<typename... Ts>
+export template<typename... Ts>
 using tail_t = typename internal::tail<Ts...>::type;
 
 }  // namespace _traits

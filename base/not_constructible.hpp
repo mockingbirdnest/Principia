@@ -14,7 +14,7 @@ struct not_constructible {
 
 }  // namespace internal
 
-using internal::not_constructible;
+export using internal::not_constructible;
 
 }  // namespace _not_constructible
 }  // namespace base
