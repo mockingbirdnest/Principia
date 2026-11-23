@@ -31,6 +31,12 @@ struct Generator<Scalar, Vector<S, F>> {
   static VectorSymmetricBilinearForm<double, F> InnerProductForm();
 };
 
+template<typename Scalar, quantity Q>
+struct Generator<Scalar, Q> {
+  using Gradient = Quotient<Scalar, Q>;
+  static QuantitySymmetricBilinearForm<double> InnerProductForm();
+};
+
 template<typename Scalar, typename V>
 struct Generator<Scalar, Point<V>> {
   using Gradient = typename Generator<Scalar, V>::Gradient;

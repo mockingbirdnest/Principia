@@ -238,7 +238,7 @@ absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
   auto const H₀ = InnerProduct(s₀, y₀) *
                   geometry::_differential_geometry::internal::
                       Generator<Scalar, Argument>::InnerProductForm() /
-                  y₀.Norm²();
+                  Norm²(y₀);
 
   auto xₖ = x₁;
   auto grad_f_xₖ = grad_f_x₁;
@@ -246,14 +246,14 @@ absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
   for (;;) {
     VLOG(1) << "Iterating from: " << xₖ;
     RETURN_IF_STOPPED;
-    if ((xₖ - x₀).Norm() > radius) {
+    if (Norm(xₖ - x₀) > radius) {
       VLOG(1) << "No minimum within search radius at: " << xₖ;
       return absl::Status(termination_condition::NoMinimum, "No minimum found");
     }
     Difference<Argument> const pₖ = -Hₖ(grad_f_xₖ);
-    if (pₖ.Norm() <= tolerance) {
+    if (Norm(pₖ) <= tolerance) {
       VLOG(1) << "Below tolerance at: " << xₖ
-              << ", displacement: " << pₖ.Norm();
+              << ", displacement: " << Norm(pₖ);
       return xₖ;
     }
     double const αₖ = LineSearch(xₖ, pₖ, grad_f_xₖ, f, gateaux_derivative_f,
