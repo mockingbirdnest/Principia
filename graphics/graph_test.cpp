@@ -23,17 +23,26 @@ using namespace principia::quantities::_si;
 
 class GraphTest : public ::testing::Test {};
 
+
 TEST_F(GraphTest, Frame) {
-  Graph<Angle, double> graph(std::round(100 * φ),
-                             100,
-                             {-2 * π * Radian, 2 * π * Radian},
-                             {-1.0, 1.0},
-                             /*background=*/Opaque(xkcd::red));
-  graph.PlotHorizontalLine(-1.0, xkcd::blue);
-  graph.PlotHorizontalLine(1.0, xkcd::blue);
-  graph.PlotVerticalLine(-2 * π * Radian, xkcd::blue);
-  graph.PlotVerticalLine(2 * π * Radian, xkcd::blue);
-  EXPECT_GOLDEN_GRAPH(graph, "frame");
+  // This test draws lines aligned with the centres of the edge pixels, using a
+  // square pixel-sized brush: the resulting image does not change with
+  // anti-aliasing.
+  for (std::int64_t supersampling = 1; supersampling <= 8; ++supersampling) {
+    Graph<Angle, double> graph(
+        std::round(100 * φ),
+        100,
+        {-2 * π * Radian, 2 * π * Radian},
+        {-1.0, 1.0},
+        /*background=*/Opaque(xkcd::red),
+        {.anti_aliasing = {.supersampling = supersampling}});
+    graph.PlotHorizontalLine(-1.0, xkcd::blue);
+    graph.PlotHorizontalLine(1.0, xkcd::blue);
+    graph.PlotVerticalLine(-2 * π * Radian, xkcd::blue);
+    graph.PlotVerticalLine(2 * π * Radian, xkcd::blue);
+    graph.AntiAlias();
+    EXPECT_GOLDEN_GRAPH(graph, "frame");
+  }
 }
 
 TEST_F(GraphTest, Sinusoid) {
@@ -41,7 +50,8 @@ TEST_F(GraphTest, Sinusoid) {
                              100,
                              {-2 * π * Radian, 2 * π * Radian},
                              {-1.0, 1.0},
-                             /*background=*/Opaque(xkcd::black));
+                             /*background=*/Opaque(xkcd::black),
+                             {.anti_aliasing={.supersampling = 8}});
   graph.PlotHorizontalLine(0, xkcd::white);
   graph.PlotVerticalLine(0 * Radian, xkcd::white);
   graph.PlotVerticalLine(π / 2 * Radian, xkcd::white, {{0, 1}});
@@ -59,6 +69,7 @@ TEST_F(GraphTest, Sinusoid) {
       }),
       xkcd::green,
       {.joined = true});
+  graph.AntiAlias();
   EXPECT_GOLDEN_GRAPH(graph, "sinusoids");
 }
 

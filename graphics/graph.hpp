@@ -55,6 +55,13 @@ struct ListPointPlotOptions {
 template<affine Abscissa, affine Ordinate>
 class Graph {
  public:
+  struct Options {
+    struct AntiAliasing {
+      std::int64_t supersampling = 1;
+    };
+    AntiAliasing anti_aliasing;
+  };
+
   // A pixel centred at coordinates that lie in the product of closed intervals
   // `x_range` × `y_range` lies entirely within the image.  In particular, the
   // border of `x_range` × `y_range` can be plotted using the pixels on the edge
@@ -63,11 +70,22 @@ class Graph {
   // abscissa: x_range.min              ...              x_range.max
   //          |_____↓_____|___________| ... |___________|_____↓_____|
   // pixel:         0           1             width - 2   width - 1
+  // With supersampling, the same pixels are retained; this means that 
+  // the outlying ⌊`supersampling` / 2⌋ samples for the edge pixels lie outside
+  // `x_range` × `y_range`:
+  // abscissa:                      x_range.min
+  //                             |___________↓___________|
+  // pixel:                                  0
+  //                             |       |       |       |
+  // sample, supersampling = 3:      0       1       2
+  //                             |     |     |     |     |
+  // sample, supersampling = 4:     0     1     2     3
   Graph(std::int64_t width,
         std::int64_t height,
         Interval<Abscissa> const& x_range,
         Interval<Ordinate> const& y_range,
-        RGBA32 background);
+        RGBA32 background,
+        Options options = {});
 
   template<std::ranges::range Points>
     requires graph_point<std::ranges::range_value_t<Points>, Abscissa, Ordinate>
@@ -91,6 +109,8 @@ class Graph {
                 RGB24 colour,
                 Label::TextPlacement placement);
 
+  void AntiAlias();
+
   std::vector<RGBA32> const& pixels() const;
   // The labels are in the order in which `AddLabel` was called.
   std::vector<Label> const& labels() const;
@@ -98,24 +118,49 @@ class Graph {
   std::int64_t height() const;
 
  private:
-  std::int64_t abscissa_to_pixel(Abscissa x) const;
-  Interval<Abscissa> pixel_to_abscissa(std::int64_t i) const;
+  std::int64_t abscissa_to_sample(Abscissa x) const;
+  Interval<Abscissa> sample_to_abscissa_range(std::int64_t i) const;
   // This function is decreasing: `y_range_.max` maps to 0.
-  std::int64_t ordinate_to_pixel(Ordinate y) const;
+  std::int64_t ordinate_to_sample(Ordinate y) const;
+  
+  // Draws a rectangle with the given dimensions centred at (x, y).
+  void DrawRectangle(Abscissa x,
+                     Ordinate y,
+                     Difference<Abscissa> width,
+                     Difference<Ordinate> height,
+                     RGB24 colour);
+  // Draws a disk with a radius of `r` pixels centred at (x, y).
+  void DrawDisk(Abscissa x, Ordinate y, double r, RGB24 colour);
 
-  void SetPixel(std::int64_t column, std::int64_t row, RGBA32 pixel);
+  void SetSample(std::int64_t column, std::int64_t row, RGBA32 pixel);
 
+  void InvalidateAntiAliasing();
 
   Interval<Abscissa> const x_range_;
   Interval<Ordinate> const y_range_;
 
   std::int64_t const width_;
   std::int64_t const height_;
-  Difference<Abscissa> const pixel_width_ = x_range_.measure() / (width_ - 1);
-  Difference<Ordinate> const pixel_height_ = y_range_.measure() / (height_ - 1);
-  Inverse<Difference<Abscissa>> const inverse_pixel_width_ = 1 / pixel_width_;
-  Inverse<Difference<Ordinate>> const inverse_pixel_height_ = 1 / pixel_height_;
-  std::vector<RGBA32> pixels_;
+  Difference<Abscissa> const pixel_width_ =
+      x_range_.measure() / (width_ - 1);
+  Difference<Ordinate> const pixel_height_ =
+      y_range_.measure() / (height_ - 1);
+
+  Options::AntiAliasing const anti_aliasing_;
+  std::int64_t const samples_width_ = anti_aliasing_.supersampling * width_;
+  std::int64_t const samples_height_ = anti_aliasing_.supersampling * height_;
+  Difference<Abscissa> const sample_width_ =
+      x_range_.measure() / (samples_width_ - anti_aliasing_.supersampling);
+  Difference<Ordinate> const sample_height_ =
+      y_range_.measure() / (samples_height_ - anti_aliasing_.supersampling);
+  Inverse<Difference<Abscissa>> const inverse_sample_width_ = 1 / sample_width_;
+  Inverse<Difference<Ordinate>> const inverse_sample_height_ =
+      1 / sample_height_;
+  std::vector<RGBA32> samples_;
+
+  // In the absence of anti-aliasing, `pixels_` is always nullopt, and
+  // `pixels()` returns `samples_`.
+  std::optional<std::vector<RGBA32>> pixels_;
   std::vector<Label> labels_;
 };
 
