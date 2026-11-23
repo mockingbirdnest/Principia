@@ -682,7 +682,7 @@ class TimeParser final {
   // Fails unless `str` is a valid time representation of one of the following
   // forms: [hh:mm:ss], [hhmmss], [hh:mm:ss.ss̲], [hh:mm:ss,ss̲], [hhmmss.ss̲],
   // [hhmmss,ss̲], with at most three digits after the decimal mark.
-  static constexpr TimeOfDay Parse(char const* str, std::size_t size);
+  static constexpr TimeOfDay Parse(std::string_view s);
 
  private:
   constexpr TimeParser(std::int64_t digits,
@@ -699,8 +699,7 @@ class TimeParser final {
   //   - any number of decimal digits;
   //   - at most two colons;
   //   - at most one decimal mark ('.' or ',').
-  static constexpr TimeParser ReadToEnd(char const* str,
-                                        std::size_t size);
+  static constexpr TimeParser ReadToEnd(std::string_view s);
   static constexpr TimeParser ReadToEnd(CStringIterator str,
                                         std::int64_t digits,
                                         int digit_count,
@@ -730,9 +729,8 @@ class TimeParser final {
   int const decimal_mark_index_;
 };
 
-constexpr TimeOfDay TimeParser::Parse(char const* const str,
-                                 std::size_t const size) {
-  return ReadToEnd(str, size).ToTime();
+constexpr TimeOfDay TimeParser::Parse(std::string_view const s) {
+  return ReadToEnd(s).ToTime();
 }
 
 constexpr TimeParser::TimeParser(std::int64_t const digits,
@@ -750,9 +748,8 @@ constexpr TimeParser::TimeParser(std::int64_t const digits,
       has_decimal_mark_(has_decimal_mark),
       decimal_mark_index_(decimal_mark_index) {}
 
-constexpr TimeParser TimeParser::ReadToEnd(char const* const str,
-                                           std::size_t const size) {
-  return ReadToEnd(CStringIterator(str, size),
+constexpr TimeParser TimeParser::ReadToEnd(std::string_view const s) {
+  return ReadToEnd(CStringIterator(s.data(), s.size()),
                    /*digits=*/0,
                    /*digit_count*/ 0,
                    /*colons=*/0,
