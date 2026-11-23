@@ -241,16 +241,10 @@
     <ClCompile Include="not_null_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="pull_serializer_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
     <ClCompile Include="not_null.ixx">
       <Filter>Header Files</Filter>
     </ClCompile>
     <ClCompile Include="array.ixx">
-      <Filter>Header Files</Filter>
-    </ClCompile>
-    <ClCompile Include="pull_serializer.ixx">
       <Filter>Header Files</Filter>
     </ClCompile>
     <ClCompile Include="sink_source.ixx">
@@ -261,6 +255,9 @@
     </ClCompile>
     <ClCompile Include="traits.ixx">
       <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="array_test.cpp">
+      <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
