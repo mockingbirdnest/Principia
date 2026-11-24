@@ -1,7 +1,8 @@
 #include "absl/hash/hash_testing.h"
-#include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+
+import "base/macros.hpp";  // 🧙 For PRINCIPIA_COMPILER_MSVC.
 
 import std;
 

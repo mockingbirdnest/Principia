@@ -4,16 +4,16 @@ module;
 #include "absl/log/log.h"
 #include "absl/strings/str_join.h"
 
-module principia.base.cpuid;
-import principia.base.not_null;
-
-import "base/macros.hpp";  // 🧙 For PRINCIPIA_COMPILER_MSVC.
+#include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
 
 #if PRINCIPIA_COMPILER_MSVC
 #include <intrin.h>
 #else
 #include <cpuid.h>
 #endif
+
+module principia.base.cpuid;
+import principia.base.not_null;
 
 namespace principia {
 namespace base {
