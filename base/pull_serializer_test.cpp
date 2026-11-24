@@ -4,11 +4,12 @@
 #include "gipfeli/gipfeli.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "serialization/geometry.pb.h"
-#include "serialization/physics.pb.h"
-#include "serialization/quantities.pb.h"
 
 import std;
+
+import "serialization/geometry.pb.h";
+import "serialization/physics.pb.h";
+import "serialization/quantities.pb.h";
 
 import principia.base.pull_serializer;
 import principia.base.array;
