@@ -34,36 +34,32 @@ template<euclidean Point_, typename Payload_ = std::nullopt_t>
 class PrincipalComponentPartitioningTree {
   static constexpr bool has_payload = !std::is_same_v<Payload_, std::nullopt_t>;
 
+  // A displacement between two points.
+  using Displacement = Difference<Point_>;
+
  public:
   using Point = Point_;
   using Payload = Payload_;
 
-  // A displacement from the centroid.
-  using Displacement = Difference<Point>;
-
-  // The type of the norm (and its square) of `Displacement`.
+  // The type of the norm of `Displacement`.
   using NormType = NormType<Displacement>;
-  using Norm²Type = Norm²Type<Displacement>;
 
   using Filter = std::conditional_t<
       has_payload,
-      std::function<bool(Point const*, std::optional<Payload> const&)>,
-      std::function<bool(Point const*)>>;
+      std::function<bool(Point const&, std::optional<Payload> const&)>,
+      std::function<bool(Point const&)>>;
 
   // We stop subdividing a cell when it contains `max_points_per_cell` or fewer
-  // points.  This API takes (non-owning) pointers so that the client can relate
-  // the points given here to the ones it gets from `FindNearestNeighbour`.  The
-  // vector `points` may be empty, in which case the object is not usable until
-  // the first point has been `Add`ed.
+  // points.
   PrincipalComponentPartitioningTree(
-      std::vector<not_null<Point const*>> const& points,
+      std::vector<Point> const& points,
       std::int64_t max_points_per_cell);
 
   // Adds a new point to the tree, restructuring it as needed.  Optionally
   // supports adding a payload, if the tree has one.  This is the only way to
   // add payloads.
-  void Add(not_null<Point const*> point);
-  void Add(not_null<Point const*> point, Payload const& payload)
+  void Add(Point const& point);
+  void Add(Point const& point, Payload const& payload)
     requires has_payload;
 
   // May be called after all points have been added to the tree to optimize the
@@ -73,15 +69,18 @@ class PrincipalComponentPartitioningTree {
   void Optimize();
 
   // Finds the nearest neighbour of the given `point` at a distance less than or
-  // equal to `radius`, and for which `filter` returns true.  Returns nullptr if
-  // no such point is found.
+  // equal to `radius`, and for which `filter` returns true.  Returns
+  // `std::nullopt` if no such point is found.
   // Beware! if `filter` rejects many points and `radius` is large, the search
   // may end up looking at the entire tree.
-  Point const* FindNearestNeighbour(Point const& point,
-                                    NormType const& radius,
-                                    Filter const& filter = nullptr) const;
+  std::optional<Point> FindNearestNeighbour(
+      Point const& point,
+      NormType const& radius,
+      Filter const& filter = nullptr) const;
 
  private:
+  using Norm²Type = Norm²Type<Displacement>;
+
   // A unit vector corresponding to `Displacement`.
   using Axis = NormalizedType<Displacement>;
 
@@ -94,7 +93,7 @@ class PrincipalComponentPartitioningTree {
   // The declarations of the tree structure.
   struct Internal;
 
-  using Leaf = std::vector<std::int32_t>;  // Indices in `displacements_`.
+  using Leaf = std::vector<std::int32_t>;  // Indices in `points_`.
 
   using Node = std::variant<Internal, Leaf>;
 
@@ -102,23 +101,21 @@ class PrincipalComponentPartitioningTree {
 
   struct Internal {
     Axis principal_axis;
-    Displacement anchor;
+    Point anchor;
     Children children;
   };
 
   // The construction of the tree uses this type, which contains an index in the
-  // `displacements_` array and storage for the projection of the corresponding
-  // `Displacement` on the current principal axis.  We use 32-bit integers
-  // because these objects will be swapped a lot, so the less memory we touch
-  // the better.
+  // `points_` array and storage for the projection of the corresponding `Point`
+  // on the current principal axis.  We use 32-bit integers because these
+  // objects will be swapped a lot, so the less memory we touch the better.
   struct Index {
     std::int32_t index;
     NormType projection;
   };
   using Indices = std::vector<Index>;
 
-  // Called when the first point is added to the tree to initialize the
-  // `centroid_` and the `root_`.
+  // Called when the first point is added to the tree to initialize the `root_`.
   void Initialize();
 
   // Constructs a tree for the displacements given by the index range
@@ -133,14 +130,14 @@ class PrincipalComponentPartitioningTree {
                             Node* node = nullptr);
 
   // Returns the symmetric bilinear form that represents the "inertia" of the
-  // displacements given by the index range [begin, end[.
+  // points given by the index range [begin, end[.
   DisplacementSymmetricBilinearForm ComputePrincipalComponentForm(
       typename Indices::iterator begin,
       typename Indices::iterator end) const;
 
   // Adds `point` to the tree, initializing it if needed.  The caller must take
   // care of managing `payloads_` if needed.
-  void AddPoint(not_null<Point const*> point);
+  void AddPoint(Point const& point);
 
   // Adds the point at the given `index` by first finding the location in the
   // subtree rooted at `node` where it would be located, and then adding it to
@@ -151,12 +148,12 @@ class PrincipalComponentPartitioningTree {
   void Add(std::int32_t index, Internal const& internal);
   void Add(std::int32_t index, Leaf& leaf, not_null<Node*> node);
 
-  // Finds the point closest to `displacement` in the `node` and its children,
-  // and returns its index and its (squared) distance.  If `displacement` is
-  // close to the separator plane of `parent`, sets `must_check_other_side` to
-  // true.  That pointer may be null if the client doesn't want to check this
-  // condition.  `parent` should be null for the root of the tree.
-  void Find(Displacement const& displacement,
+  // Finds the point closest to `point` in the `node` and its children, and
+  // returns its index and its (squared) distance.  If `point` is close to the
+  // separator plane of `parent`, sets `must_check_other_side` to true.  That
+  // pointer may be null if the client doesn't want to check this condition.
+  // `parent` should be null for the root of the tree.
+  void Find(Point const& point,
             Norm²Type const& radius²,
             Filter const& filter,
             Internal const* parent,
@@ -166,7 +163,7 @@ class PrincipalComponentPartitioningTree {
             bool* must_check_other_side) const;
 
   // Specializations for internal nodes and leaves, respectively.
-  void Find(Displacement const& displacement,
+  void Find(Point const& point,
             Norm²Type const& radius²,
             Filter const& filter,
             Internal const* parent,
@@ -174,7 +171,7 @@ class PrincipalComponentPartitioningTree {
             Norm²Type& min_distance²,
             std::int32_t& min_index,
             bool* must_check_other_side) const;
-  void Find(Displacement const& displacement,
+  void Find(Point const& point,
             Norm²Type const& radius²,
             Filter const& filter,
             Internal const* parent,
@@ -184,16 +181,8 @@ class PrincipalComponentPartitioningTree {
             bool* must_check_other_side) const;
 
   // Construction parameters.
-  std::vector<not_null<Point const*>> points_;
+  std::vector<Point> points_;
   std::int64_t const max_points_per_cell_;
-
-  // The centroid of the points passed at construction, or the first point
-  // passed to `Add` if no point is passed at construction.
-  Point centroid_;
-
-  // The displacements from the centroid.  The indices are the same as for
-  // `points_`.
-  std::vector<Displacement> displacements_;
 
   // All the nodes in the tree are allocated in this `deque`.  This gives us a
   // bit of locality (because `deque` has internal arrays) without expensive
@@ -209,6 +198,8 @@ class PrincipalComponentPartitioningTree {
   Payloads payloads_;
 
   Node* root_ = nullptr;
+
+  static Point const origin_;
 };
 
 }  // namespace internal
