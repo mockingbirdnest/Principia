@@ -502,77 +502,43 @@ constexpr DateParser DateParser::ReadToEnd(std::string_view s) {
                    /*w_index=*/-1);
 }
 
-constexpr DateParser DateParser::ReadToEnd(
-    std::string_view const s,
-    std::string_view::const_iterator const it,
-    std::int64_t const digits,
-    int const digit_count,
-    int const hyphens,
-    int const first_hyphen_index,
-    int const second_hyphen_index,
-    bool const has_w,
-    int const w_index) {
-  if (it == s.end()) {
-    return DateParser{digits,
-                      digit_count,
-                      hyphens,
-                      first_hyphen_index,
-                      second_hyphen_index,
-                      has_w,
-                      w_index};
-  } else {
+constexpr DateParser DateParser::ReadToEnd(std::string_view const s) {
+  std::int64_t digits = 0;
+  int digit_count = 0;
+  int hyphens = 0;
+  int first_hyphen_index = -1;
+  int second_hyphen_index = -1;
+  bool has_w = false;
+  int w_index = -1;
+
+  for (auto it = s.begin(); it != s.end(); ++it) {
     switch (*it) {
       case '-':
         CONSTEXPR_CHECK(hyphens < 2);
         if (hyphens == 0) {
-          return ReadToEnd(s,
-                           std::next(it),
-                           digits,
-                           digit_count,
-                           hyphens + 1,
-                           /*first_hyphen_index=*/it - s.begin(),
-                           second_hyphen_index,
-                           has_w,
-                           w_index);
+          first_hyphen_index = it - s.begin();
         } else {
-          return ReadToEnd(s,
-                           std::next(it),
-                           digits,
-                           digit_count,
-                           hyphens + 1,
-                           first_hyphen_index,
-                           /*second_hyphen_index=*/it - s.begin(),
-                           has_w,
-                           w_index);
+          second_hyphen_index = it - s.begin();
         }
+        ++hyphens;
+        break;
       case 'W':
         CONSTEXPR_CHECK(!has_w);
-        return ReadToEnd(s,
-                         std::next(it),
-                         digits,
-                         digit_count,
-                         hyphens,
-                         first_hyphen_index,
-                         second_hyphen_index,
-                         /*has_w=*/true,
-                         /*w_index=*/it - s.begin());
+        has_w = true;
+        w_index = it - s.begin();
+        break;
       case '0': case '1': case '2': case '3': case '4':
       case '5': case '6': case '7': case '8': case '9':
-        return ReadToEnd(s,
-                         std::next(it),
-                         digits * 10 + *it - '0',
-                         digit_count + 1,
-                         hyphens,
-                         first_hyphen_index,
-                         second_hyphen_index,
-                         has_w,
-                         w_index);
+        digits = digits * 10 + *it - '0';
+        ++digit_count;
+        break;
       default:
         CONSTEXPR_CHECK(false);
         return DateParser{0, 0, 0, 0, 0, false, 0};
     }
   }
 }
+
 
 constexpr Date DateParser::ToDate(std::optional<Calendar> const calendar,
                                   bool const negative) const {
