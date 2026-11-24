@@ -43,6 +43,11 @@ class SymmetricBilinearForm<Scalar, MultivectorTag, Frame, Rank<rank>> {
   explicit SymmetricBilinearForm(R3x3Matrix<Scalar> const& matrix);
   explicit SymmetricBilinearForm(R3x3Matrix<Scalar>&& matrix);
 
+  // `InnerProductForm()` is the symmetric bilinear form such that for all v and
+  // w, `InnerProductForm()(v, w) == InnerProduct(v, w)`.
+  static SymmetricBilinearForm<double, MultivectorTag, Frame, Rank<rank>> const&
+  InnerProductForm();
+
   friend bool operator==(SymmetricBilinearForm const& left,
                          SymmetricBilinearForm const& right) = default;
   friend bool operator!=(SymmetricBilinearForm const& left,
@@ -121,6 +126,10 @@ class SymmetricBilinearForm<Scalar, QuantityTag> {
   SymmetricBilinearForm() = default;
   explicit SymmetricBilinearForm(Scalar const& coordinates);
 
+  // Returns a form with `coordinates` set to the unit of `Scalar`.
+  static SymmetricBilinearForm<double, QuantityTag> const&
+  InnerProductForm();
+
   friend bool operator==(SymmetricBilinearForm const& left,
                          SymmetricBilinearForm const& right) = default;
   friend bool operator!=(SymmetricBilinearForm const& left,
@@ -156,12 +165,6 @@ class SymmetricBilinearForm<Scalar, QuantityTag> {
   Scalar coordinates_;
 };
 
-
-// `InnerProductForm()` is the symmetric bilinear form such that for all v and
-// w, `InnerProductForm()(v, w) == InnerProduct(v, w)`.
-template<typename Frame, int rank>
-SymmetricBilinearForm<double, MultivectorTag, Frame, Rank<rank>> const&
-InnerProductForm();
 
 template<quantity Scalar, typename Tag, typename... Parameters>
 SymmetricBilinearForm<Scalar, Tag, Parameters...> operator+(
@@ -268,21 +271,13 @@ template<typename Scalar, typename Frame>
 using BivectorSymmetricBilinearForm =
     SymmetricBilinearForm<Scalar, MultivectorTag, Frame, Rank<2>>;
 
-template<typename Frame>
-auto const& VectorInnerProductForm = InnerProductForm<Frame, 1>;
-template<typename Frame>
-auto const& BivectorInnerProductForm = InnerProductForm<Frame, 2>;
-
 }  // namespace internal
 
 using internal::Anticommutator;
-using internal::BivectorInnerProductForm;
 using internal::BivectorSymmetricBilinearForm;
-using internal::InnerProductForm;
 using internal::SymmetricBilinearForm;
 using internal::SymmetricProduct;
 using internal::SymmetricSquare;
-using internal::VectorInnerProductForm;
 using internal::VectorSymmetricBilinearForm;
 
 }  // namespace _symmetric_bilinear_form

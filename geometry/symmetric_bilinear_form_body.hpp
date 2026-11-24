@@ -85,6 +85,15 @@ SymmetricBilinearForm(
 }
 
 template<quantity Scalar, typename Frame, int rank>
+SymmetricBilinearForm<double, MultivectorTag, Frame, Rank<rank>> const&
+SymmetricBilinearForm<Scalar, MultivectorTag, Frame, Rank<rank>>::
+InnerProductForm() {
+  static SymmetricBilinearForm<double, MultivectorTag, Frame, Rank<rank>> const
+      form(R3x3Matrix<double>::Identity());
+  return form;
+}
+
+template<quantity Scalar, typename Frame, int rank>
 SymmetricBilinearForm<Scalar, MultivectorTag, Frame, Rank<rank>>&
 SymmetricBilinearForm<Scalar, MultivectorTag, Frame, Rank<rank>>::
 operator+=(SymmetricBilinearForm const& right) {
@@ -265,6 +274,13 @@ SymmetricBilinearForm<Scalar, QuantityTag>::SymmetricBilinearForm(
     Scalar const& coordinates) : coordinates_(coordinates) {}
 
 template<quantity Scalar>
+SymmetricBilinearForm<double, QuantityTag> const&
+SymmetricBilinearForm<Scalar, QuantityTag>::InnerProductForm() {
+  static SymmetricBilinearForm<double, Quotient> const form(si::Unit<Scalar>);
+  return form;
+}
+
+template<quantity Scalar>
 SymmetricBilinearForm<Scalar, QuantityTag>&
 SymmetricBilinearForm<Scalar, QuantityTag>::operator+=(
     SymmetricBilinearForm const& right) {
@@ -338,15 +354,6 @@ SymmetricBilinearForm<Scalar, QuantityTag>::ReadFromMessage(
   return SymmetricBilinearForm<Scalar, QuantityTag>();
 }
 
-
-template<typename Frame, int rank>
-SymmetricBilinearForm<double, MultivectorTag, Frame, Rank<rank>> const&
-InnerProductForm() {
-  static auto const identity =
-      SymmetricBilinearForm<double, MultivectorTag, Frame, Rank<rank>>(
-          R3x3Matrix<double>::Identity());
-  return identity;
-}
 
 template<quantity Scalar, typename Tag, typename... Parameters>
 SymmetricBilinearForm<Scalar, Tag, Parameters...> operator+(
