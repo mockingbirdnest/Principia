@@ -22,18 +22,28 @@ using namespace principia::quantities::_concepts;
 template<typename Scalar, typename S, int s, bool uh>
 struct Generator<Scalar, FixedVector<S, s, uh>> {
   using Gradient = FixedVector<Quotient<Scalar, S>, s, uh>;
+  using Hessian = FixedMatrix<Quotient<Scalar, Square<S>>, s, s, uh>;
   static FixedMatrix<double, s, s, uh> InnerProductForm();
 };
 
 template<convertible_to_quantity Scalar, quantity S, typename F>
 struct Generator<Scalar, Vector<S, F>> {
   using Gradient = Vector<Quotient<Scalar, S>, F>;
+  using Hessian = VectorSymmetricBilinearForm<Quotient<Scalar, Square<S>>, F>;
   static VectorSymmetricBilinearForm<double, F> InnerProductForm();
+};
+
+template<typename Scalar, quantity Q>
+struct Generator<Scalar, Q> {
+  using Gradient = Quotient<Scalar, Q>;
+  using Hessian = QuantitySymmetricBilinearForm<Quotient<Scalar, Square<Q>>>;
+  static QuantitySymmetricBilinearForm<double> InnerProductForm();
 };
 
 template<typename Scalar, typename V>
 struct Generator<Scalar, Point<V>> {
   using Gradient = typename Generator<Scalar, V>::Gradient;
+  using Hessian = typename Generator<Scalar, V>::Hessian;
 #if _MSC_FULL_VER == 193'632'532 || \
     _MSC_FULL_VER == 193'632'535 || \
     _MSC_FULL_VER == 193'732'822 || \
