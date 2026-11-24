@@ -1,9 +1,3 @@
-module;
-
-// For body:
-#include "absl/log/check.h"
-#include "absl/log/log.h"
-
 export module principia.base.array;
 
 import std;

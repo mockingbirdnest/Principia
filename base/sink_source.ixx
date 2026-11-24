@@ -1,8 +1,6 @@
-module;
-
-#include "gipfeli/sinksource.h"
-
 export module principia.base.sink_source;
+
+import "gipfeli/sinksource.h";
 
 import principia.base.array;
 

@@ -1,4 +1,6 @@
-#pragma once
+// Body of link:base/pull_serializer.ixx
+
+import "absl/log/check.h";
 
 import principia.base.sink_source;
 

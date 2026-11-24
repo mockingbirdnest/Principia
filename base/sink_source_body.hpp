@@ -1,4 +1,4 @@
-#pragma once
+// Body of link:base/sink_source.ixx
 
 namespace principia {
 namespace base {

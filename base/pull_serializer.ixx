@@ -1,18 +1,12 @@
-module;
-
-#include "absl/base/thread_annotations.h"
-#include "absl/synchronization/mutex.h"
-#include "gipfeli/compression.h"
-#include "google/protobuf/io/zero_copy_stream.h"
-#include "google/protobuf/message.h"
-// For body:
-#include "absl/log/check.h"
-
 export module principia.base.pull_serializer;
 
-#pragma once
-
 import std;
+
+import "absl/base/thread_annotations.h";
+import "absl/synchronization/mutex.h";
+import "gipfeli/compression.h";
+import "google/protobuf/io/zero_copy_stream.h";
+import "google/protobuf/message.h";
 
 import principia.base.array;
 import principia.base.not_null;

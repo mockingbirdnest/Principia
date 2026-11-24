@@ -1,12 +1,11 @@
-#include "absl/log/check.h"
-#include "absl/log/log.h"
-#include "gipfeli/compression.h"
-#include "gipfeli/gipfeli.h"
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
-
 import std;
 
+import "absl/log/check.h";
+import "absl/log/log.h";
+import "gipfeli/compression.h";
+import "gipfeli/gipfeli.h";
+import "gmock/gmock.h";
+import "gtest/gtest.h";
 import "serialization/geometry.pb.h";
 import "serialization/physics.pb.h";
 import "serialization/quantities.pb.h";

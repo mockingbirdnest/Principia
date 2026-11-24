@@ -1,7 +1,7 @@
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
-
 import std;
+
+import "gmock/gmock.h";
+import "gtest/gtest.h";
 
 import principia.base.array;
 
