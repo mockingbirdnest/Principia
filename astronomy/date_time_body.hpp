@@ -502,15 +502,16 @@ constexpr DateParser DateParser::ReadToEnd(std::string_view s) {
                    /*w_index=*/-1);
 }
 
-constexpr DateParser DateParser::ReadToEnd(std::string_view const s,
-                                           std::string_view::const_iterator const it,
-                                           std::int64_t const digits,
-                                           int const digit_count,
-                                           int const hyphens,
-                                           int const first_hyphen_index,
-                                           int const second_hyphen_index,
-                                           bool const has_w,
-                                           int const w_index) {
+constexpr DateParser DateParser::ReadToEnd(
+    std::string_view const s,
+    std::string_view::const_iterator const it,
+    std::int64_t const digits,
+    int const digit_count,
+    int const hyphens,
+    int const first_hyphen_index,
+    int const second_hyphen_index,
+    bool const has_w,
+    int const w_index) {
   if (it == s.end()) {
     return DateParser{digits,
                       digit_count,
@@ -693,15 +694,16 @@ constexpr TimeParser TimeParser::ReadToEnd(std::string_view const s) {
                    /*decimal_mark_index=*/-1);
 }
 
-constexpr TimeParser TimeParser::ReadToEnd(std::string_view const s,
-                                           std::string_view::const_iterator const it,
-                                           std::int64_t const digits,
-                                           int const digit_count,
-                                           int const colons,
-                                           int const first_colon_index,
-                                           int const second_colon_index,
-                                           bool const has_decimal_mark,
-                                           int const decimal_mark_index) {
+constexpr TimeParser TimeParser::ReadToEnd(
+    std::string_view const s,
+    std::string_view::const_iterator const it,
+    std::int64_t const digits,
+    int const digit_count,
+    int const colons,
+    int const first_colon_index,
+    int const second_colon_index,
+    bool const has_decimal_mark,
+    int const decimal_mark_index) {
   if (it == s.end()) {
     return TimeParser(digits,
                       digit_count,
@@ -812,12 +814,13 @@ class JulianDateParser final {
   // string is not of the form [ddd] or [ddd.fff] or if it has too many digits
   // to fit in a std::int64_t.
   static constexpr JulianDateParser ReadToEnd(std::string_view s);
-  static constexpr JulianDateParser ReadToEnd(std::string_view s,
-                                              std::string_view::const_iterator it,
-                                              std::int64_t digits,
-                                              int digit_count,
-                                              bool has_decimal_mark,
-                                              int decimal_mark_index);
+  static constexpr JulianDateParser ReadToEnd(
+      std::string_view s,
+      std::string_view::const_iterator it,
+      std::int64_t digits,
+      int digit_count,
+      bool has_decimal_mark,
+      int decimal_mark_index);
 
   // Returns a `JulianDate` corresponding to the string that `*this` describes.
   // Fails if the format is invalid.
@@ -847,7 +850,8 @@ constexpr JulianDateParser::JulianDateParser(std::int64_t const digits,
       digit_count_(digit_count),
       decimal_mark_index_(decimal_mark_index) {}
 
-constexpr JulianDateParser JulianDateParser::ReadToEnd(std::string_view const s) {
+constexpr JulianDateParser JulianDateParser::ReadToEnd(
+    std::string_view const s) {
   return ReadToEnd(s, s.begin(),
                    /*digits=*/0,
                    /*digit_count*/ 0,
