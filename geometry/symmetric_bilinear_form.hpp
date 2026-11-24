@@ -270,11 +270,15 @@ using VectorSymmetricBilinearForm =
 template<typename Scalar, typename Frame>
 using BivectorSymmetricBilinearForm =
     SymmetricBilinearForm<Scalar, MultivectorTag, Frame, Rank<2>>;
+template<typename Scalar>
+using QuantitySymmetricBilinearForm =
+    SymmetricBilinearForm<Scalar, QuantityTag>;
 
 }  // namespace internal
 
 using internal::Anticommutator;
 using internal::BivectorSymmetricBilinearForm;
+using internal::QuantitySymmetricBilinearForm;
 using internal::SymmetricBilinearForm;
 using internal::SymmetricProduct;
 using internal::SymmetricSquare;

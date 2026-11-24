@@ -9,7 +9,6 @@
 
 #include "numerics/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
-#include "quantities/si.hpp"
 
 namespace principia {
 namespace geometry {
@@ -18,7 +17,6 @@ namespace internal {
 
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_quantities;
-using namespace principia::quantities::_si;
 
 struct CosSin {
   double cos;
@@ -276,7 +274,7 @@ SymmetricBilinearForm<Scalar, QuantityTag>::SymmetricBilinearForm(
 template<quantity Scalar>
 SymmetricBilinearForm<double, QuantityTag> const&
 SymmetricBilinearForm<Scalar, QuantityTag>::InnerProductForm() {
-  static SymmetricBilinearForm<double, Quotient> const form(si::Unit<Scalar>);
+  static SymmetricBilinearForm<double, Quotient> const form(1);
   return form;
 }
 
