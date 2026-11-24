@@ -403,33 +403,6 @@ constexpr JulianDate::JulianDate(std::int64_t day,
   CONSTEXPR_CHECK(fraction_numerator < fraction_denominator);
 }
 
-// Parsing utilities.
-
-constexpr bool contains(char const* const str,
-                        std::size_t const size,
-                        char const c) {
-  return size > 0 && (str[0] == c || contains(str + 1, size - 1, c));
-}
-
-constexpr int index_of(char const* const str,
-                       std::size_t const size,
-                       char const c) {
-  CONSTEXPR_CHECK(size > 0);
-  return str[0] == c ? 0 : (index_of(str + 1, size - 1, c) + 1);
-}
-
-constexpr bool starts_with(char const* const str,
-                           std::size_t const size,
-                           char const* const prefix_str,
-                           std::size_t const prefix_size) {
-  CONSTEXPR_CHECK(size > 0);
-  CONSTEXPR_CHECK(prefix_size > 0);
-  return str[0] == prefix_str[0] &&
-         (prefix_size == 1 ||
-          (size > 1 &&
-           starts_with(str + 1, size - 1, prefix_str + 1, prefix_size - 1)));
-}
-
 // Date parsing.
 
 // A `DateParser` contains information about a string necessary to interpret it
