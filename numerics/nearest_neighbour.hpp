@@ -118,12 +118,12 @@ class PrincipalComponentPartitioningTree {
   // Called when the first point is added to the tree to initialize the `root_`.
   void Initialize();
 
-  // Constructs a tree for the displacements given by the index range
-  // [begin, end[.  `size` must be equal to `std::distance(begin, end)`, but is
-  // passed by the caller for efficiency.  If `node` is not null, the root of
-  // the newly constructed tree is stored in `node` and `node` is returned. This
-  // is useful when splitting leaves.  Otherwise, a new node is allocated in the
-  // `nodes_` deque and returned.
+  // Constructs a tree for the points given by the index range [begin, end[.
+  // `size` must be equal to `std::distance(begin, end)`, but is passed by the
+  // caller for efficiency.  If `node` is not null, the root of the newly
+  // constructed tree is stored in `node` and `node` is returned. This is useful
+  // when splitting leaves.  Otherwise, a new node is allocated in the `nodes_`
+  // deque and returned.
   not_null<Node*> BuildTree(typename Indices::iterator begin,
                             typename Indices::iterator end,
                             std::int64_t size,

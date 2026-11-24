@@ -136,24 +136,24 @@ TEST_F(PrincipalComponentPartitioningTreeTest, Instant) {
 
   PrincipalComponentPartitioningTree<Instant> tree({},
                                                    /*max_values_per_cell=*/1);
-  tree.Add(&t1);
-  tree.Add(&t2);
-  tree.Add(&t3);
-  tree.Add(&t4);
+  tree.Add(t1);
+  tree.Add(t2);
+  tree.Add(t3);
+  tree.Add(t4);
 
   EXPECT_THAT(tree.FindNearestNeighbour(t0 - 0.5 * Second, radius),
-              Pointee(t1));
+              Optional(t1));
   EXPECT_THAT(tree.FindNearestNeighbour(t0 + 0.5 * Second, radius),
-              Pointee(t3));
+              Optional(t3));
   EXPECT_THAT(tree.FindNearestNeighbour(t0 + 1.2 * Second, radius),
-              Pointee(t3));
-  EXPECT_THAT(tree.FindNearestNeighbour(t0 + 3 * Second, radius), Pointee(t4));
+              Optional(t3));
+  EXPECT_THAT(tree.FindNearestNeighbour(t0 + 3 * Second, radius), Optional(t4));
 
   // Check that the points of the tree can be retrieved.
-  EXPECT_THAT(tree.FindNearestNeighbour(t1, radius), Pointee(t1));
-  EXPECT_THAT(tree.FindNearestNeighbour(t2, radius), Pointee(t2));
-  EXPECT_THAT(tree.FindNearestNeighbour(t3, radius), Pointee(t3));
-  EXPECT_THAT(tree.FindNearestNeighbour(t4, radius), Pointee(t4));
+  EXPECT_THAT(tree.FindNearestNeighbour(t1, radius), Optional(t1));
+  EXPECT_THAT(tree.FindNearestNeighbour(t2, radius), Optional(t2));
+  EXPECT_THAT(tree.FindNearestNeighbour(t3, radius), Optional(t3));
+  EXPECT_THAT(tree.FindNearestNeighbour(t4, radius), Optional(t4));
 }
 
 // Random points, validated against the brute force algorithm.
