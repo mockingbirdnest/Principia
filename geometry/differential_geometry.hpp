@@ -15,11 +15,9 @@ template<real_vector_space Value, euclidean Argument>
 using VectorField = std::function<Value(Argument const&)>;
 
 // A helper for generating declarations derived from `Scalar` and `Argument`.
-// It must declare the type of the gradient and a function returning the inner
-// product form thus:
+// It must declare the type of the gradient and the inverse Hessian thus:
 //   using Gradient = ...;
-//   static ... InnerProductForm();
-// TODO(phl): The `InnerProductForm` should probably go elsewhere.
+//   using InverseHessian = ...;
 template<homogeneous_field Scalar, homogeneous_euclidean_space<Scalar> Argument>
 struct Generator;
 
@@ -30,6 +28,10 @@ using Gradient = typename Generator<Scalar, Argument>::Gradient;
 // The gradient vector field.
 template<homogeneous_field Scalar, homogeneous_euclidean_space<Scalar> Argument>
 using GradientField = VectorField<Gradient<Scalar, Argument>, Argument>;
+
+// The type of the inverse Hessian of `VectorField<Scalar, Argument>`.
+template<homogeneous_field Scalar, homogeneous_euclidean_space<Scalar> Argument>
+using InverseHessian = typename Generator<Scalar, Argument>::InverseHessian;
 
 // Must return InnerProduct(grad_f(argument), direction).  This is not a
 // `VectorField` because it depends on the direction.
@@ -43,6 +45,7 @@ using GateauxDerivative =
 using internal::GateauxDerivative;
 using internal::Gradient;
 using internal::GradientField;
+using internal::InverseHessian;
 using internal::VectorField;
 
 }  // namespace _differential_geometry

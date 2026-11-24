@@ -234,11 +234,9 @@ absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
   auto const grad_f_x₁ = grad_f(x₁);
   Difference<Argument> const s₀ = x₁ - x₀;
   auto const y₀ = grad_f_x₁ - grad_f_x₀;
-  // TODO(phl): Remove the `internal` use here.
-  auto const H₀ = InnerProduct(s₀, y₀) *
-                  geometry::_differential_geometry::internal::
-                      Generator<Scalar, Argument>::InnerProductForm() /
-                  Norm²(y₀);
+  InverseHessian<Scalar, Argument> const H₀ =
+      InnerProduct(s₀, y₀) *
+      InverseHessian<Scalar, Argument>::InnerProductForm() / y₀.Norm²();
 
   auto xₖ = x₁;
   auto grad_f_xₖ = grad_f_x₁;
