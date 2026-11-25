@@ -38,7 +38,7 @@ PrincipalComponentPartitioningTree<V> BuildTreeUsingAdd(
     values.push_back(V({coordinate_distribution(random),
                         coordinate_distribution(random),
                         coordinate_distribution(random)}));
-    tree.Add(&values.back());
+    tree.Add(values.back());
   }
   return tree;
 }
@@ -57,9 +57,8 @@ PrincipalComponentPartitioningTree<V> BuildTreeUsingConstructor(
     values.push_back(V({coordinate_distribution(random),
                         coordinate_distribution(random),
                         coordinate_distribution(random)}));
-    pointers.push_back(&values.back());
   }
-  return PrincipalComponentPartitioningTree<V>(pointers, max_values_per_cell);
+  return PrincipalComponentPartitioningTree<V>(values, max_values_per_cell);
 }
 
 void BM_PCPBuildTreeUsingAdd(benchmark::State& state) {

@@ -2,6 +2,7 @@
 
 #include "graphics/graph.hpp"
 
+#include <algorithm>
 #include <optional>
 #include <string>
 #include <utility>
@@ -27,10 +28,33 @@ Graph<Abscissa, Ordinate>::Graph(std::int64_t const width,
 template<affine Abscissa, affine Ordinate>
 template<std::ranges::range Points>
   requires graph_point<std::ranges::range_value_t<Points>, Abscissa, Ordinate>
-void Graph<Abscissa, Ordinate>::ListPointPlot(Points const& points,
-                                              RGB24 const colour) {
-  for (auto const& [x, y] : points) {
-    SetPixel(abscissa_to_pixel(x), ordinate_to_pixel(y), Opaque(colour));
+void Graph<Abscissa, Ordinate>::ListPointPlot(
+    Points const& points,
+    RGB24 const colour,
+    ListPointPlotOptions const options) {
+  if (options.joined) {
+    std::optional<Abscissa> xᵢ₋₁;
+    std::optional<Ordinate> yᵢ₋₁;
+    for (auto const& [xᵢ, yᵢ] : points) {
+      if (xᵢ₋₁.has_value()) {
+        if (*xᵢ₋₁ == xᵢ) {
+          PlotVerticalLine(
+              xᵢ, colour, {{std::min(*yᵢ₋₁, yᵢ), std::max(*yᵢ₋₁, yᵢ)}});
+        } else {
+          auto const slope = (yᵢ - *yᵢ₋₁) / (xᵢ - *xᵢ₋₁);
+          Plot([xᵢ₋₁ = *xᵢ₋₁, yᵢ₋₁ = *yᵢ₋₁, slope](
+                   Abscissa const& x) { return yᵢ₋₁ + (x - xᵢ₋₁) * slope; },
+               {std::min(*xᵢ₋₁, xᵢ), std::max(*xᵢ₋₁, xᵢ)},
+               colour);
+        }
+      }
+      xᵢ₋₁ = xᵢ;
+      yᵢ₋₁ = yᵢ;
+    }
+  } else {
+    for (auto const& [x, y] : points) {
+      SetPixel(abscissa_to_pixel(x), ordinate_to_pixel(y), Opaque(colour));
+    }
   }
 }
 
@@ -42,10 +66,10 @@ void Graph<Abscissa, Ordinate>::Plot(std::function<Ordinate(Abscissa)> const& f,
        i <= abscissa_to_pixel(range.max);
        ++i) {
     Interval const pixel_range = Intersection(pixel_to_abscissa(i), range);
-    double const f_x_min = f(pixel_range.min);
-    double const f_x_max = f(pixel_range.max);
-    double f_min;
-    double f_max;
+    Ordinate const f_x_min = f(pixel_range.min);
+    Ordinate const f_x_max = f(pixel_range.max);
+    Ordinate f_min;
+    Ordinate f_max;
     if (f_x_min <= f_x_max) {
       f_min = f_x_min;
       f_max = f_x_max;

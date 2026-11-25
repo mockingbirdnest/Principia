@@ -29,7 +29,7 @@ constexpr std::int32_t no_min_index = -1;
 template<euclidean Point_, typename Payload_>
 PrincipalComponentPartitioningTree<Point_, Payload_>::
 PrincipalComponentPartitioningTree(
-    std::vector<not_null<Point const*>> const& points,
+    std::vector<Point> const& points,
     std::int64_t const max_points_per_cell)
     : points_(points),
       max_points_per_cell_(max_points_per_cell) {
@@ -44,7 +44,7 @@ PrincipalComponentPartitioningTree(
 
 template<euclidean Point_, typename Payload_>
 void PrincipalComponentPartitioningTree<Point_, Payload_>::Add(
-    not_null<Point const*> const point) {
+    Point const& point) {
   if constexpr (has_payload) {
     payloads_.push_back(std::nullopt);
   }
@@ -53,7 +53,7 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Add(
 
 template<euclidean Point_, typename Payload_>
 void PrincipalComponentPartitioningTree<Point_, Payload_>::Add(
-    not_null<Point const*> const point,
+    Point const& point,
     Payload const& payload)
   requires has_payload {
   payloads_.push_back(payload);
@@ -85,7 +85,6 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Optimize() {
     while (i != permutation[current]) {
       auto const next = permutation[current];
       std::swap(points_[current], points_[next]);
-      std::swap(displacements_[current], displacements_[next]);
       if constexpr (has_payload) {
         std::swap(payloads_[current], payloads_[next]);
       }
@@ -97,18 +96,18 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Optimize() {
 }
 
 template<euclidean Point_, typename Payload_>
-Point_ const*
+std::optional<Point_>
 PrincipalComponentPartitioningTree<Point_, Payload_>::FindNearestNeighbour(
     Point const& point,
     NormType const& radius,
     Filter const& filter) const {
-  if (displacements_.empty()) {
-    return nullptr;
+  if (points_.empty()) {
+    return std::nullopt;
   }
   Norm²Type const radius² = Pow<2>(radius);
   Norm²Type min_distance²;
   std::int32_t min_index;
-  Find(point - centroid_,
+  Find(point,
        radius²,
        filter,
        /*parent=*/nullptr,
@@ -118,30 +117,16 @@ PrincipalComponentPartitioningTree<Point_, Payload_>::FindNearestNeighbour(
 
   // In the end, this is why we retain the points: we want to return a pointer
   // that the client gave us.
-  return min_index == no_min_index
-             ? nullptr
-             : static_cast<Point const*>(points_[min_index]);
+  return min_index == no_min_index ? std::nullopt
+                                   : std::make_optional(points_[min_index]);
 }
 
 template<euclidean Point_, typename Payload_>
 void PrincipalComponentPartitioningTree<Point_, Payload_>::Initialize() {
-  // Compute the centroid of the points.
-  BarycentreCalculator<Point, double> centroid;
-  for (auto const point : points_) {
-    centroid.Add(*point, 1);
-  }
-  centroid_ = centroid.Get();
-
-  // Compute the displacements from the centroid.
-  displacements_.reserve(points_.size());
-  for (auto const point : points_) {
-    displacements_.push_back(*point - centroid_);
-  }
-
-  // Fill indices to denote the displacements.
+  // Fill indices to denote the points.
   Indices indices;
-  indices.reserve(displacements_.size());
-  for (int i = 0; i < displacements_.size(); ++i) {
+  indices.reserve(points_.size());
+  for (int i = 0; i < points_.size(); ++i) {
     indices.push_back({.index = i, .projection = NormType{}});
   }
 
@@ -177,8 +162,8 @@ PrincipalComponentPartitioningTree<Point_, Payload_>::BuildTree(
 
   // Project the `vectors` on the principal axis.
   for (auto it = begin; it != end; ++it) {
-    auto const& displacement = displacements_[it->index];
-    it->projection = InnerProduct(principal_axis, displacement);
+    auto const& point = points_[it->index];
+    it->projection = InnerProduct(principal_axis, point - origin_);
   }
 
   // A comparator for the projections.
@@ -198,8 +183,8 @@ PrincipalComponentPartitioningTree<Point_, Payload_>::BuildTree(
   // halfway between these points.  Cost: 0.25 * N.
   auto const mid_lower = std::max_element(begin, mid_upper, projection_less);
 
-  auto const anchor = Barycentre(
-      {displacements_[mid_lower->index], displacements_[mid_upper->index]});
+  auto const anchor =
+      Barycentre({points_[mid_lower->index], points_[mid_upper->index]});
 
   auto const first_child = BuildTree(begin, mid_upper, size / 2);
   auto const second_child = BuildTree(mid_upper, end, size - size / 2);
@@ -218,7 +203,7 @@ PrincipalComponentPartitioningTree<Point_, Payload_>::BuildTree(
 
 template<euclidean Point_, typename Payload_>
 void PrincipalComponentPartitioningTree<Point_, Payload_>::AddPoint(
-    not_null<Point const*> const point) {
+    Point const& point) {
   points_.push_back(point);
   if (points_.size() == 1) {
     Initialize();
@@ -227,9 +212,7 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::AddPoint(
     // matter).  Bkd trees provide some kind of solution, but their lookup is
     // expensive.  We are assuming that the tree won't get so unbalanced that
     // lookups get costly.
-    auto const displacement = *point - centroid_;
-    std::int32_t const index = displacements_.size();
-    displacements_.push_back(displacement);
+    std::int32_t const index = points_.size() - 1;
     Add(index, *root_);
   }
 }
@@ -243,7 +226,7 @@ ComputePrincipalComponentForm(
     typename Indices::iterator const end) const {
   DisplacementSymmetricBilinearForm result;
   for (auto it = begin; it != end; ++it) {
-    result += SymmetricSquare(displacements_[it->index]);
+    result += SymmetricSquare(points_[it->index] - origin_);
   }
   return result;
 }
@@ -271,7 +254,7 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Add(
     std::int32_t const index,
     Internal const& internal) {
   NormType const projection = InnerProduct(
-      internal.principal_axis, displacements_[index] - internal.anchor);
+      internal.principal_axis, points_[index] - internal.anchor);
   if (projection < NormType{}) {
     Add(index, *internal.children.first);
   } else {
@@ -307,7 +290,7 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Add(
 
 template<euclidean Point_, typename Payload_>
 void PrincipalComponentPartitioningTree<Point_, Payload_>::Find(
-    Displacement const& displacement,
+    Point const& point,
     Norm²Type const& radius²,
     Filter const& filter,
     Internal const* const parent,
@@ -319,7 +302,7 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Find(
       [&](auto&& v) {
         using V = std::decay_t<decltype(v)>;
         if constexpr (std::is_same_v<V, Internal>) {
-          Find(displacement,
+          Find(point,
                radius²,
                filter,
                parent,
@@ -328,7 +311,7 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Find(
                min_index,
                must_check_other_side);
         } else if constexpr (std::is_same_v<V, Leaf>) {
-          Find(displacement,
+          Find(point,
                radius²,
                filter,
                parent,
@@ -345,7 +328,7 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Find(
 
 template<euclidean Point_, typename Payload_>
 void PrincipalComponentPartitioningTree<Point_, Payload_>::Find(
-    Displacement const& displacement,
+    Point const& point,
     Norm²Type const& radius²,
     Filter const& filter,
     Internal const* parent,
@@ -354,11 +337,11 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Find(
     std::int32_t& min_index,
     bool* const must_check_other_side) const {
   NormType const projection =
-      InnerProduct(internal.principal_axis, displacement - internal.anchor);
+      InnerProduct(internal.principal_axis, point - internal.anchor);
 
   // We first search on the "preferred" side of the separator plane, i.e., the
-  // one where `displacement` is located.  We may have to look at the "other"
-  // side, if `displacement` is too close to that plane.
+  // one where `point` is located.  We may have to look at the "other" side, if
+  // `point` is too close to that plane.
   not_null<Node const*> const preferred_side = projection < NormType{}
                                                    ? internal.children.first
                                                    : internal.children.second;
@@ -366,7 +349,7 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Find(
   std::int32_t preferred_min_index;
   Norm²Type preferred_min_distance²;
   bool preferred_must_check_other_side;
-  Find(displacement,
+  Find(point,
        radius²,
        filter,
        &internal,
@@ -385,7 +368,7 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Find(
     // L'autre côté a changé de côté! » [GT71]
     std::int32_t other_min_index;
     Norm²Type other_min_distance²;
-    Find(displacement,
+    Find(point,
          radius²,
          filter,
          parent,
@@ -409,7 +392,7 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Find(
   // which case *it* will need to check the other side of its plane.
   if (parent != nullptr && must_check_other_side != nullptr) {
     Norm²Type const projection² = Pow<2>(
-        InnerProduct(parent->principal_axis, displacement - parent->anchor));
+        InnerProduct(parent->principal_axis, point - parent->anchor));
     *must_check_other_side =
         projection² < min_distance² && projection² <= radius²;
   }
@@ -417,7 +400,7 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Find(
 
 template<euclidean Point_, typename Payload_>
 void PrincipalComponentPartitioningTree<Point_, Payload_>::Find(
-    Displacement const& displacement,
+    Point const& point,
     Norm²Type const& radius²,
     Filter const& filter,
     Internal const* const parent,
@@ -457,11 +440,14 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Find(
   // separator plane, we'll need to check the other side of the plane.
   if (parent != nullptr && must_check_other_side != nullptr) {
     Norm²Type const projection² = Pow<2>(
-        InnerProduct(parent->principal_axis, displacement - parent->anchor));
+        InnerProduct(parent->principal_axis, point - parent->anchor));
     *must_check_other_side =
         projection² < min_distance² && projection² <= radius²;
   }
 }
+
+template<euclidean Point_, typename Payload_>
+Point_ const PrincipalComponentPartitioningTree<Point_, Payload_>::origin_{};
 
 }  // namespace internal
 }  // namespace _nearest_neighbour
