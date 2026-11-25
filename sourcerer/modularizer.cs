@@ -194,7 +194,7 @@ class Modularizer {
                                                  List<Include>
                                                      principia_includes) {
     int position_in_parent = (after?.position_in_parent + 1) ?? 0;
-    Import? last = null;
+    Node? last = null;
     foreach (Include inc in principia_includes) {
       var import =
           new Import(parent: null,
@@ -203,6 +203,18 @@ class Modularizer {
       ++position_in_parent;
       last = import;
     }
+
+    // Insert a blank line after the group of imports if there is not one
+    // already.
+    if (last != null && last.position_in_parent + 1 < file.children.Count) {
+      last = file.children[last.position_in_parent + 1];
+      if (!last.is_blank_line) {
+        var blank = Text.Blank();
+        file.InsertChild(last.position_in_parent, blank);
+        last = blank;
+      }
+    }
+
     return last;
   }
 
@@ -219,15 +231,16 @@ class Modularizer {
         position_in_parent > 0 &&
         !file.children[position_in_parent - 1].is_blank_line;
     bool needs_blank_line_after =
+        position_in_parent + 1 < file.children.Count &&
         !file.children[position_in_parent + 1].is_blank_line;
 
     if (needs_blank_line_before) {
-      var blank = new Text("", parent: null);
+      var blank = Text.Blank();
       file.InsertChild(import_std.position_in_parent, blank);
       last = blank;
     }
     if (needs_blank_line_after) {
-      var blank = new Text("", parent: null);
+      var blank = Text.Blank();
       file.InsertChild(import_std.position_in_parent + 1, blank);
       last = blank;
     }
@@ -239,7 +252,7 @@ class Modularizer {
                                                   List<Include>
                                                       third_party_includes) {
     int position_in_parent = (after?.position_in_parent + 1) ?? 0;
-    Import? last = null;
+    Node? last = null;
     foreach (Include inc in third_party_includes) {
       var import =
           new Import(parent: null,
@@ -252,6 +265,18 @@ class Modularizer {
       ++position_in_parent;
       last = import;
     }
+
+    // Insert a blank line after the group of imports if there is not one
+    // already.
+    if (last != null && last.position_in_parent + 1 < file.children.Count) {
+      last = file.children[last.position_in_parent + 1];
+      if (!last.is_blank_line) {
+        var blank = Text.Blank();
+        file.InsertChild(last.position_in_parent, blank);
+        last = blank;
+      }
+    }
+
     return last;
   }
 

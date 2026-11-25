@@ -474,6 +474,14 @@ public class Parser {
     public override void WriteNode(string indent = "") {
       Console.WriteLine(indent + "Text (" + text + ")");
     }
+
+    public static Text Blank() {
+      return new Text("", parent: null);
+    }
+
+    public static Text Blank(Node parent) {
+      return new Text("", parent: parent);
+    }
   }
 
   public class TypeAlias : Declaration {
