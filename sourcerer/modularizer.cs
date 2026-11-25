@@ -81,26 +81,47 @@ class Modularizer {
 
     // Fix our body files.
     var needs_import_std = new HashSet<FileInfo>();
+    var body_principia_headers = new Dictionary<FileInfo, List<Include>>();
+    var body_third_party_headers = new Dictionary<FileInfo, List<Include>>();
     foreach (FileInfo body_file in all_body_files) {
       if (excluded.Contains(body_file.Name)) {
         continue;
       }
       Parser.File parser_file = file_info_to_file[body_file];
+      FixPragmaOnce(parser_file, needs_export_module: false);
+
+      // The `hpp_file` here might be this file if it's a test or a benchmark.
+      FileInfo hpp_file =
+          corresponding_header.GetValueOrDefault(body_file, body_file);
+
+      // Remove our headers and collect them to fix the header.
       var includes = FindIncludes(parser_file);
       SplitIncludes(includes,
                     out List<Include> principia_headers,
                     out List<Include> system_headers,
                     out List<Include> third_party_headers);
-      FixPragmaOnce(parser_file, needs_export_module: false);
-      if (system_headers.Count > 0) {
-        FixSystemHeaders(parser_file, system_headers);
-        if (corresponding_header.TryGetValue(body_file,
-                                             out FileInfo? header_file)) {
-          needs_import_std.Add(header_file);
-        } else {
-          FixImportStd(parser_file, null);
+
+      if (hpp_file == body_file) {
+        Node? last_thread_party_import =
+            FixImportThirdPartyHeaders(parser_file,
+                                       after: null,
+                                       third_party_headers);
+        Node? last_std_import =
+            FixImportStd(parser_file, last_thread_party_import);
+        FixImportPrincipiaHeaders(parser_file,
+                                  after: last_std_import,
+                                  principia_headers);
+      } else {
+        body_principia_headers.Add(hpp_file, principia_headers);
+        FixHeaders(parser_file, principia_headers);
+        if (system_headers.Count > 0) {
+          FixHeaders(parser_file, system_headers);
+          needs_import_std.Add(hpp_file);
         }
+        body_third_party_headers.Add(hpp_file, third_party_headers);
+        FixHeaders(parser_file, third_party_headers);
       }
+
       RewriteFile(body_file, parser_file, dry_run);
     }
 
@@ -116,34 +137,84 @@ class Modularizer {
                     out List<Include> principia_headers,
                     out List<Include> system_headers,
                     out List<Include> third_party_headers);
+      FixHeaders(parser_file, principia_headers);
+      FixPragmaOnce(parser_file, needs_export_module: false);
       ExportModule? export_module =
           FixPragmaOnce(parser_file, needs_export_module: true);
       if (system_headers.Count > 0) {
-        FixSystemHeaders(parser_file, system_headers);
+        FixHeaders(parser_file, system_headers);
         needs_import_std.Add(hpp_file);
       }
       if (needs_import_std.Contains(hpp_file)) {
         FixImportStd(parser_file, export_module!);
       }
+      FixHeaders(parser_file, third_party_headers);
       RewriteFile(hpp_file, parser_file, dry_run);
     }
   }
 
-  private static void FixImportStd(Parser.File file,
-                                   ExportModule? export_module) {
+  // Removes include directives for the given headers from the file.
+  private static void FixHeaders(Parser.File file, List<Include> headers) {
+    foreach (Include inc in headers) {
+      file.RemoveChild(inc);
+    }
+  }
+
+  private static Node? FixImportPrincipiaHeaders(Parser.File file,
+                                                 Node? after,
+                                                 List<Include>
+                                                     principia_headers) {
+    int position_in_parent = (after?.position_in_parent + 1) ?? 0;
+    Import? last = null;
+    foreach (Include inc in principia_headers) {
+      var import =
+          new Import(parent: null,
+                     name: "principia." + string.Join('.', inc.path));
+      file.InsertChild(position_in_parent, import);
+      ++position_in_parent;
+      last = import;
+    }
+    return last;
+  }
+
+  private static Node? FixImportStd(Parser.File file,
+                                    Node? after) {
+    int position_in_parent = (after?.position_in_parent + 1) ?? 0;
+    Node? last = null;
     var import_std = new Import(parent: null, "std");
-    int position_in_parent = (export_module?.position_in_parent + 1) ?? 0;
     file.InsertChild(position_in_parent, import_std);
+    last = import_std;
 
     // Surround the import with blank lines if needed.
-    var blank = new Text("", parent: null);
     if (!file.children[position_in_parent + 1].is_blank_line) {
+      var blank = new Text("", parent: null);
       file.InsertChild(position_in_parent + 1, blank);
+      last = blank;
     }
     if (position_in_parent > 0 &&
         !file.children[position_in_parent - 1].is_blank_line) {
+      var blank = new Text("", parent: null);
       file.InsertChild(position_in_parent, blank);
+      last = blank;
     }
+    return last;
+  }
+
+  private static Node? FixImportThirdPartyHeaders(Parser.File file,
+                                                  Node? after,
+                                                  List<Include>
+                                                      third_party_headers) {
+    int position_in_parent = (after?.position_in_parent + 1) ?? 0;
+    Import? last = null;
+    foreach (Include inc in third_party_headers) {
+      var import =
+          new Import(parent: null,
+                     name: '"' + string.Join('/', inc.path) + '"');
+      file.InsertChild(position_in_parent, import);
+      ++position_in_parent;
+      last = import;
+    }
+    return last;
   }
 
   // Removes `#pragma once` directives from the file and insert an
@@ -183,14 +254,6 @@ class Modularizer {
       file.RemoveChild(po);
     }
     return export_module;
-  }
-
-  // Removes include directives for system headers from the file.
-  private static void FixSystemHeaders(Parser.File file,
-                                       List<Include> system_headers) {
-    foreach (Include inc in system_headers) {
-      file.RemoveChild(inc);
-    }
   }
 
   private static void SplitIncludes(List<Include> includes,
