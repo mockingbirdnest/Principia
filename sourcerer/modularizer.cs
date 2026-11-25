@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using static principia.sourcerer.Analyser;
@@ -87,11 +86,17 @@ class Modularizer {
         continue;
       }
       Parser.File parser_file = file_info_to_file[body_file];
+      var includes = FindIncludes(parser_file);
+      SplitIncludes(includes,
+                    out List<Include> principia_headers,
+                    out List<Include> system_headers,
+                    out List<Include> third_party_headers);
       FixPragmaOnce(parser_file, needs_export_module: false);
-      bool has_system_header = FixSystemHeaders(parser_file);
-      if (has_system_header) {
-        if (corresponding_header.ContainsKey(body_file)) {
-          needs_import_std.Add(corresponding_header[body_file]);
+      if (system_headers.Count > 0) {
+        FixSystemHeaders(parser_file, system_headers);
+        if (corresponding_header.TryGetValue(body_file,
+                                             out FileInfo? header_file)) {
+          needs_import_std.Add(header_file);
         } else {
           FixImportStd(parser_file, null);
         }
@@ -106,10 +111,18 @@ class Modularizer {
         continue;
       }
       Parser.File parser_file = file_info_to_file[hpp_file];
+      var includes = FindIncludes(parser_file);
+      SplitIncludes(includes,
+                    out List<Include> principia_headers,
+                    out List<Include> system_headers,
+                    out List<Include> third_party_headers);
       ExportModule? export_module =
           FixPragmaOnce(parser_file, needs_export_module: true);
-      bool has_system_header = FixSystemHeaders(parser_file);
-      if (has_system_header || needs_import_std.Contains(hpp_file)) {
+      if (system_headers.Count > 0) {
+        FixSystemHeaders(parser_file, system_headers);
+        needs_import_std.Add(hpp_file);
+      }
+      if (needs_import_std.Contains(hpp_file)) {
         FixImportStd(parser_file, export_module!);
       }
       RewriteFile(hpp_file, parser_file, dry_run);
@@ -172,21 +185,22 @@ class Modularizer {
     return export_module;
   }
 
-  // Removes include directives for system headers from the file.  Returns true
-  // iff there was such an include.
-  private static bool FixSystemHeaders(Parser.File file) {
-    bool has_system_header = false;
-    var system_headers = new List<Include>();
-    foreach (Node n in file.children) {
-      if (n is Include{ is_system: true } inc) {
-        system_headers.Add(inc);
-        has_system_header = true;
-      }
-    }
+  // Removes include directives for system headers from the file.
+  private static void FixSystemHeaders(Parser.File file,
+                                       List<Include> system_headers) {
     foreach (Include inc in system_headers) {
       file.RemoveChild(inc);
     }
-    return has_system_header;
+  }
+
+  private static void SplitIncludes(List<Include> includes,
+                                    out List<Include> principia_headers,
+                                    out List<Include> system_headers,
+                                    out List<Include> third_party_headers) {
+    principia_headers = includes.FindAll(inc => inc.is_principia);
+    system_headers = includes.FindAll(inc => inc.is_system);
+    third_party_headers =
+        includes.FindAll(inc => !inc.is_principia && !inc.is_system);
   }
 }
 
