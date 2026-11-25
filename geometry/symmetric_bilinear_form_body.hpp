@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "numerics/elementary_functions.hpp"
-#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -17,7 +16,6 @@ namespace _symmetric_bilinear_form {
 namespace internal {
 
 using namespace principia::numerics::_elementary_functions;
-using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
 struct CosSin {
