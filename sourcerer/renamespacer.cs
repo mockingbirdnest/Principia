@@ -61,9 +61,10 @@ class Renamespacer {
       file_info_to_file.Add(input_file, parser_file);
     }
 
-    // First collect all the declarations.  We'll them to rewrite the clients.
-    // This must happen before we restructure any namespace, as the namespace
-    // names will change and would confuse our super-fancy name resolution.
+    // First collect all the declarations.  We'll need them to rewrite the
+    // clients.  This must happen before we restructure any namespace, as the
+    // namespace names will change and would confuse our super-fancy name
+    // resolution.
     var declaration_to_file = new Dictionary<Parser.Declaration, Parser.File>();
     foreach (FileInfo input_file in hpp_files) {
       if (excluded.Contains(input_file.Name) ||
