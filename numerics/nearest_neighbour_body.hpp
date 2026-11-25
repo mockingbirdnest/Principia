@@ -154,9 +154,9 @@ PrincipalComponentPartitioningTree<Point_, Payload_>::BuildTree(
     return &nodes_.back();
   }
 
-  // Compute the "inertia" of the selected displacements and obtain its
-  // principal axis.  The separator plane is orthogonal to this axis, located
-  // midway through the set of points.
+  // Compute the "inertia" of the selected points and obtain its principal axis.
+  // The separator plane is orthogonal to this axis, located midway through the
+  // set of points.
   auto const form = ComputePrincipalComponentForm(begin, end);
   auto const principal_axis = form.PrincipalAxis();
 
@@ -410,13 +410,13 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Find(
     bool* const must_check_other_side) const {
   CHECK(!leaf.empty());
 
-  // Find the point in this leaf which is the closest to `displacement`.
+  // Find the point in this leaf which is the closest to `point`.
   min_distance² = Infinity<Norm²Type>;
   min_index = no_min_index;
-  // If `Optimize()` was called, this loop accesses sequential data in
-  // `displacements_` and should be cache-friendly.
+  // If `Optimize()` was called, this loop accesses sequential data in `points_`
+  // and should be cache-friendly.
   for (auto const index : leaf) {
-    auto const distance² = (points_[index] - point).Norm²();
+    auto const distance² = Norm²(points_[index] - point);
     // Skip the points that are filtered out.  Note that *all* the points may be
     // filtered out.  The order of comparisons matters because `min_distance²`
     // is typically small.
@@ -436,8 +436,8 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Find(
     }
   }
 
-  // If there is a parent node, and `displacement` is very close to the
-  // separator plane, we'll need to check the other side of the plane.
+  // If there is a parent node, and `point` is very close to the separator
+  // plane, we'll need to check the other side of the plane.
   if (parent != nullptr && must_check_other_side != nullptr) {
     Norm²Type const projection² = Pow<2>(
         InnerProduct(parent->principal_axis, point - parent->anchor));

@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "numerics/elementary_functions.hpp"
-#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -17,7 +16,6 @@ namespace _symmetric_bilinear_form {
 namespace internal {
 
 using namespace principia::numerics::_elementary_functions;
-using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
 struct CosSin {
@@ -259,6 +257,71 @@ ReadFromMessage(serialization::SymmetricBilinearForm const& message)
       R3x3Matrix<Scalar>::ReadFromMessage(message.matrix()));
 }
 
+
+template<quantity Scalar>
+SymmetricBilinearForm<Scalar, QuantityTag>::SymmetricBilinearForm(
+    Scalar const& coordinates) : coordinates_(coordinates) {}
+
+template<quantity Scalar>
+SymmetricBilinearForm<Scalar, QuantityTag>&
+SymmetricBilinearForm<Scalar, QuantityTag>::operator+=(
+    SymmetricBilinearForm const& right) {
+  return *this = *this + right;
+}
+
+template<quantity Scalar>
+SymmetricBilinearForm<Scalar, QuantityTag>&
+SymmetricBilinearForm<Scalar, QuantityTag>::operator-=(
+    SymmetricBilinearForm const& right) {
+  return *this = *this - right;
+}
+
+template<quantity Scalar>
+SymmetricBilinearForm<Scalar, QuantityTag>&
+SymmetricBilinearForm<Scalar, QuantityTag>::operator*=(
+    double const right) {
+  return *this = *this * right;
+}
+
+template<quantity Scalar>
+SymmetricBilinearForm<Scalar, QuantityTag>&
+SymmetricBilinearForm<Scalar, QuantityTag>::operator/=(
+    double const right) {
+  return *this = *this / right;
+}
+
+template<quantity Scalar>
+Scalar const&
+SymmetricBilinearForm<Scalar, QuantityTag>::coordinates() const {
+  return coordinates_;
+}
+
+template<quantity Scalar>
+template<quantity LScalar, quantity RScalar>
+Product<Scalar, Product<LScalar, RScalar>>
+SymmetricBilinearForm<Scalar, QuantityTag>::operator()(
+    LScalar const& left,
+    RScalar const& right) const {
+  return coordinates_ * left * right;
+}
+
+template<quantity Scalar>
+SymmetricBilinearForm<Scalar, QuantityTag>
+SymmetricBilinearForm<Scalar, QuantityTag>::Diagonalize() const {
+  return *this;
+}
+
+template<quantity Scalar>
+bool SymmetricBilinearForm<Scalar, QuantityTag>::IsDiagonalized() const {
+  return true;
+}
+
+template<quantity Scalar>
+double SymmetricBilinearForm<Scalar, QuantityTag>::PrincipalAxis() const {
+  return 1.0;
+}
+
+
 template<typename Frame, int rank>
 SymmetricBilinearForm<double, MultivectorTag, Frame, Rank<rank>> const&
 InnerProductForm() {
@@ -371,6 +434,13 @@ SymmetricProduct(Vector<LScalar, Frame> const& left,
              KroneckerProduct(right_coordinates, left_coordinates)));
 }
 
+template<quantity LScalar, quantity RScalar>
+SymmetricBilinearForm<Product<LScalar, RScalar>, QuantityTag>
+SymmetricProduct(LScalar const& left, RScalar const& right) {
+  return SymmetricBilinearForm<Product<LScalar, RScalar>, QuantityTag>(
+      left * right);
+}
+
 template<quantity Scalar, typename Frame>
 SymmetricBilinearForm<Square<Scalar>, MultivectorTag, Frame, Rank<1>>
 SymmetricSquare(Vector<Scalar, Frame> const& vector) {
@@ -378,6 +448,12 @@ SymmetricSquare(Vector<Scalar, Frame> const& vector) {
   return SymmetricBilinearForm<Square<Scalar>,
                                MultivectorTag, Frame, Rank<1>>(
       KroneckerProduct(coordinates, coordinates));
+}
+
+template<quantity Scalar>
+SymmetricBilinearForm<Square<Scalar>, QuantityTag>
+SymmetricSquare(Scalar const& quantity) {
+  return SymmetricBilinearForm<Square<Scalar>, QuantityTag>(Pow<2>(quantity));
 }
 
 template<quantity LScalar, quantity RScalar, typename Frame>
@@ -392,17 +468,13 @@ Bivector<Product<LScalar, RScalar>, Frame> Anticommutator(
       form_coordinates * bivector_coordinates);
 }
 
-template<quantity Scalar,
-         typename Tag,
-         typename... Parameters>
+template<quantity Scalar, typename Tag, typename... Parameters>
 std::string DebugString(
     SymmetricBilinearForm<Scalar, Tag, Parameters...> const& form) {
   return DebugString(form.coordinates());
 }
 
-template<quantity Scalar,
-         typename Tag,
-         typename... Parameters>
+template<quantity Scalar, typename Tag, typename... Parameters>
 std::ostream& operator<<(
     std::ostream& out,
     SymmetricBilinearForm<Scalar, Tag, Parameters...> const& form) {
