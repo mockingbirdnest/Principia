@@ -81,6 +81,7 @@ class Modularizer {
 
     // Fix our body files.
     var needs_import_std = new HashSet<FileInfo>();
+    //TODO(phl):Sorted set!
     var body_principia_includes = new Dictionary<FileInfo, List<Include>>();
     var body_third_party_includes = new Dictionary<FileInfo, List<Include>>();
     foreach (FileInfo body_file in all_body_files) {
@@ -88,7 +89,8 @@ class Modularizer {
         continue;
       }
       Parser.File parser_file = file_info_to_file[body_file];
-      FixPragmaOnce(parser_file, needs_export_module: false);
+      Node? last_export_module =
+          FixPragmaOnce(parser_file, needs_export_module: false);
 
       // The `hpp_file` here might be this file if it's a test or a benchmark.
       FileInfo hpp_file =
@@ -104,7 +106,7 @@ class Modularizer {
         // If this is a test or benchmark, its imports go right here.
         Node? last_third_party_import =
             FixImportThirdPartyHeaders(parser_file,
-                                       after: null,
+                                       after: last_export_module,
                                        third_party_includes);
         Node? last_std_import;
         if (system_includes.Count > 0) {
@@ -140,7 +142,7 @@ class Modularizer {
         continue;
       }
       Parser.File parser_file = file_info_to_file[hpp_file];
-      ExportModule? export_module =
+      Node? last_export_module =
           FixPragmaOnce(parser_file, needs_export_module: true);
 
       SplitIncludes(FindIncludes(parser_file),
@@ -161,7 +163,7 @@ class Modularizer {
       // Add the imports collected from this file and its body.
       Node? last_third_party_import =
           FixImportThirdPartyHeaders(parser_file,
-                                     after: null,
+                                     after: last_export_module,
                                      all_third_party_includes);
       Node? last_std_import;
       if (system_includes.Count > 0 || needs_import_std.Contains(hpp_file)) {
@@ -182,10 +184,39 @@ class Modularizer {
     }
   }
 
+  // Ensures that `after` is followed by a blank line, unless it is `null` or
+  // the last child of `file`.  Returns the blank line, or `null` or the last
+  // child.
+  private static Node? EnsureBlankLineAfter(Parser.File file, Node? after) {
+    if (after != null) {
+      if (after.is_blank_line) {
+        // If `after` is already a blank line we have nothing to do.
+        return after;
+      }
+      if (after.position_in_parent + 1 < file.children.Count) {
+        after = file.children[after.position_in_parent + 1];
+        if (!after.is_blank_line) {
+          // If `after` is not followed by a blank line, insert one and move
+          // `after` to that blank line.
+          var blank = Text.Blank();
+          file.InsertChild(after.position_in_parent, blank);
+          after = blank;
+        }
+      }
+    }
+    return after;
+  }
+
   // Removes include directives for the given headers from the file.
   private static void FixIncludes(Parser.File file, List<Include> headers) {
     foreach (Include inc in headers) {
+      int position_in_parent = inc.position_in_parent;
       file.RemoveChild(inc);
+      // Remove blank lines that follow the include.
+      while (position_in_parent < file.children.Count &&
+             file.children[position_in_parent].is_blank_line) {
+        file.RemoveChild(file.children[position_in_parent]);
+      }
     }
   }
 
@@ -194,7 +225,7 @@ class Modularizer {
                                                  List<Include>
                                                      principia_includes) {
     int position_in_parent = (after?.position_in_parent + 1) ?? 0;
-    Node? last = null;
+    Node? last = after;
     foreach (Include inc in principia_includes) {
       var import =
           new Import(parent: null,
@@ -203,19 +234,7 @@ class Modularizer {
       ++position_in_parent;
       last = import;
     }
-
-    // Insert a blank line after the group of imports if there is not one
-    // already.
-    if (last != null && last.position_in_parent + 1 < file.children.Count) {
-      last = file.children[last.position_in_parent + 1];
-      if (!last.is_blank_line) {
-        var blank = Text.Blank();
-        file.InsertChild(last.position_in_parent, blank);
-        last = blank;
-      }
-    }
-
-    return last;
+    return EnsureBlankLineAfter(file, last);
   }
 
   private static Node? FixImportStd(Parser.File file,
@@ -252,7 +271,7 @@ class Modularizer {
                                                   List<Include>
                                                       third_party_includes) {
     int position_in_parent = (after?.position_in_parent + 1) ?? 0;
-    Node? last = null;
+    Node? last = after;
     foreach (Include inc in third_party_includes) {
       var import =
           new Import(parent: null,
@@ -265,25 +284,13 @@ class Modularizer {
       ++position_in_parent;
       last = import;
     }
-
-    // Insert a blank line after the group of imports if there is not one
-    // already.
-    if (last != null && last.position_in_parent + 1 < file.children.Count) {
-      last = file.children[last.position_in_parent + 1];
-      if (!last.is_blank_line) {
-        var blank = Text.Blank();
-        file.InsertChild(last.position_in_parent, blank);
-        last = blank;
-      }
-    }
-
-    return last;
+    return EnsureBlankLineAfter(file, last);
   }
 
   // Removes `#pragma once` directives from the file and insert an
   // `export module` directive in its place if needed.
-  private static ExportModule? FixPragmaOnce(Parser.File file,
-                                             bool needs_export_module) {
+  private static Node? FixPragmaOnce(Parser.File file,
+                                     bool needs_export_module) {
     // Collect the pragmas to fix.
     var pragma_onces = new List<PreprocessorDirective>();
     var blank_lines_after_pragma_once = new List<Text>();
@@ -300,13 +307,12 @@ class Modularizer {
     }
 
     // And fix them.
-    ExportModule? export_module = null;
+    Node? node = null;
     foreach (PreprocessorDirective po in pragma_onces) {
       if (needs_export_module) {
         int position_in_parent = po.position_in_parent;
-        export_module =
-            new ExportModule(parent: null, name: file.file_module_full_name);
-        file.InsertChild(position_in_parent, export_module);
+        node = new ExportModule(parent: null, name: file.file_module_full_name);
+        file.InsertChild(position_in_parent, node);
       } else {
         // If the `#pragma once` is not replaced by an `export module`, remove
         // the blank lines after it.
@@ -316,7 +322,7 @@ class Modularizer {
       }
       file.RemoveChild(po);
     }
-    return export_module;
+    return EnsureBlankLineAfter(file, node);
   }
 
   private static void SplitIncludes(List<Include> includes,
