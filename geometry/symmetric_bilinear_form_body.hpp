@@ -323,21 +323,6 @@ double SymmetricBilinearForm<Scalar, QuantityTag>::PrincipalAxis() const {
   return 1.0;
 }
 
-template<quantity Scalar>
-void SymmetricBilinearForm<Scalar, QuantityTag>::WriteToMessage(
-    not_null<serialization::SymmetricBilinearForm*> message) const {
-  // This form is never serialized at the moment.
-  LOG(FATAL) << "Not implemented";
-}
-
-template<quantity Scalar>
-SymmetricBilinearForm<Scalar, QuantityTag>
-SymmetricBilinearForm<Scalar, QuantityTag>::ReadFromMessage(
-    serialization::SymmetricBilinearForm const& message) {
-  // This form is never serialized at the moment.
-  LOG(FATAL) << "Not implemented";
-}
-
 
 template<typename Frame, int rank>
 SymmetricBilinearForm<double, MultivectorTag, Frame, Rank<rank>> const&
