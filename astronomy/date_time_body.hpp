@@ -430,16 +430,7 @@ class DateParser final {
   //   - at most two hyphens;
   //   - at most one 'W'.
   static constexpr DateParser ReadToEnd(std::string_view s);
-  static constexpr DateParser ReadToEnd(std::string_view s,
-                                        std::string_view::const_iterator it,
-                                        std::int64_t digits,
-                                        int digit_count,
-                                        int hyphens,
-                                        int first_hyphen_index,
-                                        int second_hyphen_index,
-                                        bool has_w,
-                                        int w_index);
-
+  
   // Returns a `Date` corresponding to the string that `*this` describes.
   // Fails if the format is invalid or the string represents an invalid date.
   constexpr Date ToDate(std::optional<Calendar> calendar, bool negative) const;
@@ -491,17 +482,6 @@ constexpr DateParser::DateParser(std::int64_t const digits,
       has_w_(has_w),
       w_index_(w_index) {}
 
-constexpr DateParser DateParser::ReadToEnd(std::string_view s) {
-  return ReadToEnd(s, s.begin(),
-                   /*digits=*/0,
-                   /*digit_count=*/0,
-                   /*hyphens=*/0,
-                   /*first_hyphen_index=*/-1,
-                   /*second_hyphen_index=*/-1,
-                   /*has_w=*/false,
-                   /*w_index=*/-1);
-}
-
 constexpr DateParser DateParser::ReadToEnd(std::string_view const s) {
   std::int64_t digits = 0;
   int digit_count = 0;
@@ -537,6 +517,13 @@ constexpr DateParser DateParser::ReadToEnd(std::string_view const s) {
         return DateParser{0, 0, 0, 0, 0, false, 0};
     }
   }
+  return DateParser{digits,
+                      digit_count,
+                      hyphens,
+                      first_hyphen_index,
+                      second_hyphen_index,
+                      has_w,
+                      w_index};
 }
 
 
