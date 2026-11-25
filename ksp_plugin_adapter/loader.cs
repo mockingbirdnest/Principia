@@ -170,7 +170,7 @@ internal static class Loader {
       foreach (string path in possible_dll_paths) {
         principia_dll_ = LoadLibrary(path);
         if (principia_dll_ == IntPtr.Zero) {
-          int error_code = GetLastError();
+          int error_code = Marshal.GetLastWin32Error();
           error_messages += new Win32Exception(error_code).ToString() + "\n";
         } else {
           break;
@@ -266,9 +266,6 @@ internal static class Loader {
   [DllImport("kernel32", SetLastError = true, CharSet = CharSet.Ansi)]
   private static extern IntPtr LoadLibrary(
       [MarshalAs(UnmanagedType.LPStr)] string lpFileName);
-
-  [DllImport("kernel32")]
-  private static extern int GetLastError();
 
   [DllImport("dl")]
   private static extern int dlclose(IntPtr handle);
