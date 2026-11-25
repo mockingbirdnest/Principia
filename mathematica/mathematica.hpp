@@ -240,10 +240,8 @@ std::string ToMathematica(Point<V> const& point,
                           OptionalExpressIn express_in = std::nullopt);
 
 template<typename OptionalExpressIn = std::nullopt_t,
-         quantity S,
-         template<quantity, typename...> typename G,
-         typename... P>
-std::string ToMathematica(SymmetricBilinearForm<S, G, P...> const& form,
+         quantity S, typename T, typename... P>
+std::string ToMathematica(SymmetricBilinearForm<S, T, P...> const& form,
                           OptionalExpressIn express_in = std::nullopt);
 
 template<typename OptionalExpressIn = std::nullopt_t, typename... T>
