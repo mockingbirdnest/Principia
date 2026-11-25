@@ -12,6 +12,7 @@
 #include "numerics/elementary_functions.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/rigid_motion.hpp"
+#include "physics/tensors.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -33,6 +34,7 @@ using namespace principia::numerics::_elementary_functions;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_mechanical_system;
 using namespace principia::physics::_rigid_motion;
+using namespace principia::physics::_tensors;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
@@ -61,8 +63,7 @@ TEST_F(MechanicalSystemTest, RigidTwoPointMasses) {
           OrthogonalMap<M1, InertialFrame>::Identity()),
       InertialFrame::nonrotating,
       InertialFrame::unmoving);
-  system_.AddRigidBody(
-      m1_motion, m1, SymmetricBilinearForm<MomentOfInertia, M1, Bivector>{});
+  system_.AddRigidBody(m1_motion, m1, InertiaTensor<M1>{});
 
   using M2 = Frame<struct M2Tag>;
   RigidMotion<M2, InertialFrame> const m2_motion(
@@ -73,8 +74,7 @@ TEST_F(MechanicalSystemTest, RigidTwoPointMasses) {
           OrthogonalMap<M2, InertialFrame>::Identity()),
       InertialFrame::nonrotating,
       Velocity<InertialFrame>({0 * Metre / Second, v, 0 * Metre / Second}));
-  system_.AddRigidBody(
-      m2_motion, m2, SymmetricBilinearForm<MomentOfInertia, M2, Bivector>{});
+  system_.AddRigidBody(m2_motion, m2, InertiaTensor<M2>{});
 
   constexpr Mass μ = m1 * m2 / (m1 + m2);
 
@@ -103,8 +103,7 @@ TEST_F(MechanicalSystemTest, RigidTwoPointMasses) {
               .velocity();
   Bivector<AngularMomentum, SystemFrame> const L = system_.AngularMomentum();
   Bivector<double, SystemFrame> const axis = Normalize(L);
-  SymmetricBilinearForm<MomentOfInertia, SystemFrame, Bivector> const I =
-      system_.InertiaTensor();
+  InertiaTensor<SystemFrame> const I = system_.InertiaTensor();
   // Compute the kinetic energy of the system in `InertialFrame` as the energy
   // of its linear motion plus that of its rotational motion, and compare that
   // with sum of the kinetic energies of the point masses.  Note that m1 is
@@ -119,7 +118,7 @@ TEST_F(MechanicalSystemTest, RigidTwoCubes) {
   constexpr Mass cube_mass = 10 * Tonne;
   constexpr Length cube_side = 3 * Metre;
   using Cube = Frame<struct CubeTag>;
-  SymmetricBilinearForm<MomentOfInertia, Cube, Bivector> const cube_inertia(
+  InertiaTensor<Cube> const cube_inertia(
       R3x3Matrix<MomentOfInertia>::DiagonalMatrix(
           {cube_mass * Pow<2>(cube_side) / 6,
            cube_mass * Pow<2>(cube_side) / 6,
@@ -171,7 +170,7 @@ TEST_F(MechanicalSystemTest, NonRigidTwoCubes) {
   constexpr Mass cube_mass = 10 * Tonne;
   constexpr Length cube_side = 3 * Metre;
   using Cube = Frame<struct CubeTag>;
-  SymmetricBilinearForm<MomentOfInertia, Cube, Bivector> const cube_inertia(
+  InertiaTensor<Cube> const cube_inertia(
       R3x3Matrix<MomentOfInertia>::DiagonalMatrix(
           {cube_mass * Pow<2>(cube_side) / 6,
            cube_mass * Pow<2>(cube_side) / 6,

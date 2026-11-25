@@ -216,8 +216,8 @@ TEST_F(MathematicaTest, ToMathematica) {
   }
   {
     EXPECT_EQ(
-        ToMathematica(SymmetricBilinearForm<double, F, Vector>().coordinates()),
-        ToMathematica(SymmetricBilinearForm<double, F, Vector>()));
+        ToMathematica(VectorSymmetricBilinearForm<double, F>().coordinates()),
+        ToMathematica(VectorSymmetricBilinearForm<double, F>()));
   }
   {
     DegreesOfFreedom<F> const dof(

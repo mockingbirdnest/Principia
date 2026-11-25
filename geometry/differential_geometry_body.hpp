@@ -28,7 +28,7 @@ struct Generator<Scalar, FixedVector<S, s, uh>> {
 template<convertible_to_quantity Scalar, quantity S, typename F>
 struct Generator<Scalar, Vector<S, F>> {
   using Gradient = Vector<Quotient<Scalar, S>, F>;
-  static SymmetricBilinearForm<double, F, Vector> InnerProductForm();
+  static VectorSymmetricBilinearForm<double, F> InnerProductForm();
 };
 
 template<typename Scalar, typename V>
@@ -57,9 +57,9 @@ Generator<Scalar, FixedVector<S, s, uh>>::InnerProductForm() {
 }
 
 template<convertible_to_quantity Scalar, quantity S, typename F>
-SymmetricBilinearForm<double, F, Vector>
+VectorSymmetricBilinearForm<double, F>
 Generator<Scalar, Vector<S, F>>::InnerProductForm() {
-  return geometry::_symmetric_bilinear_form::InnerProductForm<F, Vector>();
+  return VectorInnerProductForm<F>();
 }
 
 template<typename Scalar, typename V>
