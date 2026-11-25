@@ -71,7 +71,9 @@ class Modularizer {
       string corresponding_header_file_name =
           Filenames.CorrespondingHeader(input_file);
       // Benchmarks and tests don't have a corresponding header.
-      if (file_name_to_file_info.TryGetValue(corresponding_header_file_name, out FileInfo? corresponding_header_file)) {
+      if (file_name_to_file_info.TryGetValue(corresponding_header_file_name,
+                                             out FileInfo?
+                                                     corresponding_header_file)) {
         if (corresponding_header_file != input_file) {
           corresponding_header.Add(input_file, corresponding_header_file);
         }
@@ -88,8 +90,11 @@ class Modularizer {
       FixPragmaOnce(parser_file, needs_export_module: false);
       bool has_system_header = FixSystemHeaders(parser_file);
       if (has_system_header) {
-        needs_import_std.Add(
-            corresponding_header.GetValueOrDefault(body_file, body_file));
+        if (corresponding_header.ContainsKey(body_file)) {
+          needs_import_std.Add(corresponding_header[body_file]);
+        } else {
+          FixImportStd(parser_file, null);
+        }
       }
       RewriteFile(body_file, parser_file, dry_run);
     }
@@ -112,9 +117,9 @@ class Modularizer {
   }
 
   private static void FixImportStd(Parser.File file,
-                                   ExportModule export_module) {
+                                   ExportModule? export_module) {
     var import_std = new Import(parent: null, "std");
-    int position_in_parent = export_module.position_in_parent + 1;
+    int position_in_parent = (export_module?.position_in_parent + 1) ?? 0;
     file.InsertChild(position_in_parent, import_std);
 
     // Surround the import with blank lines if needed.
@@ -122,7 +127,8 @@ class Modularizer {
     if (!file.children[position_in_parent + 1].is_blank_line) {
       file.InsertChild(position_in_parent + 1, blank);
     }
-    if (!file.children[position_in_parent - 1].is_blank_line) {
+    if (position_in_parent > 0 &&
+        !file.children[position_in_parent - 1].is_blank_line) {
       file.InsertChild(position_in_parent, blank);
     }
   }
