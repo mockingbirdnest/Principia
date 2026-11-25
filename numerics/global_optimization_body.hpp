@@ -163,7 +163,7 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
   // neighbour is found.
   struct ScheduleEntry {
     Norm²Type distance_to_lower_nearest_neighbour²;
-    Argument const* point;
+    std::int64_t index;
     Scalar value;
   };
   std::vector<ScheduleEntry> schedule;
@@ -199,7 +199,7 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
             << number_of_local_searches << " local searches";
     if (ABSL_VLOG_IS_ON(2)) {
       for (auto const& stationary_point : stationary_points) {
-        VLOG(2) << "  " << *stationary_point;
+        VLOG(2) << "  " << stationary_point;
       }
     }
   };
@@ -247,16 +247,16 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
     // Anyway, reducing the sample would be annoying with our data structures,
     // so let's not go there, 'tis a silly place.
     Arguments pointsₖ = RandomArguments(N);
+    points.reserve(points.size() + N);
     schedule.reserve(schedule.size() + N);
     for (auto& pointₖ : pointsₖ) {
-      points.push_back(std::move(pointₖ));
-      Argument const* const pointₖ_pointer = points.back().get();
-      Scalar const fₖ = f(*pointₖ_pointer);
-      point_neighbourhoods.Add(pointₖ_pointer, fₖ);
+      Scalar const fₖ = f(pointₖ);
+      point_neighbourhoods.Add(pointₖ, fₖ);
       schedule.push_back(ScheduleEntry{
           .distance_to_lower_nearest_neighbour² = Infinity<Norm²Type>,
-          .point = pointₖ_pointer,
+          .index = static_cast<std::int64_t>(points.size()),
           .value = fₖ});
+      points.push_back(std::move(pointₖ));
     }
     point_neighbourhoods.Optimize();
     stationary_point_neighbourhoods.Optimize();
@@ -275,15 +275,16 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
           return entry.distance_to_lower_nearest_neighbour² <= rₖ²;
         });
     for (auto it = partition_it; it != schedule.end(); ++it) {
-      auto const& [_, xᵢ, f_xᵢ] = *it;
+      auto const& [_, i, f_xᵢ] = *it;
+      auto const& xᵢ = points[i];
 
       // This is the test xᵢ ∈ X*υ from [RT87b], p. 60.  Note that for some of
       // the points that short-circuit here, f_xᵢ won't ever be used.
       // Experimentally it's a small proportion, though (about 1%) so it's not
       // worth optimizing.
       if (IsCloseToKnownStationaryPoint(
-              *xᵢ, stationary_point_neighbourhoods, local_search_tolerance)) {
-        VLOG(2) << "Round #" << k << ", skipping point " << *xᵢ
+              xᵢ, stationary_point_neighbourhoods, local_search_tolerance)) {
+        VLOG(2) << "Round #" << k << ", skipping point " << xᵢ
                 << " which is close to a known stationary point";
         // We never remove points from `schedule`, we just set their distance to
         // `never_scheduled` so that they won't ever be considered again.
@@ -291,24 +292,24 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
         continue;
       }
 
-      auto* const xⱼ = point_neighbourhoods.FindNearestNeighbour(
-          *xᵢ, rₖ,
-          [f_xᵢ](Argument const* const xⱼ,
+      auto const xⱼ = point_neighbourhoods.FindNearestNeighbour(
+          xᵢ, rₖ,
+          [f_xᵢ](Argument const& xⱼ,
                  std::optional<Scalar> const& payload) {
             DCHECK(payload.has_value());
             auto const& f_xⱼ = payload.value();
             return f_xⱼ < f_xᵢ;
           });
 
-      if (xⱼ == nullptr) {
-        VLOG(2) << "Round #" << k << ", local search from " << *xᵢ;
+      if (xⱼ == std::nullopt) {
+        VLOG(2) << "Round #" << k << ", local search from " << xᵢ;
         // We must do a local search as xᵢ couldn't be added to an existing
         // cluster.  Note that the radius of the search has to be the diametre
         // of the box: it's possible that xᵢ would be near one vertex of the box
         // and the stationary point near the opposite vertex.
         ++number_of_local_searches;
         auto const status_or_stationary_point =
-            BroydenFletcherGoldfarbShanno(*xᵢ,
+            BroydenFletcherGoldfarbShanno(xᵢ,
                                           f,
                                           grad_f,
                                           local_search_tolerance,
@@ -321,9 +322,8 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
           if (IsNewStationaryPoint(stationary_point,
                                    stationary_point_neighbourhoods,
                                    local_search_tolerance)) {
-            stationary_points.push_back(
-                std::make_unique<Argument>(stationary_point));
-            stationary_point_neighbourhoods.Add(stationary_points.back().get());
+            stationary_points.push_back(stationary_point);
+            stationary_point_neighbourhoods.Add(stationary_point);
           }
         }
         // A local search has been started from xᵢ, so no point in considering
@@ -332,23 +332,17 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
       } else {
         // Move the point xᵢ "down" in the `schedule`, based on the distance to
         // its nearest neighbour.
-        auto const distance²_to_xⱼ = Norm²(*xᵢ - *xⱼ);
+        auto const distance²_to_xⱼ = Norm²(xᵢ - xⱼ.value());
         DCHECK_LE(distance²_to_xⱼ, rₖ²);
-        VLOG(3) << "Round #" << k << ", no local search from point " << *xᵢ
+        VLOG(3) << "Round #" << k << ", no local search from point " << xᵢ
                 << " which has distance " << Sqrt(distance²_to_xⱼ)
-                << " to its nearest neighbour " << *xⱼ;
+                << " to its nearest neighbour " << xⱼ.value();
         it->distance_to_lower_nearest_neighbour² = distance²_to_xⱼ;
       }
     }
   }
 
-  std::vector<Argument> result;
-  result.reserve(stationary_points.size());
-  for (const auto& stationary_point : stationary_points) {
-    result.push_back(*stationary_point);
-  }
-
-  return result;
+  return stationary_points;
 }
 
 template<homogeneous_field Scalar,
@@ -361,11 +355,11 @@ IsCloseToKnownStationaryPoint(
     PrincipalComponentPartitioningTree<Argument> const&
         stationary_point_neighbourhoods,
     NormType const local_search_tolerance) {
-  auto* const x_nearest_neighbour =
+  auto const x_nearest_neighbour =
       stationary_point_neighbourhoods.FindNearestNeighbour(
           x,
           /*radius=*/local_search_tolerance);
-  return x_nearest_neighbour != nullptr;
+  return x_nearest_neighbour.has_value();
 }
 
 template<homogeneous_field Scalar,
@@ -377,7 +371,7 @@ IsNewStationaryPoint(Argument const& stationary_point,
                      PrincipalComponentPartitioningTree<Argument> const&
                          stationary_point_neighbourhoods,
                      NormType const local_search_tolerance) {
-  auto* const stationary_point_nearest_neighbour =
+  auto const stationary_point_nearest_neighbour =
       stationary_point_neighbourhoods.FindNearestNeighbour(
           stationary_point,
           /*radius=*/Infinity<NormType>);
@@ -385,8 +379,8 @@ IsNewStationaryPoint(Argument const& stationary_point,
   // The factor 2 below is because we are looking at the distance between two
   // approximate stationary points, not between an approximate stationary point
   // and the real one.
-  return stationary_point_nearest_neighbour == nullptr ||
-         Norm(stationary_point - *stationary_point_nearest_neighbour) >
+  return !stationary_point_nearest_neighbour.has_value() ||
+         Norm(stationary_point - stationary_point_nearest_neighbour.value()) >
              2 * local_search_tolerance;
 }
 
@@ -394,18 +388,18 @@ template<homogeneous_field Scalar,
          homogeneous_euclidean_space<Scalar> Argument,
          int dimensions>
   requires(std::totally_ordered<Scalar>)
-std::vector<not_null<std::unique_ptr<Argument>>>
+typename MultiLevelSingleLinkage<Scalar, Argument, dimensions>::Arguments
 MultiLevelSingleLinkage<Scalar, Argument, dimensions>::RandomArguments(
     std::int64_t const values_per_round) {
   Arguments arguments;
   arguments.reserve(values_per_round);
   for (std::int64_t i = 0; i < values_per_round; ++i) {
-    auto argument = make_not_null_unique<Argument>(box_.centre);
+    auto argument = box_.centre;
     for (const auto& vertex : box_.vertices) {
-      *argument += distribution_(random_) * vertex;
+      argument += distribution_(random_) * vertex;
     }
     VLOG(3) << "Generating point " << i << "/" << values_per_round << ": "
-            << *argument;
+            << argument;
     arguments.push_back(std::move(argument));
   }
   return arguments;

@@ -156,10 +156,7 @@ class SymmetricBilinearForm<Scalar, QuantityTag> {
   // Always returns 1.
   double PrincipalAxis() const;
 
-  void WriteToMessage(
-      not_null<serialization::SymmetricBilinearForm*> message) const;
-  static SymmetricBilinearForm ReadFromMessage(
-      serialization::SymmetricBilinearForm const& message);
+  // No serialization support for now.
 
  private:
   Scalar coordinates_;

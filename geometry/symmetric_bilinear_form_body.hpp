@@ -337,21 +337,6 @@ double SymmetricBilinearForm<Scalar, QuantityTag>::PrincipalAxis() const {
   return 1.0;
 }
 
-template<quantity Scalar>
-void SymmetricBilinearForm<Scalar, QuantityTag>::WriteToMessage(
-    not_null<serialization::SymmetricBilinearForm*> message) const {
-  //TODO(phl)implement
-  //message->set_coordinates(coordinates_);
-}
-
-template<quantity Scalar>
-SymmetricBilinearForm<Scalar, QuantityTag>
-SymmetricBilinearForm<Scalar, QuantityTag>::ReadFromMessage(
-    serialization::SymmetricBilinearForm const& message) {
-  //TODO(phl)implement
-  return SymmetricBilinearForm<Scalar, QuantityTag>();
-}
-
 
 template<quantity Scalar, typename Tag, typename... Parameters>
 SymmetricBilinearForm<Scalar, Tag, Parameters...> operator+(

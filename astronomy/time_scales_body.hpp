@@ -510,7 +510,7 @@ constexpr Instant DateTimeAsUT1(DateTime const& ut1) {
 // `Instant` parsing.
 
 constexpr Instant ParseTAI(std::string_view const s) {
-  if (IsJulian(s.data(), s.size())) {
+  if (IsJulian(s)) {
     return FromTAI(TimeSinceJ2000(JulianDate::Parse(s)));
   } else {
     return DateTimeAsTAI(DateTime::Parse(s));
@@ -518,7 +518,7 @@ constexpr Instant ParseTAI(std::string_view const s) {
 }
 
 constexpr Instant ParseTT(std::string_view const s) {
-  if (IsJulian(s.data(), s.size())) {
+  if (IsJulian(s)) {
     return FromTT(TimeSinceJ2000(JulianDate::Parse(s)));
   } else {
     return DateTimeAsTT(DateTime::Parse(s));
@@ -530,7 +530,7 @@ constexpr Instant ParseUTC(std::string_view const s) {
 }
 
 constexpr Instant ParseUT1(std::string_view const s) {
-  if (IsJulian(s.data(), s.size())) {
+  if (IsJulian(s)) {
     return FromUT1(TimeSinceJ2000(JulianDate::Parse(s)));
   } else {
     return DateTimeAsUT1(DateTime::Parse(s));

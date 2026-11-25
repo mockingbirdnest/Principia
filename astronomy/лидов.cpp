@@ -244,7 +244,8 @@ Graph<double, double> ЛидовGraph(OrbitalElements const& elements,
                 double const c₁ = (1 - e²) * cos²_i;
                 return std::pair{c₂, c₁};
               }),
-      лидов_parameter_colour);
+      лидов_parameter_colour,
+      {.joined = true});
   return graph;
 }
 

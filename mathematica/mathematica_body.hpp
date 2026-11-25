@@ -461,10 +461,8 @@ std::string ToMathematica(Point<V> const& point,
 }
 
 template<typename OptionalExpressIn,
-         quantity S,
-         template<quantity, typename...> typename G,
-         typename... P>
-std::string ToMathematica(SymmetricBilinearForm<S, G, P...> const& form,
+         quantity S, typename T, typename... P>
+std::string ToMathematica(SymmetricBilinearForm<S, T, P...> const& form,
                           OptionalExpressIn express_in) {
   return ToMathematica(form.coordinates(), std::move(express_in));
 }

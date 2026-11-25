@@ -124,7 +124,8 @@ Graph<Instant, T> OrbitalElements::PlotTimeSeries(
           std::views::transform([element](ClassicalElements const& elements) {
             return std::pair{elements.time, elements.*element};
           }),
-      line_colour);
+      line_colour,
+      {.joined = true});
   return graph;
 }
 
@@ -170,7 +171,7 @@ inline Graph<double, double> OrbitalElements::PlotEccentricityVector(
       width, height, e_cos_ω_range, e_sin_ω_range, background);
   graph.PlotHorizontalLine(0, axis_colour);
   graph.PlotVerticalLine(0, axis_colour);
-  graph.ListPointPlot(eccentricity_vector, line_colour);
+  graph.ListPointPlot(eccentricity_vector, line_colour, {.joined = true});
   return graph;
 }
 
