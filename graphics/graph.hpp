@@ -48,6 +48,10 @@ struct Label {
   TextPlacement placement;
 };
 
+struct ListPointPlotOptions {
+  bool joined = false;
+};
+
 template<affine Abscissa, affine Ordinate>
 class Graph {
  public:
@@ -67,7 +71,9 @@ class Graph {
 
   template<std::ranges::range Points>
     requires graph_point<std::ranges::range_value_t<Points>, Abscissa, Ordinate>
-  void ListPointPlot(Points const& points, RGB24 colour);
+  void ListPointPlot(Points const& points,
+                     RGB24 colour,
+                     ListPointPlotOptions options = {});
 
   void Plot(std::function<Ordinate(Abscissa)> const& f,
             Interval<Abscissa> const& range,

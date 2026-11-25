@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "numerics/elementary_functions.hpp"
-#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -17,7 +16,6 @@ namespace _symmetric_bilinear_form {
 namespace internal {
 
 using namespace principia::numerics::_elementary_functions;
-using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
 struct CosSin {
@@ -337,21 +335,6 @@ bool SymmetricBilinearForm<Scalar, QuantityTag>::IsDiagonalized() const {
 template<quantity Scalar>
 double SymmetricBilinearForm<Scalar, QuantityTag>::PrincipalAxis() const {
   return 1.0;
-}
-
-template<quantity Scalar>
-void SymmetricBilinearForm<Scalar, QuantityTag>::WriteToMessage(
-    not_null<serialization::SymmetricBilinearForm*> message) const {
-  //TODO(phl)implement
-  //message->set_coordinates(coordinates_);
-}
-
-template<quantity Scalar>
-SymmetricBilinearForm<Scalar, QuantityTag>
-SymmetricBilinearForm<Scalar, QuantityTag>::ReadFromMessage(
-    serialization::SymmetricBilinearForm const& message) {
-  //TODO(phl)implement
-  return SymmetricBilinearForm<Scalar, QuantityTag>();
 }
 
 

@@ -182,7 +182,7 @@ consteval DateTime operator""_DateTime(char const* str, std::size_t size);
 std::ostream& operator<<(std::ostream& out, DateTime const& date_time);
 
 // Returns true if the string can be interpreted as a Julian date.
-constexpr bool IsJulian(char const* str, std::size_t size);
+constexpr bool IsJulian(std::string_view s);
 consteval JulianDate operator""_Julian(char const* str, std::size_t size);
 
 }  // namespace internal
