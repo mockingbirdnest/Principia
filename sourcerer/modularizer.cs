@@ -81,8 +81,8 @@ class Modularizer {
 
     // Fix our body files.
     var needs_import_std = new HashSet<FileInfo>();
-    var body_principia_headers = new Dictionary<FileInfo, List<Include>>();
-    var body_third_party_headers = new Dictionary<FileInfo, List<Include>>();
+    var body_principia_includes = new Dictionary<FileInfo, List<Include>>();
+    var body_third_party_includes = new Dictionary<FileInfo, List<Include>>();
     foreach (FileInfo body_file in all_body_files) {
       if (excluded.Contains(body_file.Name)) {
         continue;
@@ -95,37 +95,40 @@ class Modularizer {
           corresponding_header.GetValueOrDefault(body_file, body_file);
 
       // Find all the includes and categorize them.
-      var includes = FindIncludes(parser_file);
-      SplitIncludes(includes,
-                    out List<Include> principia_headers,
-                    out List<Include> system_headers,
-                    out List<Include> third_party_headers);
+      SplitIncludes(FindIncludes(parser_file),
+                    out List<Include> principia_includes,
+                    out List<Include> system_includes,
+                    out List<Include> third_party_includes);
 
       if (hpp_file == body_file) {
         // If this is a test or benchmark, its imports go right here.
         Node? last_third_party_import =
             FixImportThirdPartyHeaders(parser_file,
                                        after: null,
-                                       third_party_headers);
-        Node? last_std_import =
-            FixImportStd(parser_file, last_third_party_import);
+                                       third_party_includes);
+        Node? last_std_import;
+        if (system_includes.Count > 0) {
+          last_std_import = FixImportStd(parser_file, last_third_party_import);
+        } else {
+          last_std_import = last_third_party_import;
+        }
         FixImportPrincipiaHeaders(parser_file,
                                   after: last_std_import,
-                                  principia_headers);
+                                  principia_includes);
       } else {
         // If this is a body that has a header, its imports will go in the
         // header.
-        body_principia_headers.Add(hpp_file, principia_headers);
-        if (system_headers.Count > 0) {
+        body_principia_includes.Add(hpp_file, principia_includes);
+        if (system_includes.Count > 0) {
           needs_import_std.Add(hpp_file);
         }
-        body_third_party_headers.Add(hpp_file, third_party_headers);
+        body_third_party_includes.Add(hpp_file, third_party_includes);
       }
 
-      // In all cases, the headers must go away.
-      FixHeaders(parser_file, principia_headers);
-      FixHeaders(parser_file, system_headers);
-      FixHeaders(parser_file, third_party_headers);
+      // In all cases, the includes must go away.
+      FixIncludes(parser_file, principia_includes);
+      FixIncludes(parser_file, system_includes);
+      FixIncludes(parser_file, third_party_includes);
 
       RewriteFile(body_file, parser_file, dry_run);
     }
@@ -137,29 +140,50 @@ class Modularizer {
         continue;
       }
       Parser.File parser_file = file_info_to_file[hpp_file];
-      var includes = FindIncludes(parser_file);
-      SplitIncludes(includes,
-                    out List<Include> principia_headers,
-                    out List<Include> system_headers,
-                    out List<Include> third_party_headers);
-      FixHeaders(parser_file, principia_headers);
-      FixPragmaOnce(parser_file, needs_export_module: false);
       ExportModule? export_module =
           FixPragmaOnce(parser_file, needs_export_module: true);
-      if (system_headers.Count > 0) {
-        FixHeaders(parser_file, system_headers);
-        needs_import_std.Add(hpp_file);
+
+      SplitIncludes(FindIncludes(parser_file),
+                    out List<Include> principia_includes,
+                    out List<Include> system_includes,
+                    out List<Include> third_party_includes);
+      var all_principia_includes = new List<Include>(principia_includes);
+      all_principia_includes.AddRange(
+          body_principia_includes.GetValueOrDefault(
+              hpp_file,
+              new List<Include>()));
+      var all_third_party_includes = new List<Include>(third_party_includes);
+      third_party_includes.AddRange(
+          body_third_party_includes.GetValueOrDefault(
+              hpp_file,
+              new List<Include>()));
+
+      // Add the imports collected from this file and its body.
+      Node? last_third_party_import =
+          FixImportThirdPartyHeaders(parser_file,
+                                     after: null,
+                                     all_third_party_includes);
+      Node? last_std_import;
+      if (system_includes.Count > 0 || needs_import_std.Contains(hpp_file)) {
+        last_std_import = FixImportStd(parser_file, last_third_party_import);
+      } else {
+        last_std_import = last_third_party_import;
       }
-      if (needs_import_std.Contains(hpp_file)) {
-        FixImportStd(parser_file, export_module!);
-      }
-      FixHeaders(parser_file, third_party_headers);
+      FixImportPrincipiaHeaders(parser_file,
+                                after: last_std_import,
+                                all_principia_includes);
+
+      // Drop the includes.
+      FixIncludes(parser_file, principia_includes);
+      FixIncludes(parser_file, system_includes);
+      FixIncludes(parser_file, third_party_includes);
+
       RewriteFile(hpp_file, parser_file, dry_run);
     }
   }
 
   // Removes include directives for the given headers from the file.
-  private static void FixHeaders(Parser.File file, List<Include> headers) {
+  private static void FixIncludes(Parser.File file, List<Include> headers) {
     foreach (Include inc in headers) {
       file.RemoveChild(inc);
     }
@@ -168,10 +192,10 @@ class Modularizer {
   private static Node? FixImportPrincipiaHeaders(Parser.File file,
                                                  Node? after,
                                                  List<Include>
-                                                     principia_headers) {
+                                                     principia_includes) {
     int position_in_parent = (after?.position_in_parent + 1) ?? 0;
     Import? last = null;
-    foreach (Include inc in principia_headers) {
+    foreach (Include inc in principia_includes) {
       var import =
           new Import(parent: null,
                      name: "principia." + string.Join('.', inc.path));
@@ -213,10 +237,10 @@ class Modularizer {
   private static Node? FixImportThirdPartyHeaders(Parser.File file,
                                                   Node? after,
                                                   List<Include>
-                                                      third_party_headers) {
+                                                      third_party_includes) {
     int position_in_parent = (after?.position_in_parent + 1) ?? 0;
     Import? last = null;
-    foreach (Include inc in third_party_headers) {
+    foreach (Include inc in third_party_includes) {
       var import =
           new Import(parent: null,
                      name: '"' +
@@ -271,12 +295,12 @@ class Modularizer {
   }
 
   private static void SplitIncludes(List<Include> includes,
-                                    out List<Include> principia_headers,
-                                    out List<Include> system_headers,
-                                    out List<Include> third_party_headers) {
-    principia_headers = includes.FindAll(inc => inc.is_principia);
-    system_headers = includes.FindAll(inc => inc.is_system);
-    third_party_headers =
+                                    out List<Include> principia_includes,
+                                    out List<Include> system_includes,
+                                    out List<Include> third_party_includes) {
+    principia_includes = includes.FindAll(inc => inc.is_principia);
+    system_includes = includes.FindAll(inc => inc.is_system);
+    third_party_includes =
         includes.FindAll(inc => !inc.is_principia && !inc.is_system);
   }
 }
