@@ -23,7 +23,7 @@ class Modularizer {
     foreach (string arg in args) {
       if (arg.StartsWith("--") && arg.Contains(":")) {
         string[] split =
-            arg.Split(new []{ "--", ":" }, StringSplitOptions.None);
+            arg.Split([ "--", ":" ], StringSplitOptions.None);
         string option = split[1];
         string value = split[2];
         if (option == "project") {
@@ -51,8 +51,8 @@ class Modularizer {
     FileInfo[] hpp_files = project.GetFiles("*.hpp");
     FileInfo[] cpp_files = project.GetFiles("*.cpp");
     FileInfo[] body_hpp_files = Array.FindAll(hpp_files, IsBodyHpp);
-    FileInfo[] all_body_files = body_hpp_files.Union(cpp_files).ToArray();
-    FileInfo[] all_files = hpp_files.Union(cpp_files).ToArray();
+    FileInfo[] all_body_files = [.. body_hpp_files.Union(cpp_files)];
+    FileInfo[] all_files = [.. hpp_files.Union(cpp_files)];
     foreach (FileInfo input_file in all_files) {
       if (excluded.Contains(input_file.Name)) {
         continue;
@@ -119,10 +119,10 @@ class Modularizer {
 
     // Surround the import with blank lines if needed.
     var blank = new Text("", parent: null);
-    if (file.children[position_in_parent + 1] is not Text t1 || t1.text != "") {
+    if (!file.children[position_in_parent + 1].is_blank_line) {
       file.InsertChild(position_in_parent + 1, blank);
     }
-    if (file.children[position_in_parent - 1] is not Text t2 || t2.text != "") {
+    if (!file.children[position_in_parent - 1].is_blank_line) {
       file.InsertChild(position_in_parent, blank);
     }
   }
@@ -133,18 +133,33 @@ class Modularizer {
                                              bool needs_export_module) {
     // Collect the pragmas to fix.
     var pragma_onces = new List<PreprocessorDirective>();
+    var blank_lines_after_pragma_once = new List<Text>();
+    bool right_after_pragma_once = false;
     foreach (Node n in file.children) {
       if (n is PreprocessorDirective{ is_pragma_once: true } po) {
         pragma_onces.Add(po);
+        right_after_pragma_once = true;
+      } else if (right_after_pragma_once && n.is_blank_line) {
+        blank_lines_after_pragma_once.Add((n as Text)!);
+      } else {
+        right_after_pragma_once = false;
       }
     }
+
     // And fix them.
     ExportModule? export_module = null;
     foreach (PreprocessorDirective po in pragma_onces) {
       if (needs_export_module) {
+        int position_in_parent = po.position_in_parent;
         export_module =
             new ExportModule(parent: null, name: file.file_module_full_name);
-        file.InsertChild(po.position_in_parent, export_module);
+        file.InsertChild(position_in_parent, export_module);
+      } else {
+        // If the `#pragma once` is not replaced by an `export module`, remove
+        // the blank lines after it.
+        foreach (Text blank in blank_lines_after_pragma_once) {
+          file.RemoveChild(blank);
+        }
       }
       file.RemoveChild(po);
     }

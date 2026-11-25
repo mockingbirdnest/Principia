@@ -156,6 +156,8 @@ public class Parser {
       }
     }
 
+    public bool is_blank_line => this is Text{ text: "" } ;
+
     public int position_in_parent { get ; private set; } = -1;
 
     public string? text { get ; protected set; }
@@ -287,6 +289,11 @@ public class Parser {
         text,
         parent,
         name) {}
+
+    public override string Cxx() {
+      Debug.Assert(must_rewrite, "inconsistent rewrite");
+      return "import " + name + ";";
+    }
 
     public override void WriteNode(string indent = "") {
       Console.WriteLine(indent + "Import " + name);
