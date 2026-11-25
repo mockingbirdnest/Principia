@@ -204,10 +204,26 @@ public class Parser {
     public Constant(string text, Node parent, string name) : base(
         text,
         parent,
-        name) { }
+        name) {}
 
     public override void WriteNode(string indent = "") {
       Console.WriteLine(indent + "Constant " + name);
+    }
+  }
+
+  public class ExportModule : Declaration {
+    public ExportModule(Node parent, string name) : base(
+        text: null,
+        parent,
+        name) {}
+
+    public override string Cxx() {
+      Debug.Assert(must_rewrite, "inconsistent rewrite");
+      return "export module " + name + ";";
+    }
+
+    public override void WriteNode(string indent = "") {
+      Console.WriteLine(indent + "ExportModule " + name);
     }
   }
 
@@ -216,20 +232,21 @@ public class Parser {
     public File(FileInfo file_info, bool is_body) : base(parent: null) {
       this.file_info = file_info;
       if (is_body) {
-        file_namespace_simple_name = "_" +
-                                     Regex.Replace(file_info.Name,
-                                                   @"(_body|_test)?\.[hc]pp",
-                                                   "");
+        file_module_simple_name =
+            Regex.Replace(file_info.Name, @"(_body|_test)?\.[hc]pp", "");
+        file_namespace_simple_name = "_" + file_module_simple_name;
       } else {
-        file_namespace_simple_name = "_" +
-                                     Regex.Replace(file_info.Name,
-                                                   @"\.hpp",
-                                                   "");
+        file_module_simple_name = Regex.Replace(file_info.Name, @"\.hpp", "");
+        file_namespace_simple_name = "_" + file_module_simple_name;
       }
       project_namespace_full_name = "principia::" + file_info.Directory!.Name;
-      file_namespace_full_name = project_namespace_full_name +
-                                 "::" +
-                                 file_namespace_simple_name;
+      file_namespace_full_name =
+          project_namespace_full_name + "::" + file_namespace_simple_name;
+      file_module_full_name =
+          "principia." +
+          file_info.Directory!.Name +
+          "." +
+          file_module_simple_name;
     }
 
     public override void WriteNode(string indent = "") {
@@ -239,6 +256,8 @@ public class Parser {
     public FileInfo file_info { get; }
     public string file_namespace_full_name { get; }
     public string file_namespace_simple_name { get; }
+    public string file_module_full_name { get; }
+    public string file_module_simple_name { get; }
     public string project_namespace_full_name { get; }
   }
 
@@ -410,7 +429,8 @@ public class Parser {
     }
 
     public bool is_if => text?.StartsWith("#if") == true;
-  }
+    public bool is_pragma_once => text?.StartsWith("#pragma once") == true;
+      }
 
   public class Struct : Declaration {
     public Struct(string text, Node parent, string name) : base(
