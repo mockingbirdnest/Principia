@@ -94,7 +94,7 @@ class Modularizer {
       FileInfo hpp_file =
           corresponding_header.GetValueOrDefault(body_file, body_file);
 
-      // Remove our headers and collect them to fix the header.
+      // Find all the includes and categorize them.
       var includes = FindIncludes(parser_file);
       SplitIncludes(includes,
                     out List<Include> principia_headers,
@@ -102,25 +102,30 @@ class Modularizer {
                     out List<Include> third_party_headers);
 
       if (hpp_file == body_file) {
-        Node? last_thread_party_import =
+        // If this is a test or benchmark, its imports go right here.
+        Node? last_third_party_import =
             FixImportThirdPartyHeaders(parser_file,
                                        after: null,
                                        third_party_headers);
         Node? last_std_import =
-            FixImportStd(parser_file, last_thread_party_import);
+            FixImportStd(parser_file, last_third_party_import);
         FixImportPrincipiaHeaders(parser_file,
                                   after: last_std_import,
                                   principia_headers);
       } else {
+        // If this is a body that has a header, its imports will go in the
+        // header.
         body_principia_headers.Add(hpp_file, principia_headers);
-        FixHeaders(parser_file, principia_headers);
         if (system_headers.Count > 0) {
-          FixHeaders(parser_file, system_headers);
           needs_import_std.Add(hpp_file);
         }
         body_third_party_headers.Add(hpp_file, third_party_headers);
-        FixHeaders(parser_file, third_party_headers);
       }
+
+      // In all cases, the headers must go away.
+      FixHeaders(parser_file, principia_headers);
+      FixHeaders(parser_file, system_headers);
+      FixHeaders(parser_file, third_party_headers);
 
       RewriteFile(body_file, parser_file, dry_run);
     }
@@ -186,15 +191,20 @@ class Modularizer {
     last = import_std;
 
     // Surround the import with blank lines if needed.
-    if (!file.children[position_in_parent + 1].is_blank_line) {
+    bool needs_blank_line_before =
+        position_in_parent > 0 &&
+        !file.children[position_in_parent - 1].is_blank_line;
+    bool needs_blank_line_after =
+        !file.children[position_in_parent + 1].is_blank_line;
+
+    if (needs_blank_line_before) {
       var blank = new Text("", parent: null);
-      file.InsertChild(position_in_parent + 1, blank);
+      file.InsertChild(import_std.position_in_parent, blank);
       last = blank;
     }
-    if (position_in_parent > 0 &&
-        !file.children[position_in_parent - 1].is_blank_line) {
+    if (needs_blank_line_after) {
       var blank = new Text("", parent: null);
-      file.InsertChild(position_in_parent, blank);
+      file.InsertChild(import_std.position_in_parent + 1, blank);
       last = blank;
     }
     return last;
@@ -209,7 +219,11 @@ class Modularizer {
     foreach (Include inc in third_party_headers) {
       var import =
           new Import(parent: null,
-                     name: '"' + string.Join('/', inc.path) + '"');
+                     name: '"' +
+                           string.Join('/', inc.path) +
+                           "."  +
+                           inc.extension +
+                           '"');
       file.InsertChild(position_in_parent, import);
       ++position_in_parent;
       last = import;

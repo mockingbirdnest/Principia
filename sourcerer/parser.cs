@@ -22,10 +22,13 @@ public class Parser {
       string line = reader.ReadLine()!;
       string uncommented_line = Uncomment(line, ref in_comment);
       if (IsInclude(uncommented_line)) {
+        ParseIncludedPath(uncommented_line,
+                          out string[] path,
+                          out string extension);
         var include = new Include(line,
                                   parent: current,
-                                  ParseIncludedPath(uncommented_line),
-                                  extension: "hpp",
+                                  path,
+                                  extension,
                                   file_info);
       } else if (IsPreprocessorDirective(uncommented_line)) {
         var preprocessor_directive =
@@ -340,6 +343,7 @@ public class Parser {
     }
 
     public string[] path;
+    public string extension => extension_;
 
     public bool is_blessed_by_sourcerer =>
         text != null && Regex.IsMatch(text, @"// 🧙 .+$");
@@ -642,9 +646,12 @@ public class Parser {
     return Regex.Replace(Regex.Replace(line, @"\(.*$", ""), @"^.+ ", "");
   }
 
-  private static string[] ParseIncludedPath(string line) {
-    string path = line.Replace("#include \"", "").Replace(".hpp\"", "");
-    return path.Split('/');
+  private static void ParseIncludedPath(string line,
+                                        out string[] path,
+                                        out string extension) {
+    string[] fragments = line.Split('.');
+    extension = fragments[^1].Replace("\"", "");
+    path = fragments[0].Replace("#include \"", "").Split('/');
   }
 
   private static string ParseImport(string line) {
