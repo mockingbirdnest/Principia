@@ -170,8 +170,13 @@ internal static class Loader {
       foreach (string path in possible_dll_paths) {
         principia_dll_ = LoadLibrary(path);
         if (principia_dll_ == IntPtr.Zero) {
-          int error_code = Marshal.GetLastWin32Error();
-          error_messages += new Win32Exception(error_code).ToString() + "\n";
+          var error = new Win32Exception();
+          error_messages +=
+              "0x" +
+              error.NativeErrorCode.ToString("X8") +
+              ": " +
+              error.Message +
+              "\n";
         } else {
           break;
         }
