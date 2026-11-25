@@ -1,7 +1,5 @@
 // Body of link:base/not_null.ixx
 
-import "absl/log/check.h";
-
 namespace principia {
 namespace base {
 namespace _not_null {

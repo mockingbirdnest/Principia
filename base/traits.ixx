@@ -6,6 +6,7 @@ namespace principia {
 namespace base {
 namespace _traits {
 namespace internal {
+export {
 
 template<typename... Ts>
 constexpr bool all_different_v = false;
@@ -107,6 +108,7 @@ struct tail<T, Ts...> {
   }
 };
 
+}
 }  // namespace internal
 
 export using internal::all_different_v;

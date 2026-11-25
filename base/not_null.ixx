@@ -1,6 +1,7 @@
 
 export module principia.base.not_null;
 
+import "absl/log/check.h";
 
 import std;
 
@@ -78,6 +79,8 @@ namespace internal {
 
 using namespace principia::base::_not_constructible;
 using namespace principia::base::_traits;
+
+export {
 
 template<typename Pointer>
 class not_null;
@@ -347,7 +350,7 @@ template<typename T, typename... Args>
 not_null<std::unique_ptr<T>> make_not_null_unique(Args&&... args);
 
 // For logging.
-export template<typename Pointer>
+template<typename Pointer>
 std::ostream& operator<<(std::ostream& stream,
                          not_null<Pointer> const& pointer);
 
@@ -356,7 +359,7 @@ not_null<Result> dynamic_cast_not_null(not_null<T*> pointer);
 
 template<typename Result, typename T>
 not_null<Result> dynamic_cast_not_null(not_null<std::unique_ptr<T>>&& pointer);
-
+}
 }  // namespace internal
 
 export using internal::check_not_null;

@@ -3,6 +3,8 @@ import "base/macros.hpp";  // 🧙 For PRINCIPIA_COMPILER_MSVC.
 import "gmock/gmock.h";
 import "gtest/gtest.h";
 
+import "absl/log/check.h";  // Otherwise clang is missing Voidify::operator&&…
+
 import std;
 
 import principia.base.not_null;
