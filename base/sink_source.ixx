@@ -11,6 +11,8 @@ namespace internal {
 
 using namespace principia::base::_array;
 
+export {
+
 template<typename Element>
 class ArraySource : public google::compression::Source {
  public:
@@ -48,7 +50,7 @@ class ArraySink : public google::compression::Sink {
   const Array<Element> array_;
   std::int64_t next_to_write_ = 0;
 };
-
+}
 }  // namespace internal
 
 export using internal::ArraySink;

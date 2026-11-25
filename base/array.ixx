@@ -2,11 +2,15 @@ export module principia.base.array;
 
 import std;
 
+import "absl/log/check.h";
+import "absl/log/log.h";
+
 namespace principia {
 namespace base {
 namespace _array {
 namespace internal {
 
+export {
 // A simple container for a pointer and size.  `data` is not owned.
 template<typename Element>
 struct Array final {
@@ -131,7 +135,7 @@ template<std::integral LeftElement,
          std::integral RightElement>
 bool operator==(UniqueArray<LeftElement> const& left,
                 UniqueArray<RightElement> const& right);
-
+}
 }  // namespace internal
 
 export using internal::Array;

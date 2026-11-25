@@ -1,8 +1,5 @@
 // Body of link:base/array.ixx
 
-import "absl/log/check.h";
-import "absl/log/log.h";
-
 namespace principia {
 namespace base {
 namespace _array {
