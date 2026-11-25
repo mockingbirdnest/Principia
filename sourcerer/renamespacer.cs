@@ -119,7 +119,7 @@ class Renamespacer {
       Parser.File parser_file = file_info_to_file[input_file];
       FixLegacyInternalNamespaces(parser_file);
       FixMissingInternalNamespaces(parser_file,
-                                            insert_using_declarations: true);
+                                   insert_using_declarations: true);
       FixCompatibilityNamespace(parser_file);
       RewriteFile(input_file, parser_file, dry_run);
     }
@@ -136,7 +136,7 @@ class Renamespacer {
       } else {
         FixLegacyInternalNamespaces(parser_file);
         FixMissingInternalNamespaces(parser_file,
-                                              insert_using_declarations: false);
+                                     insert_using_declarations: false);
       }
       RewriteFile(input_file, parser_file, dry_run);
     }

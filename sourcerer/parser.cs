@@ -167,12 +167,12 @@ public class Parser {
   }
 
   public abstract class Declaration : Node {
-    protected Declaration(Node parent, string name) : this(
+    protected Declaration(Node? parent, string name) : this(
         text: null,
         parent,
         name) {}
 
-    protected Declaration(string? text, Node parent, string name) : base(
+    protected Declaration(string? text, Node? parent, string name) : base(
         text,
         parent) {
       name_ = name;
@@ -212,7 +212,7 @@ public class Parser {
   }
 
   public class ExportModule : Declaration {
-    public ExportModule(Node parent, string name) : base(
+    public ExportModule(Node? parent, string name) : base(
         text: null,
         parent,
         name) {}
@@ -267,13 +267,23 @@ public class Parser {
         parent,
         name) { }
 
+    public override string Cxx() {
+      Debug.Assert(must_rewrite, "inconsistent rewrite");
+      return "import " + name + ";";
+    }
+
     public override void WriteNode(string indent = "") {
       Console.WriteLine(indent + "Function " + name);
     }
   }
 
   public class Import : Declaration {
-    public Import(string text, Node parent, string name) : base(
+    public Import(Node? parent, string name) : this(
+        text: null,
+        parent,
+        name) {}
+
+    public Import(string? text, Node? parent, string name) : base(
         text,
         parent,
         name) {}
@@ -444,7 +454,7 @@ public class Parser {
   }
 
   public class Text : Node {
-    public Text(string text, Node parent) : base(text, parent) {
+    public Text(string text, Node? parent) : base(text, parent) {
       if (text == null) {
         throw new ArgumentNullException();
       }
