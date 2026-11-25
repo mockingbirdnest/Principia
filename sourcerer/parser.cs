@@ -57,6 +57,10 @@ public class Parser {
         var function = new Function(line,
                                     parent: current,
                                     ParseFunction(uncommented_line));
+      } else if (IsImport(uncommented_line)) {
+        var import = new Import(line,
+                                parent: current,
+                                ParseImport(uncommented_line));
       } else if (IsStruct(uncommented_line)) {
         var strukt = new Struct(line,
                                 parent: current,
@@ -105,6 +109,36 @@ public class Parser {
     public void AddChildren(List<Node> children) {
       foreach (Node child in children) {
         AddChild(child);
+      }
+    }
+
+    public void InsertChild(int position, Node child) {
+      child.parent = this;
+      child.position_in_parent = position;
+      children.Insert(position, child);
+      for (int i = position + 1; i < children.Count; ++i) {
+        children[i].position_in_parent = i;
+      }
+    }
+
+    public void RemoveChild(Node child) {
+      int removed_position_in_parent = -1;
+      for (int i = 0; i < children.Count; ++i) {
+        if (children[i] == child) {
+          removed_position_in_parent = i;
+          break;
+        }
+      }
+      children.RemoveAt(removed_position_in_parent);
+      child.parent = null;
+      for (int i = removed_position_in_parent; i < children.Count; ++i) {
+        children[i].position_in_parent = i;
+      }
+    }
+
+    public void RemoveChildren(List<Node> children_to_remove) {
+      foreach (Node child in children_to_remove) {
+        RemoveChild(child);
       }
     }
 
@@ -216,6 +250,17 @@ public class Parser {
 
     public override void WriteNode(string indent = "") {
       Console.WriteLine(indent + "Function " + name);
+    }
+  }
+
+  public class Import : Declaration {
+    public Import(string text, Node parent, string name) : base(
+        text,
+        parent,
+        name) {}
+
+    public override void WriteNode(string indent = "") {
+      Console.WriteLine(indent + "Import " + name);
     }
   }
 
@@ -500,6 +545,10 @@ public class Parser {
             Regex.IsMatch(line, @"^[A-Z][a-z]\w+\(.*$"));
   }
 
+  private static bool IsImport(string line) {
+    return Regex.IsMatch(line, @"^ *import +\w+;$");
+  }
+
   private static bool IsInclude(string line) {
     return Regex.IsMatch(line, @"^#include [^ ]+$");
   }
@@ -559,6 +608,12 @@ public class Parser {
   private static string[] ParseIncludedPath(string line) {
     string path = line.Replace("#include \"", "").Replace(".hpp\"", "");
     return path.Split('/');
+  }
+
+  private static string ParseImport(string line) {
+    string module = Regex.Replace(line, @"^ *import +", "");
+    module = Regex.Replace(module, @";$", "");
+    return module;
   }
 
   private static string ParseOpeningNamespace(string line) {
