@@ -436,6 +436,24 @@ operator/(SymmetricBilinearForm<LScalar, Tag, Parameters...> const& left,
 }
 
 template<quantity LScalar, quantity RScalar, typename Frame, int rank>
+Multivector<Product<LScalar, RScalar>, Frame, rank> operator*(
+    SymmetricBilinearForm<
+        LScalar, MultivectorTag, Frame, Rank<rank>> const& left,
+    Multivector<RScalar, Frame, rank> const& right) {
+  return Multivector<Product<LScalar, RScalar>, Frame, rank>(
+      left.coordinates() * right.coordinates());
+}
+
+template<quantity LScalar, quantity RScalar, typename Frame, int rank>
+Multivector<Product<LScalar, RScalar>, Frame, rank> operator*(
+    Multivector<LScalar, Frame, rank> const& left,
+    SymmetricBilinearForm<
+        RScalar, MultivectorTag, Frame, Rank<rank>> const& right) {
+  return Multivector<Product<LScalar, RScalar>, Frame, rank>(
+      left.coordinates() * right.coordinates());
+}
+
+template<quantity LScalar, quantity RScalar, typename Frame, int rank>
 Multivector<Quotient<LScalar, RScalar>, Frame, rank> operator/(
     Multivector<LScalar, Frame, rank> const& left,
     SymmetricBilinearForm<
