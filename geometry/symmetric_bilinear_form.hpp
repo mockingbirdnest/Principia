@@ -60,9 +60,21 @@ class SymmetricBilinearForm<Scalar, MultivectorTag, Frame, Rank<rank>> {
 
   R3x3Matrix<Scalar> const& coordinates() const;
 
+  // Application of the form to a pair of multivectors.
   template<quantity LScalar, quantity RScalar>
   Product<Scalar, Product<LScalar, RScalar>> operator()(
       Multivector<LScalar, Frame, rank> const& left,
+      Multivector<RScalar, Frame, rank> const& right) const;
+
+  // Application of the form to a single multivector, yielding a linear form
+  // which we identify with a multivector of the same rank.
+  template<quantity LScalar>
+  Multivector<Product<Scalar, LScalar>, Frame, rank> operator()(
+      Multivector<LScalar, Frame, rank> const& left,
+      MathematicalParameterPlaceholder) const;
+  template<quantity RScalar>
+  Multivector<Product<Scalar, RScalar>, Frame, rank> operator()(
+      MathematicalParameterPlaceholder,
       Multivector<RScalar, Frame, rank> const& right) const;
 
   // For a form on vectors, `Anticommutator` returns the form on bivectors
@@ -142,10 +154,21 @@ class SymmetricBilinearForm<Scalar, QuantityTag> {
 
   Scalar const& coordinates() const;
 
+  // Application of the form to a pair of quantities (considered as members of a
+  // vector space).
   template<quantity LScalar, quantity RScalar>
   Product<Scalar, Product<LScalar, RScalar>> operator()(
       LScalar const& left,
       RScalar const& right) const;
+
+  // Application of the form to a single multivector, yielding a linear form
+  // which we identify with an element of the quantities vector space.
+  template<quantity LScalar>
+  Product<Scalar, LScalar> operator()(LScalar const& left,
+                                      MathematicalParameterPlaceholder) const;
+  template<quantity RScalar>
+  Product<Scalar, RScalar> operator()(MathematicalParameterPlaceholder,
+                                      RScalar const& right) const;
 
   // Returns a copy of this object.
   SymmetricBilinearForm<Scalar, QuantityTag> Diagonalize() const;
@@ -163,6 +186,8 @@ class SymmetricBilinearForm<Scalar, QuantityTag> {
 };
 
 
+// Additive group.
+
 template<quantity Scalar, typename Tag, typename... Parameters>
 SymmetricBilinearForm<Scalar, Tag, Parameters...> operator+(
     SymmetricBilinearForm<Scalar, Tag, Parameters...> const& right);
@@ -178,6 +203,8 @@ template<quantity Scalar, typename Tag, typename... Parameters>
 SymmetricBilinearForm<Scalar, Tag, Parameters...> operator-(
     SymmetricBilinearForm<Scalar, Tag, Parameters...> const& left,
     SymmetricBilinearForm<Scalar, Tag, Parameters...> const& right);
+
+// Vector space.
 
 template<convertible_to_quantity LScalar,
          quantity RScalar,
@@ -201,7 +228,13 @@ SymmetricBilinearForm<Quotient<LScalar, RScalar>, Tag, Parameters...>
 operator/(SymmetricBilinearForm<LScalar, Tag, Parameters...> const& left,
           RScalar right);
 
-
+// For multivectors, it is convenient to write the application of a form as a
+// product, because that's what is customary in physics.
+// This only works because we identify vectors with linear forms on vectors; the
+// application to a vector should return a linear form.  We also make that
+// identification for quantities and reals (where it is canonical), but because
+// we need to distinguish a symmetric bilinear form on the reals from a real,
+// the `operator*` would be ambiguous.
 template<quantity LScalar, quantity RScalar, typename Frame, int rank>
 Multivector<Product<LScalar, RScalar>, Frame, rank> operator*(
     SymmetricBilinearForm<

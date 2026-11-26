@@ -130,7 +130,27 @@ Product<Scalar, Product<LScalar, RScalar>>
 SymmetricBilinearForm<Scalar, MultivectorTag, Frame, Rank<rank>>::
 operator()(Multivector<LScalar, Frame, rank> const& left,
            Multivector<RScalar, Frame, rank> const& right) const {
-  return InnerProduct(left, *this * right);
+  return InnerProduct(left, (*this)(_, right));
+}
+
+template<quantity Scalar, typename Frame, int rank>
+template<quantity LScalar>
+Multivector<Product<Scalar, LScalar>, Frame, rank>
+SymmetricBilinearForm<Scalar, MultivectorTag, Frame, Rank<rank>>::operator()(
+    Multivector<LScalar, Frame, rank> const& left,
+    MathematicalParameterPlaceholder) const {
+  return Multivector<Product<Scalar, LScalar>, Frame, rank>(
+      matrix_ * left.coordinates());
+}
+
+template<quantity Scalar, typename Frame, int rank>
+template<quantity RScalar>
+Multivector<Product<Scalar, RScalar>, Frame, rank>
+SymmetricBilinearForm<Scalar, MultivectorTag, Frame, Rank<rank>>::operator()(
+    MathematicalParameterPlaceholder,
+    Multivector<RScalar, Frame, rank> const& right) const {
+  return Multivector<Product<Scalar, RScalar>, Frame, rank>(
+      matrix_ * right.coordinates());
 }
 
 template<quantity Scalar, typename Frame, int rank>
@@ -317,6 +337,22 @@ SymmetricBilinearForm<Scalar, QuantityTag>::operator()(
     LScalar const& left,
     RScalar const& right) const {
   return coordinates_ * left * right;
+}
+
+template<quantity Scalar>
+template<quantity LScalar>
+Product<Scalar, LScalar> SymmetricBilinearForm<Scalar, QuantityTag>::operator()(
+    LScalar const& left,
+    MathematicalParameterPlaceholder) const {
+  return coordinates_ * left;
+}
+
+template<quantity Scalar>
+template<quantity RScalar>
+Product<Scalar, RScalar> SymmetricBilinearForm<Scalar, QuantityTag>::operator()(
+    MathematicalParameterPlaceholder,
+    RScalar const& right) const {
+  return coordinates_ * right;
 }
 
 template<quantity Scalar>

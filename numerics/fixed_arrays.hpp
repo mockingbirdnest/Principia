@@ -195,8 +195,17 @@ class FixedMatrix final {
   // `SymmetricBilinearForm`.  Prefer to use `TransposedView` and `operator*`.
   template<affine LScalar, affine RScalar, bool luh, bool ruh>
   Product<Scalar, Product<LScalar, RScalar>>
-      operator()(FixedVector<LScalar, columns_, luh> const& left,
-                 FixedVector<RScalar, rows_, ruh> const& right) const;
+      operator()(FixedVector<LScalar, rows_, luh> const& left,
+                 FixedVector<RScalar, columns_, ruh> const& right) const;
+
+  template<affine LScalar, bool ruh>
+  FixedVector<Product<Scalar, LScalar>, rows_, use_heap> operator()(
+      FixedVector<LScalar, columns_, ruh> const& left,
+      MathematicalParameterPlaceholder) const;
+  template<affine RScalar, bool ruh>
+  FixedVector<Product<Scalar, RScalar>, rows_, use_heap> operator()(
+      MathematicalParameterPlaceholder,
+      FixedVector<RScalar, columns_, ruh> const& right) const;
 
   // Returns a matrix representing the inner product form for the given scalar
   // type.  Present for compatibility with `SymmetricBilinearForm`.
