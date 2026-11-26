@@ -228,6 +228,20 @@ SymmetricBilinearForm<Quotient<LScalar, RScalar>, Tag, Parameters...>
 operator/(SymmetricBilinearForm<LScalar, Tag, Parameters...> const& left,
           RScalar right);
 
+// For multivectors, it is convenient to write the application of a form as a
+// product, because that's what is customary in physics.
+template<quantity LScalar, quantity RScalar, typename Frame, int rank>
+Multivector<Product<LScalar, RScalar>, Frame, rank> operator*(
+    SymmetricBilinearForm<
+        LScalar, MultivectorTag, Frame, Rank<rank>> const& left,
+    Multivector<RScalar, Frame, rank> const& right);
+
+template<quantity LScalar, quantity RScalar, typename Frame, int rank>
+Multivector<Product<LScalar, RScalar>, Frame, rank> operator*(
+    Multivector<LScalar, Frame, rank> const& left,
+    SymmetricBilinearForm<
+        RScalar, MultivectorTag, Frame, Rank<rank>> const& right);
+
 // Solves the system `result * right == left`.  Note that by symmetry, this is
 // also the solution of `right * result == left`.
 template<quantity LScalar, quantity RScalar, typename Frame, int rank>
