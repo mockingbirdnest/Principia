@@ -114,8 +114,8 @@ public class Analyser {
   }
 
   // Returns the using declarations found in `node` and its descendants.  If
-  // `internal_only` is true, internal namespaces are ignored (that is, only the
-  // exported using declarations are returned).
+  // `internal_only` is true, only using declarations from internal namespaces
+  // are returned.
   public static List<UsingDeclaration> FindUsingDeclarations(
       Node node,
       bool internal_only) {
@@ -137,8 +137,8 @@ public class Analyser {
   }
 
   // Returns the using directives found in `node` and its descendants.  If
-  // `internal_only` is true, internal namespaces are ignored (that is, only the
-  // exported using directives are returned).
+  // `internal_only` is true, only using declarations from internal namespaces
+  // are returned.
   public static List<UsingDirective> FindUsingDirectives(
       Node node,
       bool internal_only) {
