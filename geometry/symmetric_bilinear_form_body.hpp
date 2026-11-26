@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "numerics/elementary_functions.hpp"
-#include "quantities/si.hpp"
 
 namespace principia {
 namespace geometry {
@@ -16,7 +15,6 @@ namespace _symmetric_bilinear_form {
 namespace internal {
 
 using namespace principia::numerics::_elementary_functions;
-using namespace principia::quantities::_si;
 
 struct CosSin {
   double cos;
@@ -80,6 +78,15 @@ SymmetricBilinearForm(
   DCHECK_EQ(matrix_(0, 1), matrix_(1, 0));
   DCHECK_EQ(matrix_(0, 2), matrix_(2, 0));
   DCHECK_EQ(matrix_(1, 2), matrix_(2, 1));
+}
+
+template<quantity Scalar, typename Frame, int rank>
+SymmetricBilinearForm<double, MultivectorTag, Frame, Rank<rank>> const&
+SymmetricBilinearForm<Scalar, MultivectorTag, Frame, Rank<rank>>::
+InnerProductForm() {
+  static SymmetricBilinearForm<double, MultivectorTag, Frame, Rank<rank>> const
+      form(R3x3Matrix<double>::Identity());
+  return form;
 }
 
 template<quantity Scalar, typename Frame, int rank>
@@ -263,6 +270,13 @@ SymmetricBilinearForm<Scalar, QuantityTag>::SymmetricBilinearForm(
     Scalar const& coordinates) : coordinates_(coordinates) {}
 
 template<quantity Scalar>
+SymmetricBilinearForm<double, QuantityTag> const&
+SymmetricBilinearForm<Scalar, QuantityTag>::InnerProductForm() {
+  static SymmetricBilinearForm<double, Quotient> const form(1);
+  return form;
+}
+
+template<quantity Scalar>
 SymmetricBilinearForm<Scalar, QuantityTag>&
 SymmetricBilinearForm<Scalar, QuantityTag>::operator+=(
     SymmetricBilinearForm const& right) {
@@ -321,15 +335,6 @@ double SymmetricBilinearForm<Scalar, QuantityTag>::PrincipalAxis() const {
   return 1.0;
 }
 
-
-template<typename Frame, int rank>
-SymmetricBilinearForm<double, MultivectorTag, Frame, Rank<rank>> const&
-InnerProductForm() {
-  static auto const identity =
-      SymmetricBilinearForm<double, MultivectorTag, Frame, Rank<rank>>(
-          R3x3Matrix<double>::Identity());
-  return identity;
-}
 
 template<quantity Scalar, typename Tag, typename... Parameters>
 SymmetricBilinearForm<Scalar, Tag, Parameters...> operator+(
