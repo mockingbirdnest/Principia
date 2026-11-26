@@ -750,18 +750,18 @@ constexpr JulianDateParser::JulianDateParser(std::int64_t const digits,
 
 constexpr JulianDateParser JulianDateParser::ReadToEnd(
     std::string_view const s) {
-    std::int64_t digits = 0;
-    int digit_count = 0;
-    bool has_decimal_mark = false;
-    int  decimal_mark_index = -1;
+  std::int64_t digits = 0;
+  int digit_count = 0;
+  bool has_decimal_mark = false;
+  int decimal_mark_index = -1;
 
-    for (auto it = s.begin(); it != s.end(); ++it) {
-      switch (*it) {
-          case '.':
-            CONSTEXPR_CHECK(!has_decimal_mark);
-            has_decimal_mark = true;
-            decimal_mark_index=it - s.begin();
-            break;
+  for (auto it = s.begin(); it != s.end(); ++it) {
+    switch (*it) {
+      case '.':
+        CONSTEXPR_CHECK(!has_decimal_mark);
+        has_decimal_mark = true;
+        decimal_mark_index = it - s.begin();
+        break;
       case '0': case '1': case '2': case '3': case '4':
       case '5': case '6': case '7': case '8': case '9':
         CONSTEXPR_CHECK(digits <=
@@ -772,9 +772,9 @@ constexpr JulianDateParser JulianDateParser::ReadToEnd(
       default:
         CONSTEXPR_CHECK(false);
         return JulianDateParser{0, 0, 0};
-      }
     }
-    return JulianDateParser{digits, digit_count, decimal_mark_index};
+  }
+  return JulianDateParser{digits, digit_count, decimal_mark_index};
 }
 
 constexpr JulianDate JulianDateParser::ToJD() const {
