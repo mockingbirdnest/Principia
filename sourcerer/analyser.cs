@@ -47,11 +47,13 @@ public class Analyser {
   }
 
   // Returns the list of top-level includes in `file`.
-  public static List<Include> FindIncludes(File file) {
+  public static List<Include> FindIncludes(File file, Node? stop = null) {
     var includes = new List<Include>();
     bool after_cpp_if = false;
     foreach (Node child in file.children) {
-      if (child is PreprocessorDirective cpp) {
+      if (child == stop) {
+        break;
+      } else if (child is PreprocessorDirective cpp) {
         after_cpp_if = cpp.is_if;
       } else if (child is Include inc) {
         includes.Add(inc);
@@ -83,17 +85,15 @@ public class Analyser {
     return innermost_namespaces;
   }
 
-  // Returns the last outermost namespace found in `file`.
-  // TODO(phl): This should probably be changed to return all the outermost
-  // namespaces.
-  public static Namespace? FindLastOutermostNamespace(File file) {
-    Namespace? last_outermost_namespace = null;
+  // Returns the list of outermost namespaces found in `file`.
+  public static List<Namespace> FindOutermostNamespaces(File file) {
+    var outermost_namespaces = new List<Namespace>();
     foreach (Node child in file.children) {
       if (child is Namespace ns) {
-        last_outermost_namespace = ns;
+        outermost_namespaces.Add(ns);
       }
     }
-    return last_outermost_namespace;
+    return outermost_namespaces;
   }
 
   // Returns the legacy internal namespaces found in `node` and it descendants.

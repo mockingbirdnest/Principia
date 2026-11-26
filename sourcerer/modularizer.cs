@@ -94,6 +94,13 @@ class Modularizer {
       FileInfo hpp_file =
           corresponding_header.GetValueOrDefault(body_file, body_file);
 
+      // Only process includes up to the first outermost namespace.  We don't
+      // want to touch the final include (for the body) or includes of generated
+      // code.
+      var outermost_namespaces = FindOutermostNamespaces(parser_file);
+      Namespace? first_namespace =
+          outermost_namespaces.Count > 0 ? outermost_namespaces[0] : null;
+
       Node? last_export_module =
           FixPragmaOnce(parser_file,
                         hpp_file != body_file
@@ -102,7 +109,7 @@ class Modularizer {
                         needs_export_module: false);
 
       // Find all the includes and categorize them.
-      SplitIncludes(FindIncludes(parser_file),
+      SplitIncludes(FindIncludes(parser_file, stop: first_namespace),
                     out List<Include> principia_includes,
                     out List<Include> system_includes,
                     out List<Include> third_party_includes);
@@ -147,10 +154,18 @@ class Modularizer {
         continue;
       }
       Parser.File parser_file = file_info_to_file[hpp_file];
+
+      // Only process includes up to the first outermost namespace.  We don't
+      // want to touch the final include (for the body) or includes of generated
+      // code.
+      var outermost_namespaces = FindOutermostNamespaces(parser_file);
+      Namespace? first_namespace =
+          outermost_namespaces.Count > 0 ? outermost_namespaces[0] : null;
+
       Node? last_export_module =
           FixPragmaOnce(parser_file, hpp_file: null, needs_export_module: true);
 
-      SplitIncludes(FindIncludes(parser_file),
+      SplitIncludes(FindIncludes(parser_file, stop: first_namespace),
                     out List<Include> principia_includes,
                     out List<Include> system_includes,
                     out List<Include> third_party_includes);

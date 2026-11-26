@@ -188,7 +188,9 @@ class Renamespacer {
   }
 
   private static void FixCompatibilityNamespace(Parser.File file) {
-    var last_namespace = FindLastOutermostNamespace(file);
+    var outermost_namespaces = FindOutermostNamespaces(file);
+    var last_namespace =
+        outermost_namespaces.Count > 0 ? outermost_namespaces[^1] : null;
     if (last_namespace == null) {
       // Strange file with no namespace at all, inserting into ::.
       return;
