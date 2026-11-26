@@ -530,13 +530,31 @@ FixedMatrix<Scalar_, rows_, columns_, use_heap>::operator()(
 
 template<affine Scalar_, std::int64_t rows_, std::int64_t columns_,
          bool use_heap>
+FixedMatrix<double, rows_, columns_, use_heap>
+FixedMatrix<Scalar_, rows_, columns_, use_heap>::InnerProductForm()
+  requires(rows_ == columns_) {
+  static auto const m = []() {
+    FixedMatrix<double, rows(), columns(), use_heap> m;
+    for (std::int64_t i = 0; i < rows(); ++i) {
+      m(i, i) = 1;
+    }
+    return m;
+  }();
+  return m;
+}
+
+template<affine Scalar_, std::int64_t rows_, std::int64_t columns_,
+         bool use_heap>
 FixedMatrix<Scalar_, rows_, columns_, use_heap>
 FixedMatrix<Scalar_, rows_, columns_, use_heap>::Identity()
   requires(std::is_arithmetic_v<Scalar_> && rows_ == columns_) {
-  FixedMatrix<Scalar, rows(), columns(), use_heap> m;
-  for (std::int64_t i = 0; i < rows(); ++i) {
-    m(i, i) = 1;
-  }
+  static auto const m = []() {
+    FixedMatrix<Scalar, rows(), columns(), use_heap> m;
+    for (std::int64_t i = 0; i < rows(); ++i) {
+      m(i, i) = 1;
+    }
+    return m;
+  }();
   return m;
 }
 

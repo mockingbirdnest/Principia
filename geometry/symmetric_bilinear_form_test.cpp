@@ -262,7 +262,9 @@ TEST_F(SymmetricBilinearFormTest, AnticommutatorDiagonalization) {
 TEST_F(SymmetricBilinearFormTest, InnerProductForm) {
   Vector<Length, World> const v1({1.0 * Metre, 3.0 * Metre, -1.0 * Metre});
   Vector<double, World> const v2({2.0, 6.0, -5.0});
-  EXPECT_THAT((VectorInnerProductForm<World>()(v1, v2)), Eq(25 * Metre));
+  EXPECT_THAT(
+      (VectorSymmetricBilinearForm<Length, World>::InnerProductForm()(v1, v2)),
+      Eq(25 * Metre));
 }
 
 TEST_F(SymmetricBilinearFormTest, Apply) {

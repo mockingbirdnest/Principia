@@ -207,6 +207,11 @@ class FixedMatrix final {
       MathematicalParameterPlaceholder,
       FixedVector<RScalar, columns_, ruh> const& right) const;
 
+  // Returns a matrix representing the inner product form for the given scalar
+  // type.  Present for compatibility with `SymmetricBilinearForm`.
+  static FixedMatrix<double, rows_, columns_, use_heap> InnerProductForm()
+    requires(rows_ == columns_);
+
   static FixedMatrix Identity()
     requires(std::is_arithmetic_v<Scalar_> && rows_ == columns_);
 
