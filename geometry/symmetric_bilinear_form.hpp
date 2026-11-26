@@ -230,8 +230,11 @@ operator/(SymmetricBilinearForm<LScalar, Tag, Parameters...> const& left,
 
 // For multivectors, it is convenient to write the application of a form as a
 // product, because that's what is customary in physics.
-// This only works because we identify vectors with linear forms on vectors; the application to a vector should return a linear form.
-// We also make that identification for quantities and reals (where it is canonical), but because we need to distinguish a symmetric bilinear form on the reals from a real, the operator* would be ambiguous.
+// This only works because we identify vectors with linear forms on vectors; the
+// application to a vector should return a linear form.  We also make that
+// identification for quantities and reals (where it is canonical), but because
+// we need to distinguish a symmetric bilinear form on the reals from a real,
+// the `operator*` would be ambiguous.
 template<quantity LScalar, quantity RScalar, typename Frame, int rank>
 Multivector<Product<LScalar, RScalar>, Frame, rank> operator*(
     SymmetricBilinearForm<

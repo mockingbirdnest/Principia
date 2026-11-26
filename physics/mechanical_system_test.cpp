@@ -1,6 +1,5 @@
 #include "physics/mechanical_system.hpp"
 
-#include "base/algebra.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/identity.hpp"
@@ -23,7 +22,6 @@ namespace principia {
 namespace physics {
 
 using ::testing::Eq;
-using namespace principia::base::_algebra;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_identity;
@@ -164,8 +162,7 @@ TEST_F(MechanicalSystemTest, RigidTwoCubes) {
            2 * cube_mass * (Pow<2>(2 * cube_side) + Pow<2>(cube_side)) / 12})));
   EXPECT_THAT(
       system_.AngularMomentum(),
-      Eq(system_.InertiaTensor()(_,
-                                 Identity<InertialFrame, SystemFrame>()(ω))));
+      Eq(system_.InertiaTensor() * Identity<InertialFrame, SystemFrame>()(ω)));
 }
 
 TEST_F(MechanicalSystemTest, NonRigidTwoCubes) {
