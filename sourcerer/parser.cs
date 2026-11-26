@@ -78,10 +78,11 @@ public class Parser {
             parent: current,
             ParseUsingDirective(uncommented_line));
       } else if (IsUsingDeclaration(uncommented_line)) {
-        var using_declaration = new UsingDeclaration(
-            line,
-            parent: current,
-            ParseUsingDeclaration(uncommented_line));
+        ParseUsingDeclaration(uncommented_line,
+                              out bool is_exported,
+                              out string full_name);
+        var using_declaration =
+            new UsingDeclaration(line, parent: current, full_name, is_exported);
       } else {
         var text = new Text(line, parent: current);
       }
@@ -499,15 +500,22 @@ public class Parser {
   }
 
   public class UsingDeclaration : Declaration {
-    public UsingDeclaration(Node parent, string full_name) : this(
+    public UsingDeclaration(Node parent,
+                            string full_name,
+                            bool is_exported = false) : this(
         text: null,
         parent,
-        full_name) {}
+        full_name,
+        is_exported) {}
 
-    public UsingDeclaration(string? text, Node parent, string full_name) : base(
+    public UsingDeclaration(string? text,
+                            Node parent,
+                            string full_name,
+                            bool is_exported = false) : base(
         text,
         parent,
         full_name.Split("::")[^1]) {
+      is_exported_ = is_exported;
       this.full_name = full_name;
       string[] segments = full_name.Split("::");
 
@@ -528,15 +536,22 @@ public class Parser {
 
     public override string Cxx() {
       Debug.Assert(must_rewrite, "inconsistent rewrite");
+      string export = is_exported ? "export " : "";
       if (declared_in_namespace == null) {
-        return "using " + full_name + ";";
+        return export + "using " + full_name + ";";
       } else {
-        return "using " + declared_in_namespace.name + "::" + name + ";";
+        return export +
+               "using " +
+               declared_in_namespace.name +
+               "::" +
+               name +
+               ";";
       }
     }
 
     public override void WriteNode(string indent = "") {
       Console.WriteLine(indent +
+                        (is_exported ? "Exported " : "") +
                         "UsingDeclaration " +
                         name +
                         (declared_in_namespace == null
@@ -545,11 +560,21 @@ public class Parser {
     }
 
     public override bool must_rewrite =>
-        declared_in_namespace is { must_rewrite: true };
+        declared_in_namespace is { must_rewrite: true } || text == null;
 
+    public bool is_exported {
+      get => is_exported_;
+      set {
+        if (value != is_exported_) {
+          is_exported_ = value;
+          text = null;
+        }
+      }
+    }
     public string full_name;
     public Namespace? declared_in_namespace;
-  }
+    private bool is_exported_ = false;
+      }
 
   public class UsingDirective : Node {
     public UsingDirective(Node parent, string ns) :
@@ -626,7 +651,9 @@ public class Parser {
   private static bool IsUsingDeclaration(string line) {
     return !IsUsingDirective(line) &&
            (Regex.IsMatch(line, @"^using +[\w:]+;$") ||
-            Regex.IsMatch(line, @"^using +[\w:]+operator.*$"));
+            Regex.IsMatch(line, @"^using +[\w:]+operator.*$") ||
+            Regex.IsMatch(line, @"^export using +[\w:]+;$") ||
+            Regex.IsMatch(line, @"^export using +[\w:]+operator.*$"));
   }
 
   private static bool IsUsingDirective(string line) {
@@ -683,8 +710,13 @@ public class Parser {
     return Regex.Replace(Regex.Replace(line, @"using +", ""), @" +=.*$", "");
   }
 
-  private static string ParseUsingDeclaration(string line) {
-    return Regex.Replace(line, @"using +", "").Replace(";", "");
+  private static void ParseUsingDeclaration(string line,
+                                            out bool is_exported,
+                                            out string full_name) {
+    is_exported = line.StartsWith("export ");
+    full_name =
+        Regex.Replace(line.Replace("export ", ""), @"using +", "").
+            Replace(";", "");
   }
 
   private static string ParseUsingDirective(string line) {

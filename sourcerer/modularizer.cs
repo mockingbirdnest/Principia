@@ -200,6 +200,9 @@ class Modularizer {
       FixIncludes(parser_file, system_includes);
       FixIncludes(parser_file, third_party_includes);
 
+      // Export the non-internal using declarations.
+      FixExportedUsingDeclarations(parser_file);
+
       RewriteFile(hpp_file, parser_file, dry_run);
     }
   }
@@ -225,6 +228,13 @@ class Modularizer {
       }
     }
     return after;
+  }
+
+  private static void FixExportedUsingDeclarations(Parser.File file) {
+    var using_declarations = FindUsingDeclarations(file, internal_only: false);
+    foreach (UsingDeclaration using_declaration in using_declarations) {
+      using_declaration.is_exported = true;
+    }
   }
 
   // Removes include directives for the given headers from the file.
