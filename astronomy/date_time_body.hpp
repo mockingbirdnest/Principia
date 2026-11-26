@@ -430,7 +430,7 @@ class DateParser final {
   //   - at most two hyphens;
   //   - at most one 'W'.
   static constexpr DateParser ReadToEnd(std::string_view s);
-  
+
   // Returns a `Date` corresponding to the string that `*this` describes.
   // Fails if the format is invalid or the string represents an invalid date.
   constexpr Date ToDate(std::optional<Calendar> calendar, bool negative) const;
@@ -719,7 +719,7 @@ class JulianDateParser final {
   // string is not of the form [ddd] or [ddd.fff] or if it has too many digits
   // to fit in a std::int64_t.
   static constexpr JulianDateParser ReadToEnd(std::string_view s);
-  
+
   // Returns a `JulianDate` corresponding to the string that `*this` describes.
   // Fails if the format is invalid.
   constexpr JulianDate ToJD() const;
