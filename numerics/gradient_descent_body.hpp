@@ -250,7 +250,7 @@ absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
       VLOG(1) << "No minimum within search radius at: " << xₖ;
       return absl::Status(termination_condition::NoMinimum, "No minimum found");
     }
-    Difference<Argument> const pₖ = -Hₖ(grad_f_xₖ);
+    Difference<Argument> const pₖ = -Hₖ(ꓸ, grad_f_xₖ);
     if (pₖ.Norm() <= tolerance) {
       VLOG(1) << "Below tolerance at: " << xₖ
               << ", displacement: " << pₖ.Norm();
@@ -279,7 +279,7 @@ absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
     auto const ρ = 1 / sₖyₖ;
     auto const Hₖ₊₁ =
         Hₖ + ρ * ((ρ * Hₖ(yₖ, yₖ) + 1) * SymmetricSquare(sₖ) -
-                  2 * SymmetricProduct(Hₖ(yₖ), sₖ));
+                  2 * SymmetricProduct(Hₖ(ꓸ, yₖ), sₖ));
 
     xₖ = xₖ₊₁;
     grad_f_xₖ = grad_f_xₖ₊₁;

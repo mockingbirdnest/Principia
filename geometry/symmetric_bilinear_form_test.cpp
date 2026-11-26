@@ -182,7 +182,7 @@ TEST_F(SymmetricBilinearFormTest, LinearMap) {
                                         {4,  5,  0}));
   Vector<Length, World> const v({1.0 * Metre, 3.0 * Metre, -1.0 * Metre});
   EXPECT_THAT(
-      f(v),
+      f(ꓸ, v),
       Eq(Vector<Square<Length>, World>({3.0 * Pow<2>(Metre),
                                         -12.0 * Pow<2>(Metre),
                                         19.0 * Pow<2>(Metre)})));
@@ -213,11 +213,11 @@ TEST_F(SymmetricBilinearFormTest, Anticommutator) {
       Eq(Bivector<Square<Length>, World>(
           {11 * Pow<2>(Metre), 26 * Pow<2>(Metre), -9 * Pow<2>(Metre)})));
 
-  EXPECT_THAT(f.Anticommutator()(b), Eq(Anticommutator(f, b)));
+  EXPECT_THAT(f.Anticommutator()(ꓸ, b), Eq(Anticommutator(f, b)));
   EXPECT_THAT(f.Anticommutator()(a, b),
               Eq(InnerProduct(a, Anticommutator(f, b))));
   EXPECT_THAT(Anticommutator(f, Wedge(v, w)),
-              Eq(Wedge(f(v), w) + Wedge(v, f(w))));
+              Eq(Wedge(f(v, ꓸ), w) + Wedge(v, f(ꓸ, w))));
   EXPECT_THAT(f.Anticommutator().AnticommutatorInverse(), Eq(f));
 }
 
@@ -530,7 +530,7 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
             AbsoluteErrorFrom(+0.37170808088366222608, IsNear(2.7e-3_(1))),
             AbsoluteErrorFrom(+0.82530575173550731715, IsNear(9.1e-4_(1)))));
     EXPECT_THAT(
-        f(f.PrincipalAxis()),
+        f(ꓸ, f.PrincipalAxis()),
         AlmostEquals(f_eigensystem.form.coordinates()(2, 2) * f.PrincipalAxis(),
                      4));
   }
@@ -583,7 +583,7 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
             AbsoluteErrorFrom(+0.58834840541455209490, IsNear(0.47_(1))),
             AbsoluteErrorFrom(-0.39223227027636806515, IsNear(1.4_(1)))));
     EXPECT_THAT(
-        f(f.PrincipalAxis()),
+        f(ꓸ, f.PrincipalAxis()),
         AlmostEquals(f_eigensystem.form.coordinates()(2, 2) * f.PrincipalAxis(),
                      2));
   }
@@ -623,7 +623,7 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
                               AlmostEquals(+0.70710678118654752440, 0),
                               AlmostEquals(+0.70710678118654752440, 1)));
     EXPECT_THAT(
-        f(f.PrincipalAxis()),
+        f(ꓸ, f.PrincipalAxis()),
         AlmostEquals(f_eigensystem.form.coordinates()(2, 2) * f.PrincipalAxis(),
                      1));
   }
@@ -657,7 +657,7 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
     EXPECT_THAT(f.PrincipalAxis(),
                 Componentwise(0, 1, VanishesBefore(1, 1)));
     EXPECT_THAT(
-        f(f.PrincipalAxis()),
+        f(ꓸ, f.PrincipalAxis()),
         AlmostEquals(f_eigensystem.form.coordinates()(2, 2) * f.PrincipalAxis(),
                      1));
   }
