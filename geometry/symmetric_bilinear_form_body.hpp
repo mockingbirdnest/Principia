@@ -292,7 +292,7 @@ SymmetricBilinearForm<Scalar, QuantityTag>::SymmetricBilinearForm(
 template<quantity Scalar>
 SymmetricBilinearForm<double, QuantityTag> const&
 SymmetricBilinearForm<Scalar, QuantityTag>::InnerProductForm() {
-  static SymmetricBilinearForm<double, Quotient> const form(1);
+  static SymmetricBilinearForm<double, QuantityTag> const form(1);
   return form;
 }
 
