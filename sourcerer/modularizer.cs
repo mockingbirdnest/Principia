@@ -89,12 +89,17 @@ class Modularizer {
         continue;
       }
       Parser.File parser_file = file_info_to_file[body_file];
-      Node? last_export_module =
-          FixPragmaOnce(parser_file, needs_export_module: false);
 
       // The `hpp_file` here might be this file if it's a test or a benchmark.
       FileInfo hpp_file =
           corresponding_header.GetValueOrDefault(body_file, body_file);
+
+      Node? last_export_module =
+          FixPragmaOnce(parser_file,
+                        hpp_file != body_file
+                            ? file_info_to_file[hpp_file]
+                            : null,
+                        needs_export_module: false);
 
       // Find all the includes and categorize them.
       SplitIncludes(FindIncludes(parser_file),
@@ -143,7 +148,7 @@ class Modularizer {
       }
       Parser.File parser_file = file_info_to_file[hpp_file];
       Node? last_export_module =
-          FixPragmaOnce(parser_file, needs_export_module: true);
+          FixPragmaOnce(parser_file, hpp_file: null, needs_export_module: true);
 
       SplitIncludes(FindIncludes(parser_file),
                     out List<Include> principia_includes,
@@ -290,9 +295,10 @@ class Modularizer {
   // Removes `#pragma once` directives from the file and insert an
   // `export module` directive in its place if needed.
   private static Node? FixPragmaOnce(Parser.File file,
+                                     Parser.File? hpp_file,
                                      bool needs_export_module) {
-    // Collect the pragmas to fix.
-    var pragma_onces = new List<PreprocessorDirective>();
+        // Collect the pragmas to fix.
+        var pragma_onces = new List<PreprocessorDirective>();
     var blank_lines_after_pragma_once = new List<Text>();
     bool right_after_pragma_once = false;
     foreach (Node n in file.children) {
@@ -313,9 +319,15 @@ class Modularizer {
         int position_in_parent = po.position_in_parent;
         node = new ExportModule(parent: null, name: file.file_module_full_name);
         file.InsertChild(position_in_parent, node);
+      } else if (hpp_file != null) {
+        int position_in_parent = po.position_in_parent;
+        node =
+            new Text(text: "// Body of link:" + hpp_file.file_link_name,
+                     parent: null);
+        file.InsertChild(position_in_parent, node);
       } else {
-        // If the `#pragma once` is not replaced by an `export module`, remove
-        // the blank lines after it.
+        // If the `#pragma once` is not replaced by an `export module` or a
+        // link, remove the blank lines after it.
         foreach (Text blank in blank_lines_after_pragma_once) {
           file.RemoveChild(blank);
         }

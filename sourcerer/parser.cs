@@ -252,6 +252,8 @@ public class Parser {
           file_info.Directory!.Name +
           "." +
           file_module_simple_name;
+      file_link_name =
+          Regex.Replace(file_info.FullName, @"^.*[Pp]rincipia\\", "");
     }
 
     public override void WriteNode(string indent = "") {
@@ -259,6 +261,7 @@ public class Parser {
     }
 
     public FileInfo file_info { get; }
+    public string file_link_name { get; }
     public string file_namespace_full_name { get; }
     public string file_namespace_simple_name { get; }
     public string file_module_full_name { get; }
