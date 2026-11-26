@@ -3,6 +3,7 @@ export module principia.base.pull_serializer;
 import std;
 
 import "absl/base/thread_annotations.h";
+import "absl/log/check.h";
 import "absl/synchronization/mutex.h";
 import "gipfeli/compression.h";
 import "google/protobuf/io/zero_copy_stream.h";
@@ -10,6 +11,7 @@ import "google/protobuf/message.h";
 
 import principia.base.array;
 import principia.base.not_null;
+import principia.base.sink_source;
 
 namespace principia {
 namespace base {
@@ -21,11 +23,12 @@ using namespace principia::base::_not_null;
 
 using ::google::compression::Compressor;
 
+export {
 // An output stream based on an array that delegates to a function the handling
 // of the case where one array is full.  It calls the `on_full` function passed
 // at construction and proceeds with filling the array returned by that
 // function.
-export class DelegatingArrayOutputStream
+class DelegatingArrayOutputStream
     : public google::protobuf::io::ZeroCopyOutputStream {
  public:
   // The stream is supported by `bytes.data` which has size `bytes.size`.  Once
@@ -137,6 +140,8 @@ class PullSerializer final {
   // filled by the stream.
   std::queue<not_null<std::uint8_t*>> free_ ABSL_GUARDED_BY(lock_);
 };
+
+}
 
 }  // namespace internal
 

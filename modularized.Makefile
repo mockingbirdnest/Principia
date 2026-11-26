@@ -7,11 +7,17 @@ clean:
 	rm -rf bin/ # Binaries.
 
 PRINCIPIA_MODULE_INTERFACE_UNITS := $(wildcard */*.ixx)
-PRINCIPIA_PRECOMPILED_HEADERS := phu/base/macros.pcm
+PRINCIPIA_PRECOMPILED_HEADERS := phu/base/macros.pcm 
+SERIALIZATION_HEADERS := $(wildcard serialization/*.pb.h)
+SERIALIZATION_PRECOMPILED_HEADERS := $(addprefix phu/, $(SERIALIZATION_HEADERS:.h=.pcm))
+SERIALIZATION_TRANSLATION_UNITS := $(wildcard serialization/*.pb.cc)
+SERIALIZATION_OBJECTS := $(addprefix obj/, $(SERIALIZATION_TRANSLATION_UNITS:.cc=.o))
 ABSL_HEADERS := $(wildcard deps/abseil-cpp/install/include/absl/*/*.h)
 ABSL_PRECOMPILED_HEADERS := $(ABSL_HEADERS:deps/abseil-cpp/install/include/%.h=phu/%.pcm)
 GIPFELI_HEADERS := $(wildcard deps/gipfeli/include/*/*.h)
 GIPFELI_PRECOMPILED_HEADERS := $(GIPFELI_HEADERS:deps/gipfeli/include/%.h=phu/%.pcm)
+PROTOBUF_HEADERS := $(wildcard deps/protobuf/src/google/protobuf/*.h) $(wildcard deps/protobuf/src/google/protobuf/*/*.h)
+PROTOBUF_PRECOMPILED_HEADERS := $(PROTOBUF_HEADERS:deps/protobuf/src/%.h=phu/%.pcm)
 GMOCK_PRECOMPILED_HEADERS := phu/gmock/gmock.pcm
 GTEST_PRECOMPILED_HEADERS := phu/gtest/gtest.pcm
 
@@ -50,6 +56,86 @@ obj/base/not_null.o: \
 	pmu/principia/base/not_constructible.pcm \
 	pmu/principia/base/traits.pcm 
 
+obj/base/pull_serializer_test.o: \
+	base/pull_serializer_test.cpp \
+	pmu/std.pcm \
+	phu/absl/log/check.pcm \
+	phu/absl/log/log.pcm \
+	phu/gmock/gmock.pcm \
+	phu/gtest/gtest.pcm \
+	phu/gipfeli/gipfeli.pcm \
+	phu/gipfeli/compression.pcm \
+	phu/serialization/geometry.pb.pcm \
+	phu/serialization/quantities.pb.pcm \
+	phu/serialization/physics.pb.pcm \
+	pmu/principia/base/array.pcm \
+	pmu/principia/base/not_null.pcm \
+	pmu/principia/base/not_constructible.pcm \
+	pmu/principia/base/traits.pcm \
+	pmu/principia/base/sink_source.pcm \
+	pmu/principia/base/pull_serializer.pcm
+
+pmu/principia/base/pull_serializer.pcm: \
+	phu/absl/log/check.pcm \
+	phu/absl/base/thread_annotations.pcm \
+	phu/absl/synchronization/mutex.pcm \
+	phu/gipfeli/compression.pcm \
+	phu/google/protobuf/io/zero_copy_stream.pcm \
+	phu/google/protobuf/message.pcm \
+	pmu/std.pcm \
+	pmu/principia/base/not_null.pcm \
+	pmu/principia/base/not_constructible.pcm \
+	pmu/principia/base/traits.pcm \
+	pmu/principia/base/sink_source.pcm \
+	pmu/principia/base/array.pcm
+
+pmu/principia/base/sink_source.pcm: \
+	pmu/std.pcm \
+	phu/gipfeli/sinksource.pcm \
+	pmu/principia/base/array.pcm
+
+pmu/principia/base/array.pcm: \
+	phu/absl/log/check.pcm \
+	phu/absl/log/log.pcm \
+	pmu/std.pcm
+bin/base/not_null_test: \
+	obj/base/not_null_test.o\
+	obj/gmock_main.o\
+	obj/gmock-all.o\
+	obj/gtest-all.o\
+	obj/base/not_null.o
+
+obj/base/array.o: \
+	pmu/principia/base/array.pcm \
+	pmu/std.pcm
+
+obj/base/pull_serializer.o: \
+	pmu/principia/base/pull_serializer.pcm \
+	pmu/principia/base/not_constructible.pcm \
+	pmu/principia/base/not_null.pcm \
+	pmu/principia/base/traits.pcm \
+	pmu/principia/base/array.pcm \
+	pmu/principia/base/sink_source.pcm \
+	pmu/std.pcm
+
+obj/base/sink_source.o: \
+	pmu/principia/base/sink_source.pcm \
+	pmu/principia/base/array.pcm \
+	pmu/std.pcm
+
+bin/base/pull_serializer_test: \
+	obj/base/pull_serializer_test.o \
+	obj/base/array.o \
+	obj/gmock_main.o \
+	obj/gmock-all.o \
+	obj/gtest-all.o \
+	obj/base/pull_serializer.o \
+	obj/base/sink_source.o \
+	obj/base/not_null.o \
+	$(SERIALIZATION_OBJECTS)
+
+$(SERIALIZATION_OBJECTS): obj/%.o: %.cc
+
 pmu/std.pcm: /usr/lib/llvm-23/share/libc++/v1/std.cppm
 	@mkdir -p $(@D)
 	clang++-23 $(ARGS) --precompile $< -o $@
@@ -68,10 +154,12 @@ pmu/principia/%.pcm: %.ixx
 		--precompile -xc++-module $< -o $@
 
 $(PRINCIPIA_PRECOMPILED_HEADERS): phu/%.pcm: %.hpp
+$(SERIALIZATION_PRECOMPILED_HEADERS): phu/%.pcm: %.h
 $(ABSL_PRECOMPILED_HEADERS): phu/%.pcm: deps/abseil-cpp/install/include/%.h
 $(GIPFELI_PRECOMPILED_HEADERS): phu/%.pcm: deps/gipfeli/include/%.h
 $(GMOCK_PRECOMPILED_HEADERS): phu/%.pcm: deps/googletest/googlemock/include/%.h
 $(GTEST_PRECOMPILED_HEADERS): phu/%.pcm: deps/googletest/googletest/include/%.h
+$(PROTOBUF_PRECOMPILED_HEADERS): phu/%.pcm: deps/protobuf/src/%.h
 
 obj/gmock_main.o: deps/googletest/googlemock/src/gmock_main.cc
 	clang++-23 $(ARGS) --compile $< -o $@
@@ -88,9 +176,12 @@ obj/%.o:
 		$(foreach module, $(filter pmu/%.pcm, $^), -fmodule-file=$(subst /,.,$(module:pmu/%.pcm=%))=$(module)) \
 		--compile $< -o $@
 
-bin/base/not_null_test: obj/base/not_null_test.o obj/gmock_main.o obj/gmock-all.o obj/gtest-all.o obj/base/not_null.o
+bin/%: obj/%.o
 	@mkdir -p $(@D)
-	clang++-23 $(ARGS) $^ -Wl,--start-group deps/abseil-cpp/install/lib/libabsl_*.a -Wl,--end-group deps/re2/libre2.a -o $@
-bin/base/pull_serializer_test: obj/base/pull_serializer_test.o obj/gmock_main.o obj/gmock-all.o obj/gtest-all.o obj/base/not_null.o
-	@mkdir -p $(@D)
-	clang++-23 $(ARGS) $^ -Wl,--start-group deps/abseil-cpp/install/lib/libabsl_*.a -Wl,--end-group deps/re2/libre2.a -o $@
+	clang++-23 $(ARGS) $^ \
+		deps/protobuf/libprotobuf.a \
+		deps/protobuf/third_party/utf8_range/libutf8*.a \
+		deps/gipfeli/libgipfeli.a \
+		-Wl,--start-group deps/abseil-cpp/install/lib/libabsl_*.a -Wl,--end-group \
+		deps/re2/libre2.a \
+		-o $@

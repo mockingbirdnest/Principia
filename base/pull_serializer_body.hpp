@@ -1,9 +1,5 @@
 // Body of link:base/pull_serializer.ixx
 
-import "absl/log/check.h";
-
-import principia.base.sink_source;
-
 namespace principia {
 namespace base {
 namespace _pull_serializer {
