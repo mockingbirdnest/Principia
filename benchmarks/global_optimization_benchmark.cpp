@@ -148,9 +148,11 @@ class GlobalOptimizationBenchmark : public benchmark::Fixture {
     Instant const t_max = std::min(reference.t_max(), trajectory.t_max());
 
     auto const f = [&](Instant const& t) {
-      Position<Frame> const reference_position = reference.EvaluatePosition(t);
+      Instant const t_clamped = std::min(std::max(t, t_min), t_max);
+      Position<Frame> const reference_position =
+          reference.EvaluatePosition(t_clamped);
       Position<Frame> const trajectory_position =
-          trajectory.EvaluatePosition(t);
+          trajectory.EvaluatePosition(t_clamped);
       Displacement<Frame> const displacement =
           trajectory_position - reference_position;
       return displacement.Norm²();
