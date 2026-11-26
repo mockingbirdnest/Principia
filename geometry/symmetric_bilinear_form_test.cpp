@@ -186,6 +186,11 @@ TEST_F(SymmetricBilinearFormTest, LinearMap) {
       Eq(Vector<Square<Length>, World>({3.0 * Pow<2>(Metre),
                                         -12.0 * Pow<2>(Metre),
                                         19.0 * Pow<2>(Metre)})));
+  EXPECT_THAT(
+      f(v, ꓸ),
+      Eq(Vector<Square<Length>, World>({3.0 * Pow<2>(Metre),
+                                        -12.0 * Pow<2>(Metre),
+                                        19.0 * Pow<2>(Metre)})));
 }
 
 TEST_F(SymmetricBilinearFormTest, SymmetricProduct) {
