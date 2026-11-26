@@ -19,7 +19,7 @@ using namespace principia::geometry::_symmetric_bilinear_form;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::quantities::_concepts;
 
-template<typename Scalar, typename S, int s, bool uh>
+template<homogeneous_field Scalar, typename S, int s, bool uh>
 struct Generator<Scalar, FixedVector<S, s, uh>> {
   using Gradient = FixedVector<Quotient<Scalar, S>, s, uh>;
   using InverseHessian = FixedMatrix<Quotient<Square<S>, Scalar>, s, s, uh>;
@@ -32,14 +32,15 @@ struct Generator<Scalar, Vector<S, F>> {
       VectorSymmetricBilinearForm<Quotient<Square<S>, Scalar>, F>;
 };
 
-template<typename Scalar, quantity Q>
+template<homogeneous_field Scalar, homogeneous_euclidean_space<Scalar> Q>
+  requires(quantity<Q>)
 struct Generator<Scalar, Q> {
   using Gradient = Quotient<Scalar, Q>;
   using InverseHessian =
       QuantitySymmetricBilinearForm<Quotient<Square<Q>, Scalar>>;
 };
 
-template<typename Scalar, typename V>
+template<homogeneous_field Scalar, typename V>
 struct Generator<Scalar, Point<V>> {
   using Gradient = typename Generator<Scalar, V>::Gradient;
   using InverseHessian = typename Generator<Scalar, V>::InverseHessian;
