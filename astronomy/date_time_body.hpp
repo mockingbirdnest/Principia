@@ -587,15 +587,6 @@ class TimeParser final {
   //   - at most two colons;
   //   - at most one decimal mark ('.' or ',').
   static constexpr TimeParser ReadToEnd(std::string_view s);
-  static constexpr TimeParser ReadToEnd(std::string_view s,
-                                        std::string_view::const_iterator it,
-                                        std::int64_t digits,
-                                        int digit_count,
-                                        int colons,
-                                        int first_colon_index,
-                                        int second_colon_index,
-                                        bool has_decimal_mark,
-                                        int decimal_mark_index);
 
   // Returns a `TimeOfDay` corresponding to the string that `*this` describes.
   // Fails if the format is invalid or the string represents an invalid time.
@@ -728,14 +719,7 @@ class JulianDateParser final {
   // string is not of the form [ddd] or [ddd.fff] or if it has too many digits
   // to fit in a std::int64_t.
   static constexpr JulianDateParser ReadToEnd(std::string_view s);
-  static constexpr JulianDateParser ReadToEnd(
-      std::string_view s,
-      std::string_view::const_iterator it,
-      std::int64_t digits,
-      int digit_count,
-      bool has_decimal_mark,
-      int decimal_mark_index);
-
+  
   // Returns a `JulianDate` corresponding to the string that `*this` describes.
   // Fails if the format is invalid.
   constexpr JulianDate ToJD() const;
@@ -766,49 +750,31 @@ constexpr JulianDateParser::JulianDateParser(std::int64_t const digits,
 
 constexpr JulianDateParser JulianDateParser::ReadToEnd(
     std::string_view const s) {
-  return ReadToEnd(s, s.begin(),
-                   /*digits=*/0,
-                   /*digit_count*/ 0,
-                   /*has_decimal_mark=*/false,
-                   /*decimal_mark_index=*/-1);
-}
+    std::int64_t digits = 0;
+    int digit_count = 0;
+    bool has_decimal_mark = false;
+    int  decimal_mark_index = -1;
 
-constexpr JulianDateParser JulianDateParser::ReadToEnd(
-    std::string_view const s,
-    std::string_view::const_iterator const it,
-    std::int64_t const digits,
-    int const digit_count,
-    bool const has_decimal_mark,
-    int const decimal_mark_index) {
-  if (it == s.end()) {
-    return JulianDateParser(digits,
-                            digit_count,
-                            decimal_mark_index);
-  } else {
-    switch (*it) {
-      case '.':
-        CONSTEXPR_CHECK(!has_decimal_mark);
-        return ReadToEnd(s,
-                         std::next(it),
-                         digits,
-                         digit_count,
-                         /*has_decimal_mark=*/true,
-                         /*decimal_mark_index=*/it - s.begin());
+    for (auto it = s.begin(); it != s.end(); ++it) {
+      switch (*it) {
+          case '.':
+            CONSTEXPR_CHECK(!has_decimal_mark);
+            has_decimal_mark = true;
+            decimal_mark_index=it - s.begin();
+            break;
       case '0': case '1': case '2': case '3': case '4':
       case '5': case '6': case '7': case '8': case '9':
         CONSTEXPR_CHECK(digits <=
                         std::numeric_limits<std::int64_t>::max() / 10 - 9);
-        return ReadToEnd(s,
-                         std::next(it),
-                         digits * 10 + *it - '0',
-                         digit_count + 1,
-                         has_decimal_mark,
-                         decimal_mark_index);
+        digits = digits * 10 + *it - '0';
+        ++digit_count + 1;
+        break;
       default:
         CONSTEXPR_CHECK(false);
         return JulianDateParser{0, 0, 0};
+      }
     }
-  }
+    return JulianDateParser{digits, digit_count, decimal_mark_index};
 }
 
 constexpr JulianDate JulianDateParser::ToJD() const {
