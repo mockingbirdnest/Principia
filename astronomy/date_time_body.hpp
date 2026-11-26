@@ -403,79 +403,6 @@ constexpr JulianDate::JulianDate(std::int64_t day,
   CONSTEXPR_CHECK(fraction_numerator < fraction_denominator);
 }
 
-// Parsing utilities.
-
-constexpr bool contains(char const* const str,
-                        std::size_t const size,
-                        char const c) {
-  return size > 0 && (str[0] == c || contains(str + 1, size - 1, c));
-}
-
-constexpr int index_of(char const* const str,
-                       std::size_t const size,
-                       char const c) {
-  CONSTEXPR_CHECK(size > 0);
-  return str[0] == c ? 0 : (index_of(str + 1, size - 1, c) + 1);
-}
-
-constexpr bool starts_with(char const* const str,
-                           std::size_t const size,
-                           char const* const prefix_str,
-                           std::size_t const prefix_size) {
-  CONSTEXPR_CHECK(size > 0);
-  CONSTEXPR_CHECK(prefix_size > 0);
-  return str[0] == prefix_str[0] &&
-         (prefix_size == 1 ||
-          (size > 1 &&
-           starts_with(str + 1, size - 1, prefix_str + 1, prefix_size - 1)));
-}
-
-class CStringIterator final {
- public:
-  constexpr CStringIterator(char const* str, std::size_t size);
-
-  constexpr bool at_end() const;
-  constexpr CStringIterator next() const;
-  constexpr int index() const;
-  constexpr char const& operator*() const;
-
- private:
-  constexpr CStringIterator(char const* str, char const* end, char const* it);
-
-  char const* const str_;
-  char const* const end_;
-  char const* const it_;
-};
-
-constexpr CStringIterator::CStringIterator(char const* const str,
-                                           std::size_t const size)
-    : str_(str), end_(str + size), it_(str) {}
-
-constexpr bool CStringIterator::at_end() const {
-  return it_ == end_;
-}
-
-constexpr CStringIterator CStringIterator::next() const {
-  CONSTEXPR_CHECK(!at_end());
-  return CStringIterator(str_, end_, it_ + 1);
-}
-
-constexpr int CStringIterator::index() const {
-  return it_ - str_;
-}
-
-constexpr char const& CStringIterator::operator*() const {
-  CONSTEXPR_CHECK(!at_end());
-  return *it_;
-}
-
-constexpr CStringIterator::CStringIterator(char const* const str,
-                                           char const* const end,
-                                           char const* const it)
-    : str_(str),
-      end_(end),
-      it_(it) {}
-
 // Date parsing.
 
 // A `DateParser` contains information about a string necessary to interpret it
@@ -486,7 +413,7 @@ class DateParser final {
   // Fails unless `str` is a date representation of one of the following forms:
   // [YYYY-MM-DD], [YYYYMMDD], [YYYY-Www-D], [YYYYWwwD], [YYYY-DDD], [YYYYDDD],
   // with an optional prefix [J] or [G] and an optional sign.
-  static constexpr Date Parse(char const* str, std::size_t size);
+  static constexpr Date Parse(std::string_view s);
 
  private:
   constexpr DateParser(std::int64_t digits,
@@ -502,9 +429,9 @@ class DateParser final {
   //   - any number of decimal digits;
   //   - at most two hyphens;
   //   - at most one 'W'.
-  static constexpr DateParser ReadToEnd(char const* str,
-                                        std::size_t size);
-  static constexpr DateParser ReadToEnd(CStringIterator str,
+  static constexpr DateParser ReadToEnd(std::string_view s);
+  static constexpr DateParser ReadToEnd(std::string_view s,
+                                        std::string_view::const_iterator it,
                                         std::int64_t digits,
                                         int digit_count,
                                         int hyphens,
@@ -533,21 +460,20 @@ class DateParser final {
   int const w_index_;
 };
 
-constexpr Date DateParser::Parse(char const* str,
-                                 std::size_t size) {
+constexpr Date DateParser::Parse(std::string_view const s) {
   std::optional<Calendar> calendar;
-  if (str[0] == 'J' || str[0] == 'G') {
-    calendar = static_cast<Calendar>(str[0]);
-    ++str;
-    --size;
+  std::string_view tail = s;
+
+  if (tail[0] == 'J' || tail[0] == 'G') {
+    calendar = static_cast<Calendar>(tail[0]);
+    tail.remove_prefix(1);
   }
   bool negative = false;
-  if (str[0] == '+' || str[0] == '-') {
-    negative = str[0] == '-';
-    ++str;
-    --size;
+  if (tail[0] == '+' || tail[0] == '-') {
+    negative = tail[0] == '-';
+    tail.remove_prefix(1);
   }
-  return ReadToEnd(str, size).ToDate(calendar, negative);
+  return ReadToEnd(tail).ToDate(calendar, negative);
 }
 
 constexpr DateParser::DateParser(std::int64_t const digits,
@@ -565,9 +491,8 @@ constexpr DateParser::DateParser(std::int64_t const digits,
       has_w_(has_w),
       w_index_(w_index) {}
 
-constexpr DateParser DateParser::ReadToEnd(char const* const str,
-                                           std::size_t const size) {
-  return ReadToEnd(CStringIterator(str, size),
+constexpr DateParser DateParser::ReadToEnd(std::string_view s) {
+  return ReadToEnd(s, s.begin(),
                    /*digits=*/0,
                    /*digit_count=*/0,
                    /*hyphens=*/0,
@@ -577,15 +502,17 @@ constexpr DateParser DateParser::ReadToEnd(char const* const str,
                    /*w_index=*/-1);
 }
 
-constexpr DateParser DateParser::ReadToEnd(CStringIterator const str,
-                                           std::int64_t const digits,
-                                           int const digit_count,
-                                           int const hyphens,
-                                           int const first_hyphen_index,
-                                           int const second_hyphen_index,
-                                           bool const has_w,
-                                           int const w_index) {
-  if (str.at_end()) {
+constexpr DateParser DateParser::ReadToEnd(
+    std::string_view const s,
+    std::string_view::const_iterator const it,
+    std::int64_t const digits,
+    int const digit_count,
+    int const hyphens,
+    int const first_hyphen_index,
+    int const second_hyphen_index,
+    bool const has_w,
+    int const w_index) {
+  if (it == s.end()) {
     return DateParser{digits,
                       digit_count,
                       hyphens,
@@ -594,42 +521,46 @@ constexpr DateParser DateParser::ReadToEnd(CStringIterator const str,
                       has_w,
                       w_index};
   } else {
-    switch (*str) {
+    switch (*it) {
       case '-':
         CONSTEXPR_CHECK(hyphens < 2);
         if (hyphens == 0) {
-          return ReadToEnd(str.next(),
+          return ReadToEnd(s,
+                           std::next(it),
                            digits,
                            digit_count,
                            hyphens + 1,
-                           /*first_hyphen_index=*/str.index(),
+                           /*first_hyphen_index=*/it - s.begin(),
                            second_hyphen_index,
                            has_w,
                            w_index);
         } else {
-          return ReadToEnd(str.next(),
+          return ReadToEnd(s,
+                           std::next(it),
                            digits,
                            digit_count,
                            hyphens + 1,
                            first_hyphen_index,
-                           /*second_hyphen_index=*/str.index(),
+                           /*second_hyphen_index=*/it - s.begin(),
                            has_w,
                            w_index);
         }
       case 'W':
         CONSTEXPR_CHECK(!has_w);
-        return ReadToEnd(str.next(),
+        return ReadToEnd(s,
+                         std::next(it),
                          digits,
                          digit_count,
                          hyphens,
                          first_hyphen_index,
                          second_hyphen_index,
                          /*has_w=*/true,
-                         /*w_index=*/str.index());
+                         /*w_index=*/it - s.begin());
       case '0': case '1': case '2': case '3': case '4':
       case '5': case '6': case '7': case '8': case '9':
-        return ReadToEnd(str.next(),
-                         digits * 10 + *str - '0',
+        return ReadToEnd(s,
+                         std::next(it),
+                         digits * 10 + *it - '0',
                          digit_count + 1,
                          hyphens,
                          first_hyphen_index,
@@ -672,7 +603,7 @@ constexpr Date DateParser::ToDate(std::optional<Calendar> const calendar,
 }
 
 constexpr Date Date::Parse(std::string_view const s) {
-  return DateParser::Parse(s.data(), s.size());
+  return DateParser::Parse(s);
 }
 
 // TimeOfDay parsing.
@@ -685,7 +616,7 @@ class TimeParser final {
   // Fails unless `str` is a valid time representation of one of the following
   // forms: [hh:mm:ss], [hhmmss], [hh:mm:ss.ss̲], [hh:mm:ss,ss̲], [hhmmss.ss̲],
   // [hhmmss,ss̲], with at most three digits after the decimal mark.
-  static constexpr TimeOfDay Parse(char const* str, std::size_t size);
+  static constexpr TimeOfDay Parse(std::string_view s);
 
  private:
   constexpr TimeParser(std::int64_t digits,
@@ -702,9 +633,9 @@ class TimeParser final {
   //   - any number of decimal digits;
   //   - at most two colons;
   //   - at most one decimal mark ('.' or ',').
-  static constexpr TimeParser ReadToEnd(char const* str,
-                                        std::size_t size);
-  static constexpr TimeParser ReadToEnd(CStringIterator str,
+  static constexpr TimeParser ReadToEnd(std::string_view s);
+  static constexpr TimeParser ReadToEnd(std::string_view s,
+                                        std::string_view::const_iterator it,
                                         std::int64_t digits,
                                         int digit_count,
                                         int colons,
@@ -733,9 +664,8 @@ class TimeParser final {
   int const decimal_mark_index_;
 };
 
-constexpr TimeOfDay TimeParser::Parse(char const* const str,
-                                 std::size_t const size) {
-  return ReadToEnd(str, size).ToTime();
+constexpr TimeOfDay TimeParser::Parse(std::string_view const s) {
+  return ReadToEnd(s).ToTime();
 }
 
 constexpr TimeParser::TimeParser(std::int64_t const digits,
@@ -753,9 +683,8 @@ constexpr TimeParser::TimeParser(std::int64_t const digits,
       has_decimal_mark_(has_decimal_mark),
       decimal_mark_index_(decimal_mark_index) {}
 
-constexpr TimeParser TimeParser::ReadToEnd(char const* const str,
-                                           std::size_t const size) {
-  return ReadToEnd(CStringIterator(str, size),
+constexpr TimeParser TimeParser::ReadToEnd(std::string_view const s) {
+  return ReadToEnd(s, s.begin(),
                    /*digits=*/0,
                    /*digit_count*/ 0,
                    /*colons=*/0,
@@ -765,15 +694,17 @@ constexpr TimeParser TimeParser::ReadToEnd(char const* const str,
                    /*decimal_mark_index=*/-1);
 }
 
-constexpr TimeParser TimeParser::ReadToEnd(CStringIterator const str,
-                                           std::int64_t const digits,
-                                           int const digit_count,
-                                           int const colons,
-                                           int const first_colon_index,
-                                           int const second_colon_index,
-                                           bool const has_decimal_mark,
-                                           int const decimal_mark_index) {
-  if (str.at_end()) {
+constexpr TimeParser TimeParser::ReadToEnd(
+    std::string_view const s,
+    std::string_view::const_iterator const it,
+    std::int64_t const digits,
+    int const digit_count,
+    int const colons,
+    int const first_colon_index,
+    int const second_colon_index,
+    bool const has_decimal_mark,
+    int const decimal_mark_index) {
+  if (it == s.end()) {
     return TimeParser(digits,
                       digit_count,
                       colons,
@@ -782,43 +713,47 @@ constexpr TimeParser TimeParser::ReadToEnd(CStringIterator const str,
                       has_decimal_mark,
                       decimal_mark_index);
   } else {
-    switch (*str) {
+    switch (*it) {
       case ':':
         CONSTEXPR_CHECK(colons < 2);
         if (colons == 0) {
-          return ReadToEnd(str.next(),
+          return ReadToEnd(s,
+                           std::next(it),
                            digits,
                            digit_count,
                            colons + 1,
-                           /*first_colon_index=*/str.index(),
+                           /*first_colon_index=*/it - s.begin(),
                            second_colon_index,
                            has_decimal_mark,
                            decimal_mark_index);
         } else {
-          return ReadToEnd(str.next(),
+          return ReadToEnd(s,
+                           std::next(it),
                            digits,
                            digit_count,
                            colons + 1,
                            first_colon_index,
-                           /*second_colon_index=*/str.index(),
+                           /*second_colon_index=*/it - s.begin(),
                            has_decimal_mark,
                            decimal_mark_index);
         }
       case ',':
       case '.':
         CONSTEXPR_CHECK(!has_decimal_mark);
-        return ReadToEnd(str.next(),
+        return ReadToEnd(s,
+                         std::next(it),
                          digits,
                          digit_count,
                          colons,
                          first_colon_index,
                          second_colon_index,
                          /*has_decimal_mark=*/true,
-                         /*decimal_mark_index=*/str.index());
+                         /*decimal_mark_index=*/it - s.begin());
       case '0': case '1': case '2': case '3': case '4':
       case '5': case '6': case '7': case '8': case '9':
-        return ReadToEnd(str.next(),
-                         digits * 10 + *str - '0',
+        return ReadToEnd(s,
+                         std::next(it),
+                         digits * 10 + *it - '0',
                          digit_count + 1,
                          colons,
                          first_colon_index,
@@ -852,7 +787,7 @@ constexpr TimeOfDay TimeParser::ToTime() const {
 }
 
 constexpr TimeOfDay TimeOfDay::Parse(std::string_view const s) {
-  return TimeParser::Parse(s.data(), s.size());
+  return TimeParser::Parse(s);
 }
 
 // Julian date parsing.
@@ -867,8 +802,8 @@ class JulianDateParser final {
 
   // Returns a `JulianDate` object corresponding to the given string interpreted
   // a Julian Date or a Modified Julian Date, respectively.
-  static constexpr JulianDate ParseJD(char const* str, std::size_t size);
-  static constexpr JulianDate ParseMJD(char const* str, std::size_t size);
+  static constexpr JulianDate ParseJD(std::string_view s);
+  static constexpr JulianDate ParseMJD(std::string_view s);
 
  private:
   constexpr JulianDateParser(std::int64_t digits,
@@ -878,13 +813,14 @@ class JulianDateParser final {
   // Returns a `JulianDateParser` describing the given string. Fails if the
   // string is not of the form [ddd] or [ddd.fff] or if it has too many digits
   // to fit in a std::int64_t.
-  static constexpr JulianDateParser ReadToEnd(char const* str,
-                                              std::size_t size);
-  static constexpr JulianDateParser ReadToEnd(CStringIterator str,
-                                              std::int64_t digits,
-                                              int digit_count,
-                                              bool has_decimal_mark,
-                                              int decimal_mark_index);
+  static constexpr JulianDateParser ReadToEnd(std::string_view s);
+  static constexpr JulianDateParser ReadToEnd(
+      std::string_view s,
+      std::string_view::const_iterator it,
+      std::int64_t digits,
+      int digit_count,
+      bool has_decimal_mark,
+      int decimal_mark_index);
 
   // Returns a `JulianDate` corresponding to the string that `*this` describes.
   // Fails if the format is invalid.
@@ -899,14 +835,12 @@ class JulianDateParser final {
   int const decimal_mark_index_;
 };
 
-constexpr JulianDate JulianDateParser::ParseJD(char const* const str,
-                                               std::size_t const size) {
-  return ReadToEnd(str, size).ToJD();
+constexpr JulianDate JulianDateParser::ParseJD(std::string_view const s) {
+  return ReadToEnd(s).ToJD();
 }
 
-constexpr JulianDate JulianDateParser::ParseMJD(char const* const str,
-                                                std::size_t const size) {
-  return ReadToEnd(str, size).ToMJD();
+constexpr JulianDate JulianDateParser::ParseMJD(std::string_view const s) {
+  return ReadToEnd(s).ToMJD();
 }
 
 constexpr JulianDateParser::JulianDateParser(std::int64_t const digits,
@@ -916,9 +850,9 @@ constexpr JulianDateParser::JulianDateParser(std::int64_t const digits,
       digit_count_(digit_count),
       decimal_mark_index_(decimal_mark_index) {}
 
-constexpr JulianDateParser JulianDateParser::ReadToEnd(char const* const str,
-                                                       std::size_t const size) {
-  return ReadToEnd(CStringIterator(str, size),
+constexpr JulianDateParser JulianDateParser::ReadToEnd(
+    std::string_view const s) {
+  return ReadToEnd(s, s.begin(),
                    /*digits=*/0,
                    /*digit_count*/ 0,
                    /*has_decimal_mark=*/false,
@@ -926,30 +860,33 @@ constexpr JulianDateParser JulianDateParser::ReadToEnd(char const* const str,
 }
 
 constexpr JulianDateParser JulianDateParser::ReadToEnd(
-    CStringIterator const str,
+    std::string_view const s,
+    std::string_view::const_iterator const it,
     std::int64_t const digits,
     int const digit_count,
     bool const has_decimal_mark,
     int const decimal_mark_index) {
-  if (str.at_end()) {
+  if (it == s.end()) {
     return JulianDateParser(digits,
                             digit_count,
                             decimal_mark_index);
   } else {
-    switch (*str) {
+    switch (*it) {
       case '.':
         CONSTEXPR_CHECK(!has_decimal_mark);
-        return ReadToEnd(str.next(),
+        return ReadToEnd(s,
+                         std::next(it),
                          digits,
                          digit_count,
                          /*has_decimal_mark=*/true,
-                         /*decimal_mark_index=*/str.index());
+                         /*decimal_mark_index=*/it - s.begin());
       case '0': case '1': case '2': case '3': case '4':
       case '5': case '6': case '7': case '8': case '9':
         CONSTEXPR_CHECK(digits <=
                         std::numeric_limits<std::int64_t>::max() / 10 - 9);
-        return ReadToEnd(str.next(),
-                         digits * 10 + *str - '0',
+        return ReadToEnd(s,
+                         std::next(it),
+                         digits * 10 + *it - '0',
                          digit_count + 1,
                          has_decimal_mark,
                          decimal_mark_index);
@@ -978,12 +915,10 @@ constexpr JulianDate JulianDate::Parse(std::string_view const s) {
   static constexpr std::string_view jd = "JD";
   static constexpr std::string_view mjd = "MJD";
   if (s.starts_with(jd)) {
-    return JulianDateParser::ParseJD(s.data() + jd.size(),
-                                     s.size() - jd.size());
+    return JulianDateParser::ParseJD(s.substr(jd.size()));
   } else {
     CONSTEXPR_CHECK(s.starts_with(mjd));
-    return JulianDateParser::ParseMJD(s.data() + mjd.size(),
-                                      s.size() - mjd.size());
+    return JulianDateParser::ParseMJD(s.substr(mjd.size()));
   }
 }
 
@@ -1062,8 +997,8 @@ inline std::ostream& operator<<(std::ostream& out, DateTime const& date_time) {
   return out << date_time.date() << "T" << date_time.time();
 }
 
-constexpr bool IsJulian(char const* const str, std::size_t const size) {
-  return starts_with(str, size, "JD", 2) || starts_with(str, size, "MJD", 3);
+constexpr bool IsJulian(std::string_view const s) {
+  return s.starts_with("JD") || s.starts_with("MJD");
 }
 
 consteval JulianDate operator""_Julian(char const* const str,

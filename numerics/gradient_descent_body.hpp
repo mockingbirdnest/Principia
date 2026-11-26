@@ -234,11 +234,9 @@ absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
   auto const grad_f_x₁ = grad_f(x₁);
   Difference<Argument> const s₀ = x₁ - x₀;
   auto const y₀ = grad_f_x₁ - grad_f_x₀;
-  // TODO(phl): Remove the `internal` use here.
-  auto const H₀ = InnerProduct(s₀, y₀) *
-                  geometry::_differential_geometry::internal::
-                      Generator<Scalar, Argument>::InnerProductForm() /
-                  y₀.Norm²();
+  InverseHessian<Scalar, Argument> const H₀ =
+      InnerProduct(s₀, y₀) *
+      InverseHessian<Scalar, Argument>::InnerProductForm() / y₀.Norm²();
 
   auto xₖ = x₁;
   auto grad_f_xₖ = grad_f_x₁;
@@ -250,7 +248,7 @@ absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
       VLOG(1) << "No minimum within search radius at: " << xₖ;
       return absl::Status(termination_condition::NoMinimum, "No minimum found");
     }
-    Difference<Argument> const pₖ = -Hₖ * grad_f_xₖ;
+    Difference<Argument> const pₖ = -Hₖ(_, grad_f_xₖ);
     if (pₖ.Norm() <= tolerance) {
       VLOG(1) << "Below tolerance at: " << xₖ
               << ", displacement: " << pₖ.Norm();
@@ -279,7 +277,7 @@ absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
     auto const ρ = 1 / sₖyₖ;
     auto const Hₖ₊₁ =
         Hₖ + ρ * ((ρ * Hₖ(yₖ, yₖ) + 1) * SymmetricSquare(sₖ) -
-                  2 * SymmetricProduct(Hₖ * yₖ, sₖ));
+                  2 * SymmetricProduct(Hₖ(_, yₖ), sₖ));
 
     xₖ = xₖ₊₁;
     grad_f_xₖ = grad_f_xₖ₊₁;

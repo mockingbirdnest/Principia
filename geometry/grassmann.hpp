@@ -24,6 +24,13 @@ using namespace principia::geometry::_r3_element;
 using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_quantities;
 
+// A wrapper around an integer representing the rank of a multivector.  Useful
+// for passing the rank in a template parameter pack.
+template<int rank_>
+struct Rank {
+  static constexpr int rank = rank_;
+};
+
 // A multivector of rank `rank` on a three-dimensional real inner product
 // space bearing the dimensionality of `Scalar`, i.e., an element of
 // ⋀ⁿ Scalar³. Do not use this type for `rank == 0` (scalars), use the `Scalar`
@@ -332,6 +339,14 @@ template<quantity Scalar, typename Frame, int rank>
 std::ostream& operator<<(std::ostream& out,
                          Multivector<Scalar, Frame, rank> const& multivector);
 
+// Beware!  This tag should only be used in places that can operate on symmetric
+// bilinear forms on multivectors of any rank, but not on fully general
+// symmetric bilinear forms.  Other places should use the specific names
+// declared in `symmetric_bilinear_form.hpp`, or the parameters of the
+// unspecialized template.
+// NOTE(phl): With P2989R3, we could use the template itself as a tag.
+struct MultivectorTag;
+
 }  // namespace internal
 
 using internal::AngleBetween;
@@ -343,9 +358,11 @@ using internal::FusedNegatedMultiplyAdd;
 using internal::FusedNegatedMultiplySubtract;
 using internal::InnerProduct;
 using internal::Multivector;
+using internal::MultivectorTag;
 using internal::Normalize;
 using internal::NormalizeOrZero;
 using internal::OrientedAngleBetween;
+using internal::Rank;
 using internal::Trivector;
 using internal::Vector;
 using internal::Wedge;
