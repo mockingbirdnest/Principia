@@ -218,11 +218,11 @@ constexpr int dimension<K, K> = 1;
 template<real_affine_space V>
 constexpr int real_dimension = dimension<V, double>;
 
-// Used for expressions that are conventionally written with a dot placeholder,
-// e.g., `form(ꓸ, v)` to get the linear form corresponding to `form` applied to
+// Used for expressions that are conventionally written with a placeholder,
+// e.g., `form(_, v)` to get the linear form corresponding to `form` applied to
 // `v` as the second argument.
 struct MathematicalParameterPlaceholder {};
-constexpr MathematicalParameterPlaceholder ꓸ{};
+constexpr MathematicalParameterPlaceholder _{};
 
 }  // namespace internal
 
@@ -255,10 +255,9 @@ using internal::Product;
 using internal::Quotient;
 using internal::Square;
 using internal::Sum;
-using internal::ꓸ;
+using internal::_;
 
 }  // namespace _algebra
-
 }  // namespace base
 }  // namespace principia
 

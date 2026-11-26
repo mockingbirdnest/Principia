@@ -130,7 +130,7 @@ Product<Scalar, Product<LScalar, RScalar>>
 SymmetricBilinearForm<Scalar, MultivectorTag, Frame, Rank<rank>>::
 operator()(Multivector<LScalar, Frame, rank> const& left,
            Multivector<RScalar, Frame, rank> const& right) const {
-  return InnerProduct(left, (*this)(ꓸ, right));
+  return InnerProduct(left, (*this)(_, right));
 }
 
 template<quantity Scalar, typename Frame, int rank>
