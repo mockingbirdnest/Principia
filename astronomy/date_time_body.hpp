@@ -767,7 +767,7 @@ constexpr JulianDateParser JulianDateParser::ReadToEnd(
         CONSTEXPR_CHECK(digits <=
                         std::numeric_limits<std::int64_t>::max() / 10 - 9);
         digits = digits * 10 + *it - '0';
-        ++digit_count + 1;
+        ++digit_count;
         break;
       default:
         CONSTEXPR_CHECK(false);
