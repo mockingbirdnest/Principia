@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -166,7 +167,20 @@ internal static class Loader {
                           string.Join(", ", possible_dll_paths));
     string error_messages = "";
     if (Environment.OSVersion.Platform == PlatformID.Win32NT) {
-      principia_dll_ = LoadLibrary(possible_dll_paths[0]);
+      foreach (string path in possible_dll_paths) {
+        principia_dll_ = LoadLibrary(path);
+        if (principia_dll_ == IntPtr.Zero) {
+          var error = new Win32Exception();
+          error_messages +=
+              "0x" +
+              error.NativeErrorCode.ToString("X8") +
+              ": " +
+              error.Message +
+              "\n";
+        } else {
+          break;
+        }
+      }
     } else {
       const int RTLD_NOW = 2;
       const int RTLD_GLOBAL = 8;

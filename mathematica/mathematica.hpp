@@ -199,11 +199,11 @@ template<typename T, std::int64_t rows, std::int64_t columns,
 std::string ToMathematica(FixedMatrix<T, rows, columns> const& fixed_matrix,
                           OptionalExpressIn express_in = std::nullopt);
 
-template<typename T, typename OptionalExpressIn = std::nullopt_t>
+template<quantity T, typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(R3Element<T> const& r3_element,
                           OptionalExpressIn express_in = std::nullopt);
 
-template<typename T, typename OptionalExpressIn = std::nullopt_t>
+template<quantity T, typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(R3x3Matrix<T> const& r3x3_matrix,
                           OptionalExpressIn express_in = std::nullopt);
 
@@ -240,10 +240,8 @@ std::string ToMathematica(Point<V> const& point,
                           OptionalExpressIn express_in = std::nullopt);
 
 template<typename OptionalExpressIn = std::nullopt_t,
-         quantity S,
-         template<quantity, typename...> typename G,
-         typename... P>
-std::string ToMathematica(SymmetricBilinearForm<S, G, P...> const& form,
+         quantity S, typename T, typename... P>
+std::string ToMathematica(SymmetricBilinearForm<S, T, P...> const& form,
                           OptionalExpressIn express_in = std::nullopt);
 
 template<typename OptionalExpressIn = std::nullopt_t, typename... T>

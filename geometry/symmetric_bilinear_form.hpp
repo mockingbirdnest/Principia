@@ -68,8 +68,13 @@ class SymmetricBilinearForm<Scalar, MultivectorTag, Frame, Rank<rank>> {
 
   // Application of the form to a single multivector, yielding a linear form
   // which we identify with a multivector of the same rank.
+  template<quantity LScalar>
+  Multivector<Product<Scalar, LScalar>, Frame, rank> operator()(
+      Multivector<LScalar, Frame, rank> const& left,
+      MathematicalParameterPlaceholder) const;
   template<quantity RScalar>
   Multivector<Product<Scalar, RScalar>, Frame, rank> operator()(
+      MathematicalParameterPlaceholder,
       Multivector<RScalar, Frame, rank> const& right) const;
 
   // For a form on vectors, `Anticommutator` returns the form on bivectors
@@ -158,8 +163,12 @@ class SymmetricBilinearForm<Scalar, QuantityTag> {
 
   // Application of the form to a single multivector, yielding a linear form
   // which we identify with an element of the quantities vector space.
+  template<quantity LScalar>
+  Product<Scalar, LScalar> operator()(LScalar const& left,
+                                      MathematicalParameterPlaceholder) const;
   template<quantity RScalar>
-  Product<Scalar, RScalar> operator()(RScalar const& right) const;
+  Product<Scalar, RScalar> operator()(MathematicalParameterPlaceholder,
+                                      RScalar const& right) const;
 
   // Returns a copy of this object.
   SymmetricBilinearForm<Scalar, QuantityTag> Diagonalize() const;
@@ -170,10 +179,7 @@ class SymmetricBilinearForm<Scalar, QuantityTag> {
   // Always returns 1.
   double PrincipalAxis() const;
 
-  void WriteToMessage(
-      not_null<serialization::SymmetricBilinearForm*> message) const;
-  static SymmetricBilinearForm ReadFromMessage(
-      serialization::SymmetricBilinearForm const& message);
+  // No serialization support for now.
 
  private:
   Scalar coordinates_;

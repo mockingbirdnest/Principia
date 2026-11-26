@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "numerics/elementary_functions.hpp"
-#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace geometry {
@@ -16,7 +15,6 @@ namespace _symmetric_bilinear_form {
 namespace internal {
 
 using namespace principia::numerics::_elementary_functions;
-using namespace principia::quantities::_quantities;
 
 struct CosSin {
   double cos;
@@ -132,13 +130,24 @@ Product<Scalar, Product<LScalar, RScalar>>
 SymmetricBilinearForm<Scalar, MultivectorTag, Frame, Rank<rank>>::
 operator()(Multivector<LScalar, Frame, rank> const& left,
            Multivector<RScalar, Frame, rank> const& right) const {
-  return InnerProduct(left, (*this)(right));
+  return InnerProduct(left, (*this)(_, right));
+}
+
+template<quantity Scalar, typename Frame, int rank>
+template<quantity LScalar>
+Multivector<Product<Scalar, LScalar>, Frame, rank>
+SymmetricBilinearForm<Scalar, MultivectorTag, Frame, Rank<rank>>::operator()(
+    Multivector<LScalar, Frame, rank> const& left,
+    MathematicalParameterPlaceholder) const {
+  return Multivector<Product<Scalar, LScalar>, Frame, rank>(
+      matrix_ * left.coordinates());
 }
 
 template<quantity Scalar, typename Frame, int rank>
 template<quantity RScalar>
 Multivector<Product<Scalar, RScalar>, Frame, rank>
 SymmetricBilinearForm<Scalar, MultivectorTag, Frame, Rank<rank>>::operator()(
+    MathematicalParameterPlaceholder,
     Multivector<RScalar, Frame, rank> const& right) const {
   return Multivector<Product<Scalar, RScalar>, Frame, rank>(
       matrix_ * right.coordinates());
@@ -331,8 +340,17 @@ SymmetricBilinearForm<Scalar, QuantityTag>::operator()(
 }
 
 template<quantity Scalar>
+template<quantity LScalar>
+Product<Scalar, LScalar> SymmetricBilinearForm<Scalar, QuantityTag>::operator()(
+    LScalar const& left,
+    MathematicalParameterPlaceholder) const {
+  return coordinates_ * left;
+}
+
+template<quantity Scalar>
 template<quantity RScalar>
 Product<Scalar, RScalar> SymmetricBilinearForm<Scalar, QuantityTag>::operator()(
+    MathematicalParameterPlaceholder,
     RScalar const& right) const {
   return coordinates_ * right;
 }
@@ -351,21 +369,6 @@ bool SymmetricBilinearForm<Scalar, QuantityTag>::IsDiagonalized() const {
 template<quantity Scalar>
 double SymmetricBilinearForm<Scalar, QuantityTag>::PrincipalAxis() const {
   return 1.0;
-}
-
-template<quantity Scalar>
-void SymmetricBilinearForm<Scalar, QuantityTag>::WriteToMessage(
-    not_null<serialization::SymmetricBilinearForm*> message) const {
-  //TODO(phl)implement
-  //message->set_coordinates(coordinates_);
-}
-
-template<quantity Scalar>
-SymmetricBilinearForm<Scalar, QuantityTag>
-SymmetricBilinearForm<Scalar, QuantityTag>::ReadFromMessage(
-    serialization::SymmetricBilinearForm const& message) {
-  //TODO(phl)implement
-  return SymmetricBilinearForm<Scalar, QuantityTag>();
 }
 
 
