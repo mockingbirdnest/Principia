@@ -5,44 +5,6 @@
     <RootNamespace>base</RootNamespace>
   </PropertyGroup>
   <Import Project="$(SolutionDir)principia.props" />
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ClCompile />
-    <ClCompile>
-      <BuildStlModules>true</BuildStlModules>
-    </ClCompile>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_AVX_FMA|x64'">
-    <ClCompile />
-    <ClCompile>
-      <BuildStlModules>true</BuildStlModules>
-    </ClCompile>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <ClCompile />
-    <ClCompile>
-      <BuildStlModules>true</BuildStlModules>
-    </ClCompile>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_AVX_FMA|x64'">
-    <ClCompile />
-    <ClCompile>
-      <BuildStlModules>true</BuildStlModules>
-      <ScanSourceForModuleDependencies>true</ScanSourceForModuleDependencies>
-      <DisableSpecificWarnings>5260;4018;4244;4251;4267;4373;4503;4506;4554;4566;4624;4723;4800;4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
-    </ClCompile>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|x64'">
-    <ClCompile />
-    <ClCompile>
-      <BuildStlModules>true</BuildStlModules>
-    </ClCompile>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_LLVM_AVX_FMA|x64'">
-    <ClCompile />
-    <ClCompile>
-      <BuildStlModules>true</BuildStlModules>
-    </ClCompile>
-  </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="algebra.hpp" />
     <ClInclude Include="algebra_body.hpp" />
@@ -78,9 +40,7 @@
     <ClCompile Include="cpuid.cpp" />
     <ClCompile Include="cpuid.ixx" />
     <ClCompile Include="cpuid_test.cpp" />
-    <ClCompile Include="macros.hpp">
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release_AVX_FMA|x64'">CompileAsHeaderUnit</CompileAs>
-    </ClCompile>
+    <ClInclude Include="macros.hpp" />
     <ClInclude Include="malloc_allocator.hpp" />
     <ClInclude Include="mappable.hpp" />
     <ClInclude Include="map_util.hpp" />
