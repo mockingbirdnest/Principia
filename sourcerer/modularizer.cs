@@ -115,19 +115,19 @@ class Modularizer {
                     out List<Include> third_party_includes);
 
       if (hpp_file == body_file) {
+        Node? last_std_import;
+        if (system_includes.Count > 0) {
+          last_std_import = FixImportStd(parser_file, last_export_module);
+        } else {
+          last_std_import = last_export_module;
+        }
         // If this is a test or benchmark, its imports go right here.
         Node? last_third_party_import =
             FixImportThirdPartyHeaders(parser_file,
-                                       after: last_export_module,
+                                       after: last_std_import,
                                        third_party_includes);
-        Node? last_std_import;
-        if (system_includes.Count > 0) {
-          last_std_import = FixImportStd(parser_file, last_third_party_import);
-        } else {
-          last_std_import = last_third_party_import;
-        }
         FixImportPrincipiaHeaders(parser_file,
-                                  after: last_std_import,
+                                  after: last_third_party_import,
                                   principia_includes);
       } else {
         // If this is a body that has a header, its imports will go in the
@@ -181,18 +181,18 @@ class Modularizer {
               new List<Include>()));
 
       // Add the imports collected from this file and its body.
-      Node? last_third_party_import =
-          FixImportThirdPartyHeaders(parser_file,
-                                     after: last_export_module,
-                                     all_third_party_includes);
       Node? last_std_import;
       if (system_includes.Count > 0 || needs_import_std.Contains(hpp_file)) {
-        last_std_import = FixImportStd(parser_file, last_third_party_import);
+        last_std_import = FixImportStd(parser_file, last_export_module);
       } else {
-        last_std_import = last_third_party_import;
+        last_std_import = last_export_module;
       }
+      Node? last_third_party_import =
+          FixImportThirdPartyHeaders(parser_file,
+                                     after: last_std_import,
+                                     all_third_party_includes);
       FixImportPrincipiaHeaders(parser_file,
-                                after: last_std_import,
+                                after: last_third_party_import,
                                 all_principia_includes);
 
       // Drop the includes.
@@ -351,8 +351,8 @@ class Modularizer {
   private static Node? FixPragmaOnce(Parser.File file,
                                      Parser.File? hpp_file,
                                      bool needs_export_module) {
-        // Collect the pragmas to fix.
-        var pragma_onces = new List<PreprocessorDirective>();
+    // Collect the pragmas to fix.
+    var pragma_onces = new List<PreprocessorDirective>();
     var blank_lines_after_pragma_once = new List<Text>();
     bool right_after_pragma_once = false;
     foreach (Node n in file.children) {
