@@ -205,7 +205,7 @@ class Modularizer {
 
       // Export everything from the internal namespaces except the using
       // directives.
-      FixInternalNamespacesBlanketExport(parser_file);
+      FixInternalNamespacesExportSequence(parser_file);
 
       RewriteFile(hpp_file, parser_file, dry_run);
     }
@@ -214,19 +214,20 @@ class Modularizer {
   // Ensures that `after` is followed by a blank line, unless it is `null` or
   // the last child of `file`.  Returns the blank line, or `null` or the last
   // child.
-  private static Node? EnsureBlankLineAfter(Parser.File file, Node? after) {
+  private static Node? EnsureBlankLineAfter(Node? after) {
     if (after != null) {
+      Node parent = after.parent!;
       if (after.is_blank_line) {
         // If `after` is already a blank line we have nothing to do.
         return after;
       }
-      if (after.position_in_parent + 1 < file.children.Count) {
-        after = file.children[after.position_in_parent + 1];
+      if (after.position_in_parent + 1 < parent.children.Count) {
+        after = parent.children[after.position_in_parent + 1];
         if (!after.is_blank_line) {
           // If `after` is not followed by a blank line, insert one and move
           // `after` to that blank line.
           var blank = Text.Blank();
-          file.InsertChild(after.position_in_parent, blank);
+          parent.InsertChild(after.position_in_parent, blank);
           after = blank;
         }
       }
@@ -259,10 +260,10 @@ class Modularizer {
     }
   }
 
-  private static void FixInternalNamespacesBlanketExport(Parser.File file) {
+  private static void FixInternalNamespacesExportSequence(Parser.File file) {
     var internal_using_directives =
         FindUsingDirectives(file, internal_only: true);
-    int position_in_parent = -1;
+    Node? after = null;
     if (internal_using_directives.Count == 0) {
       var innermost_namespaces = FindInnermostNamespaces(file);
       if (innermost_namespaces.Count == 0) {
@@ -270,13 +271,18 @@ class Modularizer {
         // alone.
         return;
       } else {
-        // Insert the blanket export after the first innermost namespace.
-        position_in_parent = innermost_namespaces[0].position_in_parent;
+        // Insert the export sequence after the first innermost namespace.
+        after = innermost_namespaces[0];
       }
     } else {
-      // Insert the blanket export after the last internal using directive.
-      position_in_parent = internal_using_directives[^1].position_in_parent;
+      // Insert the export sequence after the last internal using directive.
+      after = internal_using_directives[^1];
     }
+    Node parent = after.parent!;
+    after = EnsureBlankLineAfter(after);
+    var es = new ExportSequence(parent: null);
+    parent.InsertChild(after!.position_in_parent + 1, es);
+    EnsureBlankLineAfter(es);
   }
 
   private static Node? FixImportPrincipiaHeaders(Parser.File file,
@@ -293,7 +299,7 @@ class Modularizer {
       ++position_in_parent;
       last = import;
     }
-    return EnsureBlankLineAfter(file, last);
+    return EnsureBlankLineAfter(last);
   }
 
   private static Node? FixImportStd(Parser.File file,
@@ -343,7 +349,7 @@ class Modularizer {
       ++position_in_parent;
       last = import;
     }
-    return EnsureBlankLineAfter(file, last);
+    return EnsureBlankLineAfter(last);
   }
 
   // Removes `#pragma once` directives from the file and insert an
@@ -390,7 +396,7 @@ class Modularizer {
       }
       file.RemoveChild(po);
     }
-    return EnsureBlankLineAfter(file, node);
+    return EnsureBlankLineAfter(node);
   }
 
   private static void SplitIncludes(List<Include> includes,
