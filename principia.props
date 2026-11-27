@@ -160,6 +160,7 @@
       <PreprocessorDefinitions Condition="!$(PlatformWithCPUFeatures.Contains('FMA'))">PRINCIPIA_REQUIRES_FMA=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="$(PlatformWithCPUFeatures.Contains('AVX'))">PRINCIPIA_REQUIRES_AVX=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="$(PlatformWithCPUFeatures.Contains('FMA'))">PRINCIPIA_REQUIRES_FMA=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ScanSourceForModuleDependencies>true</ScanSourceForModuleDependencies>
       <SDLCheck>true</SDLCheck>
       <TreatWarningAsError Condition="!$(PrincipiaCompilerClangLLVM)">true</TreatWarningAsError>
       <UseStandardPreprocessor>true</UseStandardPreprocessor>
