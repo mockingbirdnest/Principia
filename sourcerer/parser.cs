@@ -513,10 +513,10 @@ public class Parser {
       }
 
   public abstract class Scope : Declaration {
-    public Scope(Node? parent, string name) :
+    protected Scope(Node? parent, string name) :
         this(text: null, parent, name) { }
 
-    public Scope(string? text, Node? parent, string name) : base(
+    protected Scope(string? text, Node? parent, string name) : base(
         text,
         parent,
         name) { }

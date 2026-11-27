@@ -212,15 +212,15 @@ class Modularizer {
   }
 
   // Ensures that `after` is followed by a blank line, unless it is `null` or
-  // the last child of `file`.  Returns the blank line, or `null` or the last
-  // child.
+  // the last child of its parent.  Returns the blank line, or `null` or the
+  // last child.
   private static Node? EnsureBlankLineAfter(Node? after) {
     if (after != null) {
-      Node parent = after.parent!;
       if (after.is_blank_line) {
         // If `after` is already a blank line we have nothing to do.
         return after;
       }
+      Node parent = after.parent!;
       if (after.position_in_parent + 1 < parent.children.Count) {
         after = parent.children[after.position_in_parent + 1];
         if (!after.is_blank_line) {
@@ -233,6 +233,25 @@ class Modularizer {
       }
     }
     return after;
+  }
+
+  // Same as above, but for `before` and the preceding blank line.  Doesn't
+  // return anything because we don't use it for sequencing the insertions.
+  private static void EnsureBlankLineBefore(Node? before) {
+    if (before != null) {
+      if (before.is_blank_line) {
+        // If `before` is already a blank line we have nothing to do.
+        return;
+      }
+      Node parent = before.parent!;
+      if (before.position_in_parent == 0 ||
+          (before.position_in_parent - 1 >= 0 &&
+           !parent.children[before.position_in_parent - 1].is_blank_line)) {
+        // If `before` is not preceded by a blank line, insert one.
+        var blank = Text.Blank();
+        parent.InsertChild(before.position_in_parent, blank);
+      }
+    }
   }
 
   private static void FixExportedUsingDeclarations(Parser.File file) {
@@ -290,6 +309,19 @@ class Modularizer {
     while (position_in_parent < ns.children.Count) {
       Node node = ns.RemoveChild(position_in_parent);
       es.AddChild(node);
+    }
+    if (es.children.Count == 0) {
+      // Nothing in the export sequence, remove it.
+      ns.RemoveChild(es);
+    } else {
+      if (!es.children[0].is_blank_line) {
+        // Start the sequence with a blank line.
+        EnsureBlankLineBefore(es.children[0]);
+      }
+      if (!es.children[^1].is_blank_line) {
+        // End the sequence with a blank line.
+        EnsureBlankLineAfter(es.children[^1]);
+      }
     }
   }
 
