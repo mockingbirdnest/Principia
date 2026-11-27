@@ -20,30 +20,16 @@ template<typename T, typename U = T>
 using InnerProductType =
     decltype(InnerProduct(std::declval<T>(), std::declval<U>()));
 
-// We go through a generator instead of defining the return types of the two
-// overloads of `Norm²` as `auto` for the one that does `.Norm²()` and
-// `Square<T>` for the other one because otherwise the compiler (at least MSVC)
-// tries to expand `Square<T>` even when `T` is not a `homogeneous_field`.
 template<typename T>
-struct Norm²TypeGenerator {
-  using type = decltype(std::declval<T>().Norm²());
-};
+  requires(requires(T x) { x.Norm²(); })
+constexpr auto Norm²(T const& x);
 
 template<homogeneous_field T>
   requires std::totally_ordered<T>
-struct Norm²TypeGenerator<T> {
-  using type = Square<T>;
-};
+constexpr Square<T> Norm²(T const& x);
 
 template<typename T>
-using Norm²Type = typename Norm²TypeGenerator<T>::type;
-
-template<typename T>
-constexpr Norm²Type<T> Norm²(T const& x);
-
-template<homogeneous_field T>
-  requires std::totally_ordered<T>
-constexpr Norm²Type<T> Norm²(T const& x);
+using Norm²Type = decltype(Norm²(std::declval<T>()));
 
 template<typename T>
   requires(requires(T x) { x.Norm(); })
