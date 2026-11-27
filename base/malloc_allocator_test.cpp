@@ -1,11 +1,12 @@
-#include "base/malloc_allocator.hpp"
+// Test for link:base/malloc_allocator.hpp
 
-#include <cstdint>
-#include <cstdlib>
+import std;
 
-#include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
+import "base/macros.hpp";  // 🧙 For PRINCIPIA_COMPILER_MSVC.
+import "gmock/gmock.h";
+import "gtest/gtest.h";
+
+import principia.base.malloc_allocator;
 
 namespace principia {
 namespace base {

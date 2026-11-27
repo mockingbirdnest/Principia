@@ -1,15 +1,15 @@
-#include "base/file_log_sink.hpp"
+// Test for link:base/file_log_sink.hpp
 
-#include <fstream>
-#include <string>
-#include <vector>
+import std;
 
-#include "absl/log/initialize.h"
-#include "absl/log/log.h"
-#include "absl/log/log_sink_registry.h"
-#include "base/not_null.hpp"
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
+import "absl/log/initialize.h";
+import "absl/log/log.h";
+import "absl/log/log_sink_registry.h";
+import "gmock/gmock.h";
+import "gtest/gtest.h";
+
+import principia.base.file_log_sink;
+import principia.base.not_null;
 
 namespace principia {
 namespace base {

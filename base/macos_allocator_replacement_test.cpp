@@ -1,24 +1,19 @@
+import std;
+
+import "absl/container/btree_map.h";
+import "absl/container/btree_set.h";
+import "absl/container/fixed_array.h";
+import "absl/container/flat_hash_map.h";
+import "absl/container/flat_hash_set.h";
+import "absl/container/inlined_vector.h";
+import "absl/container/node_hash_map.h";
+import "absl/container/node_hash_set.h";
+import "gmock/gmock.h";
+import "gtest/gtest.h";
+
+import principia.base.malloc_allocator;
+
 // "macos_allocator_replacement.hpp" should be automagically included.
-
-#include <deque>
-#include <list>
-#include <map>
-#include <set>
-#include <type_traits>
-#include <utility>
-#include <vector>
-
-#include "absl/container/btree_map.h"
-#include "absl/container/btree_set.h"
-#include "absl/container/fixed_array.h"
-#include "absl/container/flat_hash_map.h"
-#include "absl/container/flat_hash_set.h"
-#include "absl/container/inlined_vector.h"
-#include "absl/container/node_hash_map.h"
-#include "absl/container/node_hash_set.h"
-#include "base/malloc_allocator.hpp"
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
 
 #ifdef OS_MACOSX
 

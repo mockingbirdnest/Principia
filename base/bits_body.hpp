@@ -1,10 +1,4 @@
-#pragma once
-
-#include "base/bits.hpp"
-
-#include "absl/log/check.h"
-#include "absl/log/log.h"
-#include "base/macros.hpp"  // 🧙 For CONSTEXPR_DCHECK.
+// Body of link:base/bits.hpp
 
 namespace principia {
 namespace base {

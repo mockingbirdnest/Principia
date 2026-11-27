@@ -1,14 +1,13 @@
-#include "base/bundle.hpp"
+// Test for link:base/bundle.hpp
 
-#include <chrono>
-#include <cstdint>
-#include <thread>
-#include <vector>
+import std;
 
-#include "absl/status/status.h"
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
-#include "testing_utilities/matchers.hpp"
+import "absl/status/status.h";
+import "gmock/gmock.h";
+import "gtest/gtest.h";
+
+import principia.base.bundle;
+import principia.testing_utilities.matchers;
 
 namespace principia {
 namespace base {

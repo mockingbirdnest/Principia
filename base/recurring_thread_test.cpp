@@ -1,12 +1,11 @@
-#include "base/recurring_thread.hpp"
+// Test for link:base/recurring_thread.hpp
 
-#include <chrono>
-#include <optional>
-#include <thread>
-#include <utility>
+import std;
 
-#include "absl/status/status.h"
-#include "gtest/gtest.h"
+import "absl/status/status.h";
+import "gtest/gtest.h";
+
+import principia.base.recurring_thread;
 
 namespace principia {
 namespace base {

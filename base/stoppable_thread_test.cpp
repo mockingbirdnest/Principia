@@ -1,10 +1,10 @@
-#include "base/stoppable_thread.hpp"
+// Test for link:base/stoppable_thread.hpp
 
-#include <chrono>
-#include <iostream>
-#include <thread>
+import std;
 
-#include "gtest/gtest.h"
+import "gtest/gtest.h";
+
+import principia.base.stoppable_thread;
 
 namespace principia {
 namespace base {

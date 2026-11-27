@@ -1,12 +1,11 @@
-#include "base/string_log_sink.hpp"
+// Body of link:base/string_log_sink.hpp
 
-#include <exception>
-#include <string>
-#include <vector>
-#include <utility>
+module principia.base.string_log_sink;
 
-#include "absl/log/check.h"
-#include "absl/time/time.h"
+import std;
+
+import "absl/log/check.h";
+import "absl/time/time.h";
 
 namespace principia {
 namespace base {

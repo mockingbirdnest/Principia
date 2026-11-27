@@ -1,20 +1,15 @@
-#include "base/base32768.hpp"
+// Test for link:base/base32768.hpp
 
-#include <array>
-#include <cstdint>
-#include <cstring>
-#include <ios>
-#include <memory>
-#include <ostream>
-#include <random>
-#include <string>
+import std;
 
-#include "absl/log/check.h"
-#include "absl/log/log.h"
-#include "base/array.hpp"
-#include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
+import "absl/log/check.h";
+import "absl/log/log.h";
+import "base/macros.hpp";  // 🧙 For PRINCIPIA_COMPILER_MSVC.
+import "gmock/gmock.h";
+import "gtest/gtest.h";
+
+import principia.base.base32768;
+import principia.base.array;
 
 MATCHER_P(EqualsBytes, expected, "") {
   auto const actual = arg;

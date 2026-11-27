@@ -1,17 +1,15 @@
-#include "base/reanimator.hpp"
+// Test for link:base/reanimator.hpp
 
-#include <chrono>
-#include <cstdint>
-#include <string>
-#include <thread>
-#include <vector>
+import std;
 
-#include "absl/status/status.h"
-#include "absl/synchronization/mutex.h"
-#include "absl/synchronization/notification.h"
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
-#include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
+import "absl/status/status.h";
+import "absl/synchronization/mutex.h";
+import "absl/synchronization/notification.h";
+import "gmock/gmock.h";
+import "gtest/gtest.h";
+import "testing_utilities/matchers.hpp";  // 🧙 For EXPECT_OK.
+
+import principia.base.reanimator;
 
 namespace principia {
 namespace base {

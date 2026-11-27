@@ -1,12 +1,11 @@
-#include "base/array.hpp"
+// Test for link:base/array.hpp
 
-#include <memory>
-#include <ranges>
-#include <string>
-#include <utility>
+import std;
 
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
+import "gmock/gmock.h";
+import "gtest/gtest.h";
+
+import principia.base.array;
 
 using ::testing::AllOf;
 using ::testing::ElementsAre;

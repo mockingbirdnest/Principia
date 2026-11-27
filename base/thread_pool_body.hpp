@@ -1,8 +1,4 @@
-#pragma once
-
-#include "base/thread_pool.hpp"
-
-#include <utility>
+// Body of link:base/thread_pool.hpp
 
 namespace principia {
 namespace base {

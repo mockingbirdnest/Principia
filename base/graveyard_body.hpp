@@ -1,8 +1,4 @@
-#pragma once
-
-#include "base/graveyard.hpp"
-
-#include <utility>
+// Body of link:base/graveyard.hpp
 
 namespace principia {
 namespace base {

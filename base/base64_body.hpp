@@ -1,10 +1,4 @@
-#pragma once
-
-#include "base/base64.hpp"
-
-#include <string>
-
-#include "absl/strings/escaping.h"
+// Body of link:base/base64.hpp
 
 namespace principia {
 namespace base {

@@ -1,16 +1,4 @@
-#pragma once
-
-#include "base/push_deserializer.hpp"
-
-#include <algorithm>
-#include <iomanip>
-#include <memory>
-#include <utility>
-
-#include "absl/log/check.h"
-#include "absl/log/log.h"
-#include "base/sink_source.hpp"
-#include "google/protobuf/io/coded_stream.h"
+// Body of link:base/push_deserializer.hpp
 
 namespace principia {
 namespace base {

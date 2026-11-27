@@ -1,6 +1,4 @@
-#pragma once
-
-#include "base/serialization.hpp"
+// Body of link:base/serialization.hpp
 
 namespace principia {
 namespace base {

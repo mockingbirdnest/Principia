@@ -1,15 +1,4 @@
-#pragma once
-
-#include "base/file.hpp"
-
-#include <filesystem>
-#include <string>
-#include <system_error>
-#include <utility>
-
-#include "absl/log/check.h"
-#include "absl/log/log.h"
-#include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
+// Body of link:base/file.hpp
 
 namespace principia {
 namespace base {

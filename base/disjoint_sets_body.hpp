@@ -1,8 +1,4 @@
-#pragma once
-
-#include "base/disjoint_sets.hpp"
-
-#include <utility>
+// Body of link:base/disjoint_sets.hpp
 
 namespace principia {
 namespace base {

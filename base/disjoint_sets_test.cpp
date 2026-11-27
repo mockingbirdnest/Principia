@@ -1,9 +1,11 @@
-#include "base/disjoint_sets.hpp"
+// Test for link:base/disjoint_sets.hpp
 
-#include <vector>
+import std;
 
-#include "base/not_null.hpp"
-#include "gtest/gtest.h"
+import "gtest/gtest.h";
+
+import principia.base.disjoint_sets;
+import principia.base.not_null;
 
 namespace principia {
 namespace base {
