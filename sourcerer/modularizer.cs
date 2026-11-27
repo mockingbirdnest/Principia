@@ -203,6 +203,10 @@ class Modularizer {
       // Export the non-internal using declarations.
       FixExportedUsingDeclarations(parser_file);
 
+      // Export everything from the internal namespaces except the using
+      // directives.
+      FixInternalNamespacesBlanketExport(parser_file);
+
       RewriteFile(hpp_file, parser_file, dry_run);
     }
   }
@@ -233,7 +237,12 @@ class Modularizer {
   private static void FixExportedUsingDeclarations(Parser.File file) {
     var using_declarations = FindUsingDeclarations(file, internal_only: false);
     foreach (UsingDeclaration using_declaration in using_declarations) {
-      using_declaration.is_exported = true;
+      Node parent = using_declaration.parent!;
+      int position_in_parent = using_declaration.position_in_parent;
+      var export = new Export(parent: null);
+      parent.RemoveChild(using_declaration);
+      export.AddChild(using_declaration);
+      parent.InsertChild(position_in_parent, export);
     }
   }
 
@@ -247,6 +256,26 @@ class Modularizer {
              file.children[position_in_parent].is_blank_line) {
         file.RemoveChild(file.children[position_in_parent]);
       }
+    }
+  }
+
+  private static void FixInternalNamespacesBlanketExport(Parser.File file) {
+    var internal_using_directives =
+        FindUsingDirectives(file, internal_only: true);
+    int position_in_parent = -1;
+    if (internal_using_directives.Count == 0) {
+      var innermost_namespaces = FindInnermostNamespaces(file);
+      if (innermost_namespaces.Count == 0) {
+        // No using directives and no namespaces, this is a weird file, leave it
+        // alone.
+        return;
+      } else {
+        // Insert the blanket export after the first innermost namespace.
+        position_in_parent = innermost_namespaces[0].position_in_parent;
+      }
+    } else {
+      // Insert the blanket export after the last internal using directive.
+      position_in_parent = internal_using_directives[^1].position_in_parent;
     }
   }
 
@@ -342,7 +371,9 @@ class Modularizer {
     foreach (PreprocessorDirective po in pragma_onces) {
       if (needs_export_module) {
         int position_in_parent = po.position_in_parent;
-        node = new ExportModule(parent: null, name: file.file_module_full_name);
+        node = new Export(parent: null);
+        var module =
+            new Module(parent: node, name: file.file_module_full_name);
         file.InsertChild(position_in_parent, node);
       } else if (hpp_file != null) {
         int position_in_parent = po.position_in_parent;

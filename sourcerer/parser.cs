@@ -81,8 +81,14 @@ public class Parser {
         ParseUsingDeclaration(uncommented_line,
                               out bool is_exported,
                               out string full_name);
-        var using_declaration =
-            new UsingDeclaration(line, parent: current, full_name, is_exported);
+        if (is_exported) {
+          var export = new Export(parent: current);
+          var using_declaration =
+              new UsingDeclaration(line, parent: export, full_name);
+        } else {
+          var using_declaration =
+              new UsingDeclaration(line, parent: current, full_name);
+        }
       } else {
         var text = new Text(line, parent: current);
       }
@@ -217,19 +223,43 @@ public class Parser {
     }
   }
 
-  public class ExportModule : Declaration {
-    public ExportModule(Node? parent, string name) : base(
-        text: null,
-        parent,
-        name) {}
+  public class Export : Node {
+    public Export(Node? parent) : this(text: null, parent) {}
+
+    public Export(string? text, Node? parent) : base(text, parent) {}
 
     public override string Cxx() {
       Debug.Assert(must_rewrite, "inconsistent rewrite");
-      return "export module " + name + ";";
+      Debug.Assert(children.Count == 1, "Export must have exactly one child");
+      return "export " + children[0].Cxx();
     }
 
     public override void WriteNode(string indent = "") {
-      Console.WriteLine(indent + "ExportModule " + name);
+      Console.WriteLine(indent + "Export");
+      children[0].WriteNode(indent + "  ");
+    }
+  }
+
+  public class ExportSequence : Node {
+    public ExportSequence(Node? parent) : this(text: null, parent) {}
+
+    public ExportSequence(string? text, Node? parent) : base(text, parent) {}
+
+    public override string Cxx() {
+      Debug.Assert(must_rewrite, "inconsistent rewrite");
+      return "export {";
+    }
+
+    public string ClosingCxx() {
+      Debug.Assert(must_rewrite, "inconsistent rewrite");
+      return "}  // export";
+    }
+
+    public override void WriteNode(string indent = "") {
+      Console.WriteLine(indent + "Export");
+      if (children.Count > 0) {
+        children[0].WriteNode(indent + "  ");
+      }
     }
   }
 
@@ -440,6 +470,22 @@ public class Parser {
     public string? closing_text;
   }
 
+  public class Module : Declaration {
+    public Module(Node? parent, string name) : base(
+        text: null,
+        parent,
+        name) {}
+
+    public override string Cxx() {
+      Debug.Assert(must_rewrite, "inconsistent rewrite");
+      return "module " + name + ";";
+    }
+
+    public override void WriteNode(string indent = "") {
+      Console.WriteLine(indent + "Module " + name);
+    }
+  }
+
   public class PreprocessorDirective : Node {
     public PreprocessorDirective(string text, Node parent) : base(
         text,
@@ -500,22 +546,15 @@ public class Parser {
   }
 
   public class UsingDeclaration : Declaration {
-    public UsingDeclaration(Node parent,
-                            string full_name,
-                            bool is_exported = false) : this(
+    public UsingDeclaration(Node parent, string full_name) : this(
         text: null,
         parent,
-        full_name,
-        is_exported) {}
+        full_name) {}
 
-    public UsingDeclaration(string? text,
-                            Node parent,
-                            string full_name,
-                            bool is_exported = false) : base(
+    public UsingDeclaration(string? text, Node parent, string full_name) : base(
         text,
         parent,
         full_name.Split("::")[^1]) {
-      is_exported_ = is_exported;
       this.full_name = full_name;
       string[] segments = full_name.Split("::");
 
@@ -536,22 +575,15 @@ public class Parser {
 
     public override string Cxx() {
       Debug.Assert(must_rewrite, "inconsistent rewrite");
-      string export = is_exported ? "export " : "";
       if (declared_in_namespace == null) {
-        return export + "using " + full_name + ";";
+        return "using " + full_name + ";";
       } else {
-        return export +
-               "using " +
-               declared_in_namespace.name +
-               "::" +
-               name +
-               ";";
+        return "using " + declared_in_namespace.name + "::" + name + ";";
       }
     }
 
     public override void WriteNode(string indent = "") {
       Console.WriteLine(indent +
-                        (is_exported ? "Exported " : "") +
                         "UsingDeclaration " +
                         name +
                         (declared_in_namespace == null
@@ -560,21 +592,12 @@ public class Parser {
     }
 
     public override bool must_rewrite =>
-        declared_in_namespace is { must_rewrite: true } || text == null;
+        declared_in_namespace is { must_rewrite: true } ||
+        parent is Export{ must_rewrite: true } ;
 
-    public bool is_exported {
-      get => is_exported_;
-      set {
-        if (value != is_exported_) {
-          is_exported_ = value;
-          text = null;
-        }
-      }
-    }
     public string full_name;
     public Namespace? declared_in_namespace;
-    private bool is_exported_ = false;
-      }
+  }
 
   public class UsingDirective : Node {
     public UsingDirective(Node parent, string ns) :
