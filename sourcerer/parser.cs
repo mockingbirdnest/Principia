@@ -369,6 +369,11 @@ public class Parser {
                    string[] path,
                    string extension,
                    FileInfo file_info) : base(text, parent) {
+      if (text != null) {
+        raw_path =
+            Regex.Replace(Regex.Replace(text, @"^#include ([""<])", "$1"),
+                          @"(["">]).*$", "$1");
+      }
       this.path = path;
       extension_ = extension;
       file_info_ = file_info;
@@ -391,6 +396,7 @@ public class Parser {
       Console.WriteLine(indent + "Include " + string.Join(", ", path));
     }
 
+    public string? raw_path;
     public string[] path;
     public string extension => extension_;
 
@@ -514,6 +520,7 @@ public class Parser {
     }
 
     public bool is_if => text?.StartsWith("#if") == true;
+    public bool is_else => text?.StartsWith("#else") == true;
     public bool is_pragma_once => text?.StartsWith("#pragma once") == true;
       }
 

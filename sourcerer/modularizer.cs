@@ -100,7 +100,8 @@ class Modularizer {
       SplitIncludes(includes,
                     out List<Include> principia_includes,
                     out List<Include> system_includes,
-                    out List<Include> third_party_includes);
+                    out List<Include> third_party_includes,
+                    out List<Include> conditional_includes);
 
       if (parser_file.is_body_hpp) {
         FixPragmaOnce(parser_file, needs_export_module: false);
@@ -138,6 +139,8 @@ class Modularizer {
                                   after: last_third_party_import,
                                   principia_includes,
                                   skip_own_header: parser_file.is_body_cpp);
+        FixImportConditionalHeaders(parser_file,
+                                    conditional_includes);
       }
 
       // In all cases, the includes must go away.
@@ -169,7 +172,8 @@ class Modularizer {
       SplitIncludes(FindIncludes(parser_file, stop: first_namespace),
                     out List<Include> principia_includes,
                     out List<Include> system_includes,
-                    out List<Include> third_party_includes);
+                    out List<Include> third_party_includes,
+                    out List<Include> conditional_includes);
       var all_principia_includes = new List<Include>(principia_includes);
       all_principia_includes.AddRange(
           body_principia_includes.GetValueOrDefault(
@@ -268,61 +272,17 @@ class Modularizer {
     }
   }
 
-  // Removes include directives for the given headers from the file.
-  private static void FixIncludes(Parser.File file, List<Include> headers) {
-    foreach (Include inc in headers) {
-      int position_in_parent = inc.position_in_parent;
-      file.RemoveChild(inc);
-      // Remove blank lines that follow the include.
-      while (position_in_parent < file.children.Count &&
-             file.children[position_in_parent].is_blank_line) {
-        file.RemoveChild(file.children[position_in_parent]);
-      }
-    }
-  }
-
-  private static void FixInternalNamespacesExportSequence(Parser.File file) {
-    var internal_using_directives =
-        FindUsingDirectives(file, internal_only: true);
-    var es = new ExportSequence(parent: null);
-    int position_in_parent = -1;
-    Namespace? ns = null;
-    if (internal_using_directives.Count == 0) {
-      var innermost_namespaces = FindInnermostNamespaces(file);
-      if (innermost_namespaces.Count == 0) {
-        // No using directives and no namespaces, this is a weird file, leave it
-        // alone.
-        return;
-      } else {
-        // Insert the export sequence at the beginning of the first innermost
-        // namespace.
-        ns = innermost_namespaces[0];
-        position_in_parent = 0;
-      }
-    } else {
-      // Insert the export sequence after the last internal using directive.
-      Node? after = internal_using_directives[^1];
-      after = EnsureBlankLineAfter(after);
-      ns = after!.parent as Namespace;
-      position_in_parent = after.position_in_parent + 1;
-    }
-    ns!.InsertChild(position_in_parent, es);
-    ++position_in_parent;
-    while (position_in_parent < ns.children.Count) {
-      Node node = ns.RemoveChild(position_in_parent);
-      es.AddChild(node);
-    }
-    if (es.children.Count == 0) {
-      // Nothing in the export sequence, remove it.
-      ns.RemoveChild(es);
-    } else {
-      if (!es.children[0].is_blank_line) {
-        // Start the sequence with a blank line.
-        EnsureBlankLineBefore(es.children[0]);
-      }
-      if (!es.children[^1].is_blank_line) {
-        // End the sequence with a blank line.
-        EnsureBlankLineAfter(es.children[^1]);
+  // Change conditional includes into imports, without moving them around.  They
+  // may need fixing by hand afterwards.
+  private static void FixImportConditionalHeaders(Parser.File file,
+                                                  List<Include>
+                                                      conditional_includes) {
+    foreach (Include inc in conditional_includes) {
+      if (inc.raw_path != null) {
+        int position_in_parent = inc.position_in_parent;
+        file.RemoveChild(inc);
+        var import = new Import(parent: null, name: inc.raw_path);
+        file.InsertChild(position_in_parent, import);
       }
     }
   }
@@ -403,6 +363,65 @@ class Modularizer {
     return EnsureBlankLineAfter(last);
   }
 
+  // Removes include directives for the given headers from the file.
+  private static void FixIncludes(Parser.File file, List<Include> headers) {
+    foreach (Include inc in headers) {
+      int position_in_parent = inc.position_in_parent;
+      file.RemoveChild(inc);
+      // Remove blank lines that follow the include.
+      while (position_in_parent < file.children.Count &&
+             file.children[position_in_parent].is_blank_line) {
+        file.RemoveChild(file.children[position_in_parent]);
+      }
+    }
+  }
+
+  private static void FixInternalNamespacesExportSequence(Parser.File file) {
+    var internal_using_directives =
+        FindUsingDirectives(file, internal_only: true);
+    var es = new ExportSequence(parent: null);
+    int position_in_parent = -1;
+    Namespace? ns = null;
+    if (internal_using_directives.Count == 0) {
+      var innermost_namespaces = FindInnermostNamespaces(file);
+      if (innermost_namespaces.Count == 0) {
+        // No using directives and no namespaces, this is a weird file, leave it
+        // alone.
+        return;
+      } else {
+        // Insert the export sequence at the beginning of the first innermost
+        // namespace.
+        ns = innermost_namespaces[0];
+        position_in_parent = 0;
+      }
+    } else {
+      // Insert the export sequence after the last internal using directive.
+      Node? after = internal_using_directives[^1];
+      after = EnsureBlankLineAfter(after);
+      ns = after!.parent as Namespace;
+      position_in_parent = after.position_in_parent + 1;
+    }
+    ns!.InsertChild(position_in_parent, es);
+    ++position_in_parent;
+    while (position_in_parent < ns.children.Count) {
+      Node node = ns.RemoveChild(position_in_parent);
+      es.AddChild(node);
+    }
+    if (es.children.Count == 0) {
+      // Nothing in the export sequence, remove it.
+      ns.RemoveChild(es);
+    } else {
+      if (!es.children[0].is_blank_line) {
+        // Start the sequence with a blank line.
+        EnsureBlankLineBefore(es.children[0]);
+      }
+      if (!es.children[^1].is_blank_line) {
+        // End the sequence with a blank line.
+        EnsureBlankLineAfter(es.children[^1]);
+      }
+    }
+  }
+
   // Adds a link to our own header if it is included in `file`, as the first
   // line of the file.  Returns it.
   private static Node? FixOwnHeaderLink(Parser.File file,
@@ -429,7 +448,7 @@ class Modularizer {
     return null;
   }
 
-  private static Node FixModule(Parser.File file, Node? after) {
+  private static Node? FixModule(Parser.File file, Node? after) {
     int position_in_parent = (after?.position_in_parent + 1) ?? 0;
     var module = new Module(parent: null, name: file.file_module_full_name);
     file.InsertChild(position_in_parent, module);
@@ -479,11 +498,18 @@ class Modularizer {
   private static void SplitIncludes(List<Include> includes,
                                     out List<Include> principia_includes,
                                     out List<Include> system_includes,
-                                    out List<Include> third_party_includes) {
-    principia_includes = includes.FindAll(inc => inc.is_principia);
-    system_includes = includes.FindAll(inc => inc.is_system);
+                                    out List<Include> third_party_includes,
+                                    out List<Include> conditional_includes) {
+    principia_includes =
+        includes.FindAll(inc => inc.is_principia && !inc.is_conditional);
+    system_includes =
+        includes.FindAll(inc => inc.is_system && !inc.is_conditional);
     third_party_includes =
-        includes.FindAll(inc => !inc.is_principia && !inc.is_system);
+        includes.FindAll(inc =>
+                             !inc.is_principia &&
+                             !inc.is_system &&
+                             !inc.is_conditional);
+    conditional_includes = includes.FindAll(inc => inc.is_conditional);
   }
 }
 

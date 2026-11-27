@@ -50,19 +50,23 @@ public class Analyser {
   public static List<Include> FindIncludes(File file, Node? stop = null) {
     var includes = new List<Include>();
     bool after_cpp_if = false;
+    bool after_cpp_else = false;
     foreach (Node child in file.children) {
       if (child == stop) {
         break;
       } else if (child is PreprocessorDirective cpp) {
         after_cpp_if = cpp.is_if;
+        after_cpp_else = cpp.is_else;
       } else if (child is Include inc) {
         includes.Add(inc);
-        // Mark the includes that occur immediately after a preprocessor #if as
-        // conditional.
-        inc.is_conditional = after_cpp_if;
+        // Mark the includes that occur immediately after a preprocessor #if or
+        // #else as conditional.
+        inc.is_conditional = after_cpp_if || after_cpp_else;
         after_cpp_if = false;
+        after_cpp_else = false;
       } else {
         after_cpp_if = false;
+        after_cpp_else = false;
       }
     }
     return includes;
