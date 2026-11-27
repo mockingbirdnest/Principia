@@ -97,26 +97,30 @@ class Modularizer {
       var outermost_namespaces = FindOutermostNamespaces(parser_file);
       Namespace? first_namespace =
           outermost_namespaces.Count > 0 ? outermost_namespaces[0] : null;
+      var includes = FindIncludes(parser_file, stop: first_namespace);
+      var link = FixOwnHeaderLink(parser_file, includes);
 
       Node? last_export_module =
-          FixPragmaOnce(parser_file,
-                        hpp_file != body_file
-                            ? file_info_to_file[hpp_file]
-                            : null,
-                        needs_export_module: false);
+          FixPragmaOnce(parser_file, needs_export_module: false);
 
       // Find all the includes and categorize them.
-      SplitIncludes(FindIncludes(parser_file, stop: first_namespace),
+      SplitIncludes(includes,
                     out List<Include> principia_includes,
                     out List<Include> system_includes,
                     out List<Include> third_party_includes);
 
       if (hpp_file == body_file) {
+        Node? after;
+        if (last_export_module != null) {
+          after = last_export_module;
+        } else {
+          after = link;
+        }
         Node? last_std_import;
         if (system_includes.Count > 0) {
-          last_std_import = FixImportStd(parser_file, last_export_module);
+          last_std_import = FixImportStd(parser_file, after);
         } else {
-          last_std_import = last_export_module;
+          last_std_import = after;
         }
         // If this is a test or benchmark, its imports go right here.
         Node? last_third_party_import =
@@ -160,7 +164,7 @@ class Modularizer {
           outermost_namespaces.Count > 0 ? outermost_namespaces[0] : null;
 
       Node? last_export_module =
-          FixPragmaOnce(parser_file, hpp_file: null, needs_export_module: true);
+          FixPragmaOnce(parser_file, needs_export_module: true);
 
       SplitIncludes(FindIncludes(parser_file, stop: first_namespace),
                     out List<Include> principia_includes,
@@ -322,6 +326,8 @@ class Modularizer {
     }
   }
 
+  // Inserts imports of the Principia headers in `principia_includes` after
+  // `after` in `file`.  Returns the last inserted node.
   private static Node? FixImportPrincipiaHeaders(Parser.File file,
                                                  Node? after,
                                                  List<Include>
@@ -339,6 +345,7 @@ class Modularizer {
     return EnsureBlankLineAfter(last);
   }
 
+  // Inserts an `import std` after `after` in `file` and returns it.
   private static Node? FixImportStd(Parser.File file,
                                     Node? after) {
     int position_in_parent = (after?.position_in_parent + 1) ?? 0;
@@ -368,6 +375,8 @@ class Modularizer {
     return last;
   }
 
+  // Inserts imports of the third-party headers in `third_party_includes`
+  // after `after` in `file`.  Returns the last inserted node.
   private static Node? FixImportThirdPartyHeaders(Parser.File file,
                                                   Node? after,
                                                   List<Include>
@@ -389,10 +398,35 @@ class Modularizer {
     return EnsureBlankLineAfter(last);
   }
 
+  // Adds a link to our own header if it is included in `file`, as the first
+  // line of the file.  Returns it.
+  private static Node? FixOwnHeaderLink(Parser.File file,
+                                        List<Include> includes) {
+    foreach (Include inc in includes) {
+      if (inc.is_own_header) {
+        string usage =
+            file.is_benchmark ? "Benchmark for" :
+            file.is_test ? "Test for" :
+            file.is_body ? "Body of" : "";
+        var link =
+            new Text(
+                text: "// " +
+                      usage +
+                      " link:" +
+                      string.Join('/', inc.path) +
+                      "." +
+                      inc.extension,
+                parent: null);
+        file.InsertChild(0, link);
+        return EnsureBlankLineAfter(link);
+      }
+    }
+    return null;
+  }
+
   // Removes `#pragma once` directives from the file and insert an
   // `export module` directive in its place if needed.
   private static Node? FixPragmaOnce(Parser.File file,
-                                     Parser.File? hpp_file,
                                      bool needs_export_module) {
     // Collect the pragmas to fix.
     var pragma_onces = new List<PreprocessorDirective>();
@@ -418,15 +452,9 @@ class Modularizer {
         var module =
             new Module(parent: node, name: file.file_module_full_name);
         file.InsertChild(position_in_parent, node);
-      } else if (hpp_file != null) {
-        int position_in_parent = po.position_in_parent;
-        node =
-            new Text(text: "// Body of link:" + hpp_file.file_link_name,
-                     parent: null);
-        file.InsertChild(position_in_parent, node);
       } else {
-        // If the `#pragma once` is not replaced by an `export module` or a
-        // link, remove the blank lines after it.
+        // If the `#pragma once` is not replaced by an `export module`, remove
+        // the blank lines after it.
         foreach (Text blank in blank_lines_after_pragma_once) {
           file.RemoveChild(blank);
         }
