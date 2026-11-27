@@ -87,10 +87,6 @@ class Modularizer {
       }
       Parser.File parser_file = file_info_to_file[body_file];
 
-      // The `hpp_file` here might be this file if it's a test or a benchmark.
-      FileInfo hpp_file =
-          corresponding_header.GetValueOrDefault(body_file, body_file);
-
       // Only process includes up to the first outermost namespace.  We don't
       // want to touch the final include (for the body) or includes of generated
       // code.
@@ -100,39 +96,17 @@ class Modularizer {
       var includes = FindIncludes(parser_file, stop: first_namespace);
       var link = FixOwnHeaderLink(parser_file, includes);
 
-      Node? last_export_module =
-          FixPragmaOnce(parser_file, needs_export_module: false);
-
       // Find all the includes and categorize them.
       SplitIncludes(includes,
                     out List<Include> principia_includes,
                     out List<Include> system_includes,
                     out List<Include> third_party_includes);
 
-      if (hpp_file == body_file) {
-        Node? after;
-        if (last_export_module != null) {
-          after = last_export_module;
-        } else {
-          after = link;
-        }
-        Node? last_std_import;
-        if (system_includes.Count > 0) {
-          last_std_import = FixImportStd(parser_file, after);
-        } else {
-          last_std_import = after;
-        }
-        // If this is a test or benchmark, its imports go right here.
-        Node? last_third_party_import =
-            FixImportThirdPartyHeaders(parser_file,
-                                       after: last_std_import,
-                                       third_party_includes);
-        FixImportPrincipiaHeaders(parser_file,
-                                  after: last_third_party_import,
-                                  principia_includes);
-      } else {
-        // If this is a body that has a header, its imports will go in the
-        // header.
+      if (parser_file.is_body_hpp) {
+        FixPragmaOnce(parser_file, needs_export_module: false);
+        // If this is a body that gets included into its header, its imports
+        // will go in the header.
+        FileInfo hpp_file = corresponding_header[body_file];
         if (!body_principia_includes.TryAdd(hpp_file, principia_includes)) {
           body_principia_includes[hpp_file].AddRange(principia_includes);
         }
@@ -142,6 +116,24 @@ class Modularizer {
         if (!body_third_party_includes.TryAdd(hpp_file, third_party_includes)) {
           body_third_party_includes[hpp_file].AddRange(third_party_includes);
         }
+      } else {
+        if (parser_file.is_body_cpp) {
+          FixModule(parser_file, after: link);
+        }
+        Node? last_std_import;
+        if (system_includes.Count > 0) {
+          last_std_import = FixImportStd(parser_file, after: link);
+        } else {
+          last_std_import = link;
+        }
+        // If this is a test or benchmark, its imports go right here.
+        Node? last_third_party_import =
+            FixImportThirdPartyHeaders(parser_file,
+                                       after: last_std_import,
+                                       third_party_includes);
+        FixImportPrincipiaHeaders(parser_file,
+                                  after: last_third_party_import,
+                                  principia_includes);
       }
 
       // In all cases, the includes must go away.
@@ -426,6 +418,13 @@ class Modularizer {
       }
     }
     return null;
+  }
+
+  private static void FixModule(Parser.File file, Node? after) {
+    int position_in_parent = (after?.position_in_parent + 1) ?? 0;
+    var module = new Module(parent: null, name: file.file_module_full_name);
+    file.InsertChild(position_in_parent, module);
+    EnsureBlankLineAfter(module);
   }
 
   // Removes `#pragma once` directives from the file and insert an
