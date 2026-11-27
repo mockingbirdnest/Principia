@@ -307,10 +307,11 @@ public class Parser {
     public string project_namespace_full_name { get; }
     public bool is_benchmark => file_info.Name.EndsWith("_benchmark.cpp");
 
-    public bool is_body => file_info.Name.EndsWith("_body.hpp") ||
-                           (!is_benchmark &&
-                            !is_test &&
-                            file_info.Name.EndsWith(".cpp"));
+    public bool is_body_hpp => file_info.Name.EndsWith("_body.hpp");
+
+    public bool is_body_cpp => (!is_benchmark &&
+                                !is_test &&
+                                file_info.Name.EndsWith(".cpp"));
     public bool is_test => file_info.Name.EndsWith("_test.cpp");
   }
 

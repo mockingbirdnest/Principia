@@ -407,7 +407,7 @@ class Modularizer {
         string usage =
             file.is_benchmark ? "Benchmark for" :
             file.is_test ? "Test for" :
-            file.is_body ? "Body of" : "";
+            (file.is_body_hpp || file.is_body_cpp) ? "Body of" : "";
         var link =
             new Text(
                 text: "// " +
