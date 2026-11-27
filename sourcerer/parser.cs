@@ -344,12 +344,14 @@ public class Parser {
 
     public override string Cxx() {
       Debug.Assert(must_rewrite, "inconsistent rewrite");
-      return "import " + name + ";";
+      return "import " + name + ";" + comment;
     }
 
     public override void WriteNode(string indent = "") {
       Console.WriteLine(indent + "Import " + name);
     }
+
+    public string comment = "";
   }
 
   public class Include : Node {
@@ -373,6 +375,11 @@ public class Parser {
         raw_path =
             Regex.Replace(Regex.Replace(text, @"^#include ([""<])", "$1"),
                           @"(["">]).*$", "$1");
+        comment = Regex.Replace(text, @"^.*  //", "  //");
+        if (comment == text) {
+          // The substitution changed nothing, so there is no comment after all.
+          comment = "";
+        }
       }
       this.path = path;
       extension_ = extension;
@@ -396,6 +403,7 @@ public class Parser {
       Console.WriteLine(indent + "Include " + string.Join(", ", path));
     }
 
+    public string comment = "";
     public string? raw_path;
     public string[] path;
     public string extension => extension_;

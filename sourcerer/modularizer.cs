@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using static principia.sourcerer.Analyser;
 using static principia.sourcerer.Filenames;
 using static principia.sourcerer.Parser;
@@ -282,6 +283,7 @@ class Modularizer {
         int position_in_parent = inc.position_in_parent;
         file.RemoveChild(inc);
         var import = new Import(parent: null, name: inc.raw_path);
+        import.comment = inc.comment;
         file.InsertChild(position_in_parent, import);
       }
     }
@@ -303,6 +305,7 @@ class Modularizer {
       var import =
           new Import(parent: null,
                      name: "principia." + string.Join('.', inc.path));
+      import.comment = inc.comment;
       file.InsertChild(position_in_parent, import);
       ++position_in_parent;
       last = import;
@@ -356,6 +359,7 @@ class Modularizer {
                            "."  +
                            inc.extension +
                            '"');
+      import.comment = inc.comment;
       file.InsertChild(position_in_parent, import);
       ++position_in_parent;
       last = import;
