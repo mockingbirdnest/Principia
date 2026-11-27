@@ -17,15 +17,14 @@ public class Rewriter {
       RewriteNode(writer, file);
     }
     if (!dry_run) {
+      System.IO.File.Move(output_filename, input_filename, overwrite: true);
       if (move_to_ixx) {
         string ixx_filename =
             input_file.DirectoryName +
             "\\" +
             Path.GetFileNameWithoutExtension(input_file.Name) +
             ".ixx";
-        System.IO.File.Move(output_filename, ixx_filename, overwrite: true);
-      } else {
-        System.IO.File.Move(output_filename, input_filename, overwrite: true);
+        System.IO.File.Move(input_filename, ixx_filename, overwrite: true);
       }
     }
   }
