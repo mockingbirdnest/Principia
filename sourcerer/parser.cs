@@ -139,11 +139,18 @@ public class Parser {
           break;
         }
       }
+      RemoveChild(removed_position_in_parent);
+    }
+
+    public Node RemoveChild(int removed_position_in_parent) {
+      Debug.Assert(removed_position_in_parent >= 0);
+      Node child = children[removed_position_in_parent];
       children.RemoveAt(removed_position_in_parent);
       child.parent = null;
       for (int i = removed_position_in_parent; i < children.Count; ++i) {
         children[i].position_in_parent = i;
       }
+      return child;
     }
 
     public void RemoveChildren(List<Node> children_to_remove) {
@@ -240,17 +247,20 @@ public class Parser {
     }
   }
 
-  public class ExportSequence : Node {
+  public class ExportSequence : Scope {
     public ExportSequence(Node? parent) : this(text: null, parent) {}
 
-    public ExportSequence(string? text, Node? parent) : base(text, parent) {}
+    public ExportSequence(string? text, Node? parent) : base(
+        text,
+        parent,
+        name: "") {}
 
     public override string Cxx() {
       Debug.Assert(must_rewrite, "inconsistent rewrite");
       return "export {";
     }
 
-    public string ClosingCxx() {
+    public override string ClosingCxx() {
       Debug.Assert(must_rewrite, "inconsistent rewrite");
       return "}  // export";
     }
@@ -432,7 +442,7 @@ public class Parser {
     private readonly string own_header_directory_;
   }
 
-  public class Namespace : Declaration {
+  public class Namespace : Scope {
     public Namespace(Node parent, string name) :
         this(text: null, parent, name) { }
 
@@ -452,7 +462,7 @@ public class Parser {
       return "namespace " + name + " {";
     }
 
-    public string ClosingCxx() {
+    public override string ClosingCxx() {
       Debug.Assert(must_rewrite, "inconsistent rewrite");
       return "}  // namespace " + name;
     }
@@ -467,7 +477,6 @@ public class Parser {
     // The compatibility namespace is identified by its ::.
     public bool is_compatibility_namespace => name.Contains("::");
     public bool is_internal = false;
-    public string? closing_text;
   }
 
   public class Module : Declaration {
@@ -502,6 +511,22 @@ public class Parser {
     public bool is_if => text?.StartsWith("#if") == true;
     public bool is_pragma_once => text?.StartsWith("#pragma once") == true;
       }
+
+  public abstract class Scope : Declaration {
+    public Scope(Node? parent, string name) :
+        this(text: null, parent, name) { }
+
+    public Scope(string? text, Node? parent, string name) : base(
+        text,
+        parent,
+        name) { }
+
+    public virtual string ClosingCxx() {
+      throw new InvalidOperationException();
+    }
+
+    public string? closing_text;
+  }
 
   public class Struct : Declaration {
     public Struct(string text, Node parent, string name) : base(

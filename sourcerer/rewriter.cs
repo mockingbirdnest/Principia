@@ -23,9 +23,9 @@ public class Rewriter {
   private static void RewriteNode(StreamWriter writer, Parser.Node node) {
     foreach (Parser.Node child in node.children) {
       writer.WriteLine(child.must_rewrite ? child.Cxx() : child.text);
-      if (child is Namespace ns) {
+      if (child is Scope s) {
         RewriteNode(writer, child);
-        writer.WriteLine(ns.must_rewrite ? ns.ClosingCxx() : ns.closing_text);
+        writer.WriteLine(s.must_rewrite ? s.ClosingCxx() : s.closing_text);
       }
     }
   }

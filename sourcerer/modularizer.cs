@@ -263,7 +263,9 @@ class Modularizer {
   private static void FixInternalNamespacesExportSequence(Parser.File file) {
     var internal_using_directives =
         FindUsingDirectives(file, internal_only: true);
-    Node? after = null;
+    var es = new ExportSequence(parent: null);
+    int position_in_parent = -1;
+    Namespace? ns = null;
     if (internal_using_directives.Count == 0) {
       var innermost_namespaces = FindInnermostNamespaces(file);
       if (innermost_namespaces.Count == 0) {
@@ -271,18 +273,24 @@ class Modularizer {
         // alone.
         return;
       } else {
-        // Insert the export sequence after the first innermost namespace.
-        after = innermost_namespaces[0];
+        // Insert the export sequence at the beginning of the first innermost
+        // namespace.
+        ns = innermost_namespaces[0];
+        position_in_parent = 0;
       }
     } else {
       // Insert the export sequence after the last internal using directive.
-      after = internal_using_directives[^1];
+      Node? after = internal_using_directives[^1];
+      after = EnsureBlankLineAfter(after);
+      ns = after!.parent as Namespace;
+      position_in_parent = after.position_in_parent + 1;
     }
-    Node parent = after.parent!;
-    after = EnsureBlankLineAfter(after);
-    var es = new ExportSequence(parent: null);
-    parent.InsertChild(after!.position_in_parent + 1, es);
-    EnsureBlankLineAfter(es);
+    ns!.InsertChild(position_in_parent, es);
+    ++position_in_parent;
+    while (position_in_parent < ns.children.Count) {
+      Node node = ns.RemoveChild(position_in_parent);
+      es.AddChild(node);
+    }
   }
 
   private static Node? FixImportPrincipiaHeaders(Parser.File file,
