@@ -15,7 +15,6 @@ class Modularizer {
   public static void Run(string[] args) {
     // Parse the arguments.
     DirectoryInfo? project = null;
-    var clients = new List<DirectoryInfo>();
     var excluded = new HashSet<string>();
     var extra_headers = new HashSet<string>();
     bool dry_run = true;
@@ -27,8 +26,6 @@ class Modularizer {
         string value = split[2];
         if (option == "project") {
           project = new DirectoryInfo(value);
-        } else if (option == "client") {
-          clients.Add(new DirectoryInfo(value));
         } else if (option == "dry_run") {
           dry_run = bool.Parse(value);
         } else if (option == "exclude") {
