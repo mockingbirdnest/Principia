@@ -1,12 +1,4 @@
-#pragma once
-
-#include "base/push_pull_callback.hpp"
-
-#include <memory>
-#include <utility>
-
-#include "absl/log/check.h"
-#include "absl/log/log.h"
+// Body of link:base/push_pull_callback.hpp
 
 namespace principia {
 namespace base {

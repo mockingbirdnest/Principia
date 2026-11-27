@@ -1,11 +1,4 @@
-#pragma once
-
-#include "base/for_all_of.hpp"
-
-#include <tuple>
-#include <utility>
-
-#include "base/macros.hpp"  // 🧙 For FORCE_INLINE.
+// Body of link:base/for_all_of.hpp
 
 namespace principia {
 namespace base {

@@ -1,0 +1,58 @@
+export module principia.base.function;
+
+import std;
+
+import principia.base.function;
+
+namespace principia {
+namespace base {
+namespace _function {
+namespace internal {
+export {
+
+template<typename Result, typename... Args>
+class Functor {
+ public:
+  virtual ~Functor() = default;
+  virtual Result Call(Args&&...) = 0;
+};
+
+template<typename F, typename Result, typename... Args>
+class ConcreteFunctor final : public Functor<Result, Args...> {
+ public:
+  explicit ConcreteFunctor(F functor);
+  Result Call(Args&&... args) final;
+ private:
+  F functor_;
+};
+
+template<typename Signature>
+class function;
+
+template<typename Result, typename... Args>
+class function<Result(Args...)> {
+ public:
+  function() = default;
+
+  template<typename F>
+  function(F functor);
+
+  function(function&&) = default;  // NOLINT(whitespace/operators)
+  function& operator=(function&&) = default;
+
+  Result operator()(Args&&... args) const;
+
+ private:
+  std::unique_ptr<Functor<Result, Args...>> functor_;
+};
+
+}  // export
+}  // namespace internal
+
+export using internal::function;
+
+}  // namespace _function
+}  // namespace base
+}  // namespace principia
+
+#include "base/function_body.hpp"

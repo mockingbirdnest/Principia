@@ -1,6 +1,4 @@
-#pragma once
-
-#include "base/algebra.hpp"
+// Body of link:base/algebra.hpp
 
 namespace principia {
 namespace base {

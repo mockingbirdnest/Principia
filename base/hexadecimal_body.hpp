@@ -1,13 +1,4 @@
-#pragma once
-
-#include "base/hexadecimal.hpp"
-
-#include <cstdint>
-#include <cstring>
-#include <string_view>
-
-#include "absl/log/check.h"
-#include "absl/log/log.h"
+// Body of link:base/hexadecimal.hpp
 
 namespace principia {
 namespace base {

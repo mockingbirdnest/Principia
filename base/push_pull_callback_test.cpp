@@ -1,11 +1,10 @@
-#include "base/push_pull_callback.hpp"
+// Test for link:base/push_pull_callback.hpp
 
-#include <cstdint>
-#include <functional>
-#include <optional>
-#include <utility>
+import std;
 
-#include "gtest/gtest.h"
+import "gtest/gtest.h";
+
+import principia.base.push_pull_callback;
 
 namespace principia {
 namespace base {

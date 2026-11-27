@@ -1,6 +1,8 @@
-#include "base/multiprecision.hpp"
+// Test for link:base/multiprecision.hpp
 
-#include "gtest/gtest.h"
+import "gtest/gtest.h";
+
+import principia.base.multiprecision;
 
 namespace principia {
 namespace base {

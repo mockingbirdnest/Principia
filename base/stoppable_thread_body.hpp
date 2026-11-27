@@ -1,12 +1,4 @@
-#pragma once
-
-#include "base/stoppable_thread.hpp"
-
-#include <memory>
-#include <set>
-#include <stop_token>
-#include <thread>
-#include <utility>
+// Body of link:base/stoppable_thread.hpp
 
 namespace principia {
 namespace base {

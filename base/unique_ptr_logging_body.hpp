@@ -1,8 +1,4 @@
-#pragma once
-
-#include "base/unique_ptr_logging.hpp"
-
-#include <memory>
+// Body of link:base/unique_ptr_logging.hpp
 
 template<typename T, typename U>
 std::ostream& operator<<(std::ostream& out,

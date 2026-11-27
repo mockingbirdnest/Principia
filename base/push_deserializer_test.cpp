@@ -1,31 +1,24 @@
-#include "base/push_deserializer.hpp"
+// Test for link:base/push_deserializer.hpp
 
-#include <algorithm>
-#include <cstddef>
-#include <cstdint>
-#include <cstring>
-#include <functional>
-#include <list>
-#include <memory>
-#include <string>
-#include <utility>
-#include <vector>
+import std;
 
-#include "absl/log/check.h"
-#include "absl/log/log.h"
-#include "base/array.hpp"
-#include "base/not_null.hpp"
-#include "base/pull_serializer.hpp"
-#include "base/serialization.hpp"
-#include "gipfeli/compression.h"
-#include "gipfeli/gipfeli.h"
-#include "gmock/gmock.h"
-#include "google/protobuf/message.h"
-#include "gtest/gtest.h"
-#include "serialization/geometry.pb.h"
-#include "serialization/physics.pb.h"
-#include "serialization/quantities.pb.h"
-#include "testing_utilities/matchers.hpp"
+import "absl/log/check.h";
+import "absl/log/log.h";
+import "gipfeli/compression.h";
+import "gipfeli/gipfeli.h";
+import "gmock/gmock.h";
+import "google/protobuf/message.h";
+import "gtest/gtest.h";
+import "serialization/geometry.h";
+import "serialization/physics.h";
+import "serialization/quantities.h";
+
+import principia.base.push_deserializer;
+import principia.base.array;
+import principia.base.not_null;
+import principia.base.pull_serializer;
+import principia.base.serialization;
+import principia.testing_utilities.matchers;
 
 namespace principia {
 namespace base {

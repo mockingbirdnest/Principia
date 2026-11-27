@@ -1,15 +1,14 @@
-#include "base/algebra.hpp"
+// Test for link:base/algebra.hpp
 
-#include <chrono>
-#include <cstddef>
-#include <string>
-#include <string_view>
+import std;
 
-#include "base/multiprecision.hpp"
-#include "geometry/instant.hpp"
-#include "gtest/gtest.h"
-#include "numerics/polynomial_in_monomial_basis.hpp"
-#include "quantities/quantities.hpp"
+import "gtest/gtest.h";
+
+import principia.base.algebra;
+import principia.base.multiprecision;
+import principia.geometry.instant;
+import principia.numerics.polynomial_in_monomial_basis;
+import principia.quantities.quantities;
 
 namespace principia {
 namespace base {

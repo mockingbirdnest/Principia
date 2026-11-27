@@ -1,20 +1,4 @@
-#pragma once
-
-#include "base/base32768.hpp"
-
-#include <array>
-#include <cassert>
-#include <cstdint>
-#include <cstring>
-#include <limits>
-#include <map>
-#include <string>
-#include <type_traits>
-#include <vector>
-
-#include "absl/log/check.h"
-#include "absl/log/log.h"
-#include "base/bits.hpp"
+// Body of link:base/base32768.hpp
 
 namespace principia {
 namespace base {

@@ -1,12 +1,4 @@
-#pragma once
-
-#include "base/recurring_thread.hpp"
-
-#include <algorithm>
-#include <thread>
-#include <utility>
-
-#include "base/stoppable_thread.hpp"
+// Body of link:base/recurring_thread.hpp
 
 namespace principia {
 namespace base {

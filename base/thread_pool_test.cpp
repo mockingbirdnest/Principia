@@ -1,18 +1,15 @@
-#include "base/thread_pool.hpp"
+// Test for link:base/thread_pool.hpp
 
-#include <chrono>
-#include <cstdint>
-#include <future>
-#include <optional>
-#include <thread>
-#include <vector>
+import std;
 
-#include "absl/log/check.h"
-#include "absl/log/log.h"
-#include "absl/synchronization/mutex.h"
-#include "absl/synchronization/notification.h"
-#include "absl/time/time.h"
-#include "gtest/gtest.h"
+import "absl/log/check.h";
+import "absl/log/log.h";
+import "absl/synchronization/mutex.h";
+import "absl/synchronization/notification.h";
+import "absl/time/time.h";
+import "gtest/gtest.h";
+
+import principia.base.thread_pool;
 
 namespace principia {
 namespace base {

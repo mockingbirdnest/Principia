@@ -1,13 +1,4 @@
-#pragma once
-
-#include "base/reanimator.hpp"
-
-#include <memory>
-#include <utility>
-
-#include "absl/log/check.h"
-#include "absl/log/die_if_null.h"
-#include "base/stoppable_thread.hpp"
+// Body of link:base/reanimator.hpp
 
 namespace principia {
 namespace base {

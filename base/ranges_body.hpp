@@ -1,6 +1,4 @@
-#pragma once
-
-#include "base/ranges.hpp"
+// Body of link:base/ranges.hpp
 
 namespace principia {
 namespace base {

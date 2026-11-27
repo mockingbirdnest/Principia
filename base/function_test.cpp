@@ -1,10 +1,11 @@
-#include "base/function.hpp"
+// Test for link:base/function.hpp
 
-#include <memory>
-#include <utility>
+import std;
 
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
+import "gmock/gmock.h";
+import "gtest/gtest.h";
+
+import principia.base.function;
 
 using ::testing::Eq;
 

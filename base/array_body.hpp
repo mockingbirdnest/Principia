@@ -1,13 +1,4 @@
-#pragma once
-
-#include "base/array.hpp"
-
-#include <concepts>
-#include <memory>
-#include <utility>
-
-#include "absl/log/check.h"
-#include "absl/log/log.h"
+// Body of link:base/array.hpp
 
 namespace principia {
 namespace base {

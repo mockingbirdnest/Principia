@@ -1,20 +1,17 @@
-#include "base/file_log_sink.hpp"
+// Body of link:base/file_log_sink.hpp
 
-#include <exception>
-#include <iostream>
-#include <string>
-#include <utility>
+module principia.base.file_log_sink;
 
-#include "absl/log/check.h"
-#include "absl/time/time.h"
-#include "base/macros.hpp"  // 🧙 For OS_WIN.
+import std;
+
+import "absl/log/check.h";
+import "absl/time/time.h";
+import "base/macros.hpp";  // 🧙 For OS_WIN.
 
 #if OS_WIN
-#include <process.h>
-#include <windows.h>
+import <process.h>;
 #else
-#include <sys/utsname.h>
-#include <unistd.h>
+import <sys/utsname.h>;
 #endif
 
 namespace principia {

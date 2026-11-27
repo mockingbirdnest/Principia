@@ -1,12 +1,10 @@
-#include "base/for_all_of.hpp"
+// Test for link:base/for_all_of.hpp
 
-#include <array>
-#include <iostream>
-#include <string>
-#include <tuple>
-#include <utility>
+import std;
 
-#include "gtest/gtest.h"
+import "gtest/gtest.h";
+
+import principia.base.for_all_of;
 
 namespace principia {
 namespace base {
