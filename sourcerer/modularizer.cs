@@ -133,11 +133,15 @@ class Modularizer {
       } else {
         // If this is a body that has a header, its imports will go in the
         // header.
-        body_principia_includes.Add(hpp_file, principia_includes);
+        if (!body_principia_includes.TryAdd(hpp_file, principia_includes)) {
+          body_principia_includes[hpp_file].AddRange(principia_includes);
+        }
         if (system_includes.Count > 0) {
           needs_import_std.Add(hpp_file);
         }
-        body_third_party_includes.Add(hpp_file, third_party_includes);
+        if (!body_third_party_includes.TryAdd(hpp_file, third_party_includes)) {
+          body_third_party_includes[hpp_file].AddRange(third_party_includes);
+        }
       }
 
       // In all cases, the includes must go away.
@@ -176,7 +180,7 @@ class Modularizer {
               hpp_file,
               new List<Include>()));
       var all_third_party_includes = new List<Include>(third_party_includes);
-      third_party_includes.AddRange(
+      all_third_party_includes.AddRange(
           body_third_party_includes.GetValueOrDefault(
               hpp_file,
               new List<Include>()));
