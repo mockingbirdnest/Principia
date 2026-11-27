@@ -117,14 +117,17 @@ class Modularizer {
           body_third_party_includes[hpp_file].AddRange(third_party_includes);
         }
       } else {
+        Node? module;
         if (parser_file.is_body_cpp) {
-          FixModule(parser_file, after: link);
+          module = FixModule(parser_file, after: link);
+        } else {
+          module = link;
         }
         Node? last_std_import;
         if (system_includes.Count > 0) {
-          last_std_import = FixImportStd(parser_file, after: link);
+          last_std_import = FixImportStd(parser_file, after: module);
         } else {
-          last_std_import = link;
+          last_std_import = module;
         }
         // If this is a test or benchmark, its imports go right here.
         Node? last_third_party_import =
@@ -133,7 +136,8 @@ class Modularizer {
                                        third_party_includes);
         FixImportPrincipiaHeaders(parser_file,
                                   after: last_third_party_import,
-                                  principia_includes);
+                                  principia_includes,
+                                  skip_own_header: parser_file.is_body_cpp);
       }
 
       // In all cases, the includes must go away.
@@ -190,7 +194,8 @@ class Modularizer {
                                      all_third_party_includes);
       FixImportPrincipiaHeaders(parser_file,
                                 after: last_third_party_import,
-                                all_principia_includes);
+                                all_principia_includes,
+                                skip_own_header: false);
 
       // Drop the includes.
       FixIncludes(parser_file, principia_includes);
@@ -327,10 +332,14 @@ class Modularizer {
   private static Node? FixImportPrincipiaHeaders(Parser.File file,
                                                  Node? after,
                                                  List<Include>
-                                                     principia_includes) {
+                                                     principia_includes,
+                                                 bool skip_own_header) {
     int position_in_parent = (after?.position_in_parent + 1) ?? 0;
     Node? last = after;
     foreach (Include inc in principia_includes) {
+      if (skip_own_header && inc.is_own_header) {
+        continue;
+      }
       var import =
           new Import(parent: null,
                      name: "principia." + string.Join('.', inc.path));
@@ -420,11 +429,11 @@ class Modularizer {
     return null;
   }
 
-  private static void FixModule(Parser.File file, Node? after) {
+  private static Node FixModule(Parser.File file, Node? after) {
     int position_in_parent = (after?.position_in_parent + 1) ?? 0;
     var module = new Module(parent: null, name: file.file_module_full_name);
     file.InsertChild(position_in_parent, module);
-    EnsureBlankLineAfter(module);
+    return EnsureBlankLineAfter(module);
   }
 
   // Removes `#pragma once` directives from the file and insert an
