@@ -11,6 +11,11 @@ MODULE_IMPORT_DECLARATION = re.compile(
     ''',
     re.VERBOSE)
 
+precompiled_units = []
+compiled_units = []
+linked_units = []
+
+
 class TranslationUnit:
   def __init__(self, source_file: str):
     self.source_file = source_file.removeprefix("./")
@@ -20,6 +25,15 @@ class TranslationUnit:
                       source_file.rsplit("/", 1)[0] == "main.cpp"
                    else None)
     self.precompiled = None
+    self.register()
+
+  def register(self):
+    if self.precompiled:
+      precompiled_units.append(self)
+    if self.compiled:
+      compiled_units.append(self)
+    if self.binary:
+      linked_units.append(self)
 
   def __eq__(self, value):
     return isinstance(value, TranslationUnit) and self.source_file == value.source_file
@@ -44,6 +58,7 @@ class ModuleInterfaceUnit(TranslationUnit):
       self.source_file = module_name.removeprefix("principia.").replace(
           ".", "/") + ".ixx"
       self.compiled = f"obj/{self.source_file}.o"
+      self.register()
 
 class HeaderUnit(TranslationUnit):
   def __init__(self, header_name: str):
@@ -53,6 +68,7 @@ class HeaderUnit(TranslationUnit):
     # Header units are precompiled, but not compiled.
     self.compiled = None
     self.binary = None
+    self.register()
 
 def find_all_cpp_files(path="."):
   result = []
@@ -60,7 +76,7 @@ def find_all_cpp_files(path="."):
     p = path + "/" + name
     if os.path.isfile(p) and p.endswith(".cpp"):
       result.append(p)
-    elif os.path.isdir(p):
+    elif os.path.isdir(p) and p.count("/") < 2:
       result += find_all_cpp_files(p)
   return result
 
@@ -88,28 +104,26 @@ def add_transitive_imports(translation_unit: TranslationUnit):
 for path in find_all_cpp_files():
   add_transitive_imports(TranslationUnit(path))
 
-sorted_imports = sorted(imports.items(), key=lambda i: i[0].source_file)
-sorted_dependencies = sorted(transitive_dependencies.items(), key=lambda i: i[0].source_file)
+for unit in sorted(precompiled_units, key=lambda u: u.source_file):
+  if not os.path.exists(unit.source_file):
+    # This must be a third-party dependency, let the makefile provide its path.
+    continue
+  rule = f"{unit.precompiled}: {unit.source_file}"
+  for i in transitive_dependencies[unit]:
+    rule += f" \\\n\t{i.precompiled}"
+  print(rule)
 
-for unit, imports in sorted_imports:
-  if unit.precompiled:
-    rule = f"{unit.precompiled}: {unit.source_file}"
-    for i in imports:
-      rule += f" \\\n\t{i.precompiled}"
-    print(rule)
+for unit in sorted(compiled_units, key=lambda u: u.source_file):
+  rule = f"{unit.compiled}: {unit.precompiled or unit.source_file}"
+  for d in transitive_dependencies[unit]:
+    if d.precompiled:
+      rule += f" \\\n\t{d.precompiled}"
+  print(rule)
 
-for unit, dependencies in sorted_dependencies:
-  if unit.compiled:
-    rule = f"{unit.compiled}: {unit.precompiled or unit.source_file}"
-    for d in dependencies:
-      if d.precompiled:
-        rule += f" \\\n\t{d.precompiled}"
-    print(rule)
-
-for unit, dependencies in sorted_dependencies:
+for unit in sorted(linked_units, key=lambda u: u.source_file):
   if unit.binary:
     rule = f"{unit.binary}: {unit.compiled}"
-    for d in dependencies:
+    for d in transitive_dependencies[unit]:
       if d.compiled:
         rule += f" \\\n\t{d.compiled}"
     print(rule)

@@ -6,6 +6,7 @@ namespace principia {
 namespace base {
 namespace _cpuid {
 namespace internal {
+export {
 
 struct CPUIDResult {
   std::uint32_t eax;
@@ -65,6 +66,7 @@ std::string ProcessorBrandString();
 
 std::string CPUFeatures();
 
+}
 }  // namespace internal
 
 #undef PRINCIPIA_CPUID_FLAG
