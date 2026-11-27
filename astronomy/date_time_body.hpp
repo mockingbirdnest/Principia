@@ -628,12 +628,12 @@ constexpr TimeParser::TimeParser(std::int64_t const digits,
 
 constexpr TimeParser TimeParser::ReadToEnd(std::string_view const s) {
   std::int64_t digits = 0;
-  std::int64_t digit_count = 0;
-  std::int64_t colons = 0;
-  std::int64_t first_colon_index = -1;
-  std::int64_t second_colon_index = -1;
+  int digit_count = 0;
+  int colons = 0;
+  int first_colon_index = -1;
+  int second_colon_index = -1;
   bool has_decimal_mark = false;
-  std::int64_t decimal_mark_index = -1;
+  int decimal_mark_index = -1;
 
   for (auto it = s.begin(); it != s.end(); ++it) {
     switch (*it) {
