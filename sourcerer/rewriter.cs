@@ -7,7 +7,8 @@ namespace sourcerer {
 public class Rewriter {
   public static void RewriteFile(FileInfo input_file,
                                  Parser.File file,
-                                 bool dry_run) {
+                                 bool dry_run,
+                                 bool move_to_ixx = false) {
     string input_filename = input_file.FullName;
     string output_filename =
         input_file.DirectoryName + "\\" + input_file.Name + ".new";
@@ -16,7 +17,16 @@ public class Rewriter {
       RewriteNode(writer, file);
     }
     if (!dry_run) {
-      System.IO.File.Move(output_filename, input_filename, overwrite: true);
+      if (move_to_ixx) {
+        string ixx_filename =
+            input_file.DirectoryName +
+            "\\" +
+            Path.GetFileNameWithoutExtension(input_file.Name) +
+            ".ixx";
+        System.IO.File.Move(output_filename, ixx_filename, overwrite: true);
+      } else {
+        System.IO.File.Move(output_filename, input_filename, overwrite: true);
+      }
     }
   }
 

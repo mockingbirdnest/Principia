@@ -214,11 +214,7 @@ class Modularizer {
       // directives.
       FixInternalNamespacesExportSequence(parser_file);
 
-      RewriteFile(hpp_file, parser_file, dry_run);
-
-      // Move the header to an .ixx file.
-      System.IO.File.Move(hpp_file.FullName,
-                          hpp_file.FullName.Replace(".hpp", ".ixx"));
+      RewriteFile(hpp_file, parser_file, dry_run, move_to_ixx: true);
     }
   }
 
