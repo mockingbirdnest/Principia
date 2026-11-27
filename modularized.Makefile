@@ -19,6 +19,8 @@ PROTOBUF_HEADERS := $(wildcard deps/protobuf/src/google/protobuf/*.h) $(wildcard
 PROTOBUF_PRECOMPILED_HEADERS := $(PROTOBUF_HEADERS:deps/protobuf/src/%.h=phu/%.h.pcm)
 GMOCK_PRECOMPILED_HEADERS := phu/gmock/gmock.h.pcm
 GTEST_PRECOMPILED_HEADERS := phu/gtest/gtest.h.pcm
+SYSTEM_HEADERS := $(wildcard /usr/lib/llvm-23/lib/clang/23/include/*.h)
+SYSTEM_PRECOMPILED_HEADERS := $(SYSTEM_HEADERS:/usr/lib/llvm-23/lib/clang/23/include/%.h=phu/%.h.pcm)
 
 dependencies: compute_import_dependencies.py \
 	$(PRINCIPIA_MODULE_INTERFACE_UNITS) \
@@ -45,7 +47,7 @@ $(PROTO_OBJECTS): obj/%.o: %
 pmu/std.pcm: /usr/lib/llvm-23/share/libc++/v1/std.cppm
 	@mkdir -p $(@D)
 	clang++-23 $(ARGS) --precompile $< -o $@
-	
+
 phu/%.pcm:
 	@mkdir -p $(@D)
 	clang++-23 $(ARGS) -fmodule-header $< -o $@
@@ -65,6 +67,7 @@ $(GIPFELI_PRECOMPILED_HEADERS): phu/%.pcm: deps/gipfeli/include/%
 $(GMOCK_PRECOMPILED_HEADERS): phu/%.pcm: deps/googletest/googlemock/include/%
 $(GTEST_PRECOMPILED_HEADERS): phu/%.pcm: deps/googletest/googletest/include/%
 $(PROTOBUF_PRECOMPILED_HEADERS): phu/%.pcm: deps/protobuf/src/%
+$(SYSTEM_PRECOMPILED_HEADERS): phu/%.pcm: /usr/lib/llvm-23/lib/clang/23/include/%
 
 # We don't do dependency resolution on the protos; we compile them all at once.
 $(PROTO_HEADERS) $(PROTO_TRANSLATION_UNITS): $(PROTO_FILES)
