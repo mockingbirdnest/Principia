@@ -286,9 +286,9 @@ constexpr bool TimeOfDay::is_end_of_day() const {
 }
 
 constexpr TimeOfDay::TimeOfDay(int const hour,
-                     int const minute,
-                     int const second,
-                     int const millisecond)
+                               int const minute,
+                               int const second,
+                               int const millisecond)
     : hour_(hour),
       minute_(minute),
       second_(second),
@@ -518,14 +518,13 @@ constexpr DateParser DateParser::ReadToEnd(std::string_view const s) {
     }
   }
   return DateParser{digits,
-                      digit_count,
-                      hyphens,
-                      first_hyphen_index,
-                      second_hyphen_index,
-                      has_w,
-                      w_index};
+                    digit_count,
+                    hyphens,
+                    first_hyphen_index,
+                    second_hyphen_index,
+                    has_w,
+                    w_index};
 }
-
 
 constexpr Date DateParser::ToDate(std::optional<Calendar> const calendar,
                                   bool const negative) const {
@@ -663,13 +662,13 @@ constexpr TimeParser TimeParser::ReadToEnd(std::string_view const s) {
         return TimeParser{0, 0, 0, 0, 0, false, 0};
     }
   }
-  return TimeParser(digits,
+  return TimeParser{digits,
                     digit_count,
                     colons,
                     first_colon_index,
                     second_colon_index,
                     has_decimal_mark,
-                    decimal_mark_index);
+                    decimal_mark_index};
 }
 
 constexpr TimeOfDay TimeParser::ToTime() const {
