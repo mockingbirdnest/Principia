@@ -553,6 +553,7 @@ TEST_P(LunarOrbitTest, OrbitalElements) {
           /*e_cos_ω_measure=*/GetParam().first_month_e_cos_ω_plot_range);
   first_month_eccentricity_vector_graph.ListPointPlot(
       first_month_osculating_eccentricity_vector, xkcd::blue);
+  first_month_eccentricity_vector_graph.AntiAlias();
   // This corresponds to the left-hand side of [RL06] figures 9–11 for orbits
   // A–C, with the addition of the mean elements in red.
   EXPECT_GOLDEN_GRAPH(first_month_eccentricity_vector_graph,
@@ -648,6 +649,7 @@ TEST_P(LunarOrbitTest, OrbitalElements) {
   // This corresponds to the right-hand side of [RL06] figures 9–11 for orbits
   // A–C, with the addition of the mean elements in red, and with the points at
   // the end of each ground track cycle shown in green instead of black.
+  long_term_eccentricity_vector_graph.AntiAlias();
   EXPECT_GOLDEN_GRAPH(long_term_eccentricity_vector_graph,
                       "long_term");
 

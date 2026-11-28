@@ -245,7 +245,8 @@ Graph<double, double> ЛидовGraph(OrbitalElements const& elements,
                 return std::pair{c₂, c₁};
               }),
       лидов_parameter_colour,
-      {.joined = true});
+      {.joined = true, .thickness_in_pixels = 3.5});
+  graph.AntiAlias();
   return graph;
 }
 

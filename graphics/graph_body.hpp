@@ -8,22 +8,28 @@
 #include <utility>
 #include <vector>
 
+#include "numerics/elementary_functions.hpp"
+
 namespace principia {
 namespace graphics {
 namespace _graph {
 namespace internal {
+
+using namespace principia::numerics::_elementary_functions;
 
 template<affine Abscissa, affine Ordinate>
 Graph<Abscissa, Ordinate>::Graph(std::int64_t const width,
                                  std::int64_t const height,
                                  Interval<Abscissa> const& x_range,
                                  Interval<Ordinate> const& y_range,
-                                 RGBA32 const background)
+                                 RGBA32 const background,
+                                 Graph::Options const options)
     : x_range_(x_range),
       y_range_(y_range),
       width_(width),
       height_(height),
-      pixels_(width * height, background) {}
+      anti_aliasing_(options.anti_aliasing),
+      samples_(samples_width_ * samples_height_, background) {}
 
 template<affine Abscissa, affine Ordinate>
 template<std::ranges::range Points>
@@ -32,6 +38,7 @@ void Graph<Abscissa, Ordinate>::ListPointPlot(
     Points const& points,
     RGB24 const colour,
     ListPointPlotOptions const options) {
+  InvalidateAntiAliasing();
   if (options.joined) {
     std::optional<Abscissa> xᵢ₋₁;
     std::optional<Ordinate> yᵢ₋₁;
@@ -45,7 +52,8 @@ void Graph<Abscissa, Ordinate>::ListPointPlot(
           Plot([xᵢ₋₁ = *xᵢ₋₁, yᵢ₋₁ = *yᵢ₋₁, slope](
                    Abscissa const& x) { return yᵢ₋₁ + (x - xᵢ₋₁) * slope; },
                {std::min(*xᵢ₋₁, xᵢ), std::max(*xᵢ₋₁, xᵢ)},
-               colour);
+               colour,
+               {.thickness_in_pixels = options.thickness_in_pixels});
         }
       }
       xᵢ₋₁ = xᵢ;
@@ -53,7 +61,10 @@ void Graph<Abscissa, Ordinate>::ListPointPlot(
     }
   } else {
     for (auto const& [x, y] : points) {
-      SetPixel(abscissa_to_pixel(x), ordinate_to_pixel(y), Opaque(colour));
+      DrawDisk(x,
+               y,
+               0.5 * anti_aliasing_.supersampling * options.thickness_in_pixels,
+               colour);
     }
   }
 }
@@ -61,13 +72,15 @@ void Graph<Abscissa, Ordinate>::ListPointPlot(
 template<affine Abscissa, affine Ordinate>
 void Graph<Abscissa, Ordinate>::Plot(std::function<Ordinate(Abscissa)> const& f,
                                      Interval<Abscissa> const& range,
-                                     RGB24 const colour) {
-  for (std::int64_t i = abscissa_to_pixel(range.min);
-       i <= abscissa_to_pixel(range.max);
+                                     RGB24 const colour,
+                                     PlotOptions options) {
+  InvalidateAntiAliasing();
+  for (std::int64_t i = abscissa_to_sample(range.min);
+       i <= abscissa_to_sample(range.max);
        ++i) {
-    Interval const pixel_range = Intersection(pixel_to_abscissa(i), range);
-    Ordinate const f_x_min = f(pixel_range.min);
-    Ordinate const f_x_max = f(pixel_range.max);
+    Interval const sample_range = Intersection(sample_to_abscissa_range(i), range);
+    Ordinate const f_x_min = f(sample_range.min);
+    Ordinate const f_x_max = f(sample_range.max);
     Ordinate f_min;
     Ordinate f_max;
     if (f_x_min <= f_x_max) {
@@ -77,10 +90,16 @@ void Graph<Abscissa, Ordinate>::Plot(std::function<Ordinate(Abscissa)> const& f,
       f_min = f_x_max;
       f_max = f_x_min;
     }
-    for (std::int64_t j = ordinate_to_pixel(f_max);
-         j <= ordinate_to_pixel(f_min);
-         ++j) {
-      SetPixel(i, j, Opaque(colour));
+    // Draw points equally spaced in ordinate, no further than the sample
+    // spacing, and at both f_min and f_max.
+    Difference<Ordinate> const Δf = f_max - f_min;
+    double const n = std::ceil(Δf / sample_height_);
+    Difference<Ordinate> const df = Δf / n;
+    for (std::int64_t k = 0; k <= n; ++k) {
+      DrawDisk(sample_range.midpoint(),
+               f_min + k * df,
+               0.5 * anti_aliasing_.supersampling * options.thickness_in_pixels,
+               colour);
     }
   }
 }
@@ -89,23 +108,27 @@ template<affine Abscissa, affine Ordinate>
 void Graph<Abscissa, Ordinate>::PlotVerticalLine(
     Abscissa const x,
     RGB24 const colour,
-    std::optional<Interval<Ordinate>> const y_range) {
-  // Note that the lower bound corresponds to `y_range->max` because
-  // `ordinate_to_pixel` is decreasing.
-  for (std::int64_t j = y_range.has_value() ? ordinate_to_pixel(y_range->max)
-                                            : 0;
-       j < (y_range.has_value() ? ordinate_to_pixel(y_range->min) : height_);
-       ++j) {
-    SetPixel(abscissa_to_pixel(x), j, Opaque(colour));
-  }
+    std::optional<Interval<Ordinate>> const y_range,
+    PlotOptions options) {
+  InvalidateAntiAliasing();
+  auto const& range = y_range.value_or(y_range_);
+  DrawRectangle(x,
+                range.midpoint(),
+                pixel_width_ * options.thickness_in_pixels,
+                range.measure() + pixel_height_,
+                colour);
 }
 
 template<affine Abscissa, affine Ordinate>
-void Graph<Abscissa, Ordinate>::PlotHorizontalLine(Ordinate y,
-                                                          RGB24 colour) {
-  for (std::int64_t i = 0; i < width_; ++i) {
-    SetPixel(i, ordinate_to_pixel(y), Opaque(colour));
-  }
+void Graph<Abscissa, Ordinate>::PlotHorizontalLine(Ordinate const y,
+                                                   RGB24 const colour,
+                                                   PlotOptions options) {
+  InvalidateAntiAliasing();
+  DrawRectangle(x_range_.midpoint(),
+                y,
+                x_range_.measure() + pixel_width_,
+                pixel_height_ * options.thickness_in_pixels,
+                colour);
 }
 
 template<affine Abscissa, affine Ordinate>
@@ -115,16 +138,57 @@ void Graph<Abscissa, Ordinate>::AddLabel(Point const& point,
                                          RGB24 const colour,
                                          Label::TextPlacement const placement) {
   auto const& [x, y] = point;
-  labels_.emplace_back(abscissa_to_pixel(x),
-                       ordinate_to_pixel(y),
+  labels_.emplace_back(abscissa_to_sample(x) / anti_aliasing_.supersampling,
+                       ordinate_to_sample(y) / anti_aliasing_.supersampling,
                        std::move(text),
                        colour,
                        placement);
 }
 
 template<affine Abscissa, affine Ordinate>
+inline void Graph<Abscissa, Ordinate>::AntiAlias() {
+  if (anti_aliasing_.supersampling == 1) {
+    return;
+  }
+  pixels_.emplace(width_ * height_);
+  std::int64_t const sample_count = Pow<2>(anti_aliasing_.supersampling);
+  for (std::int64_t row = 0; row < height_; ++row) {
+    for (std::int64_t column = 0; column < width_; ++column) {
+      // TODO(egg): This is bad colour theory.
+      std::int64_t r_total = 0;
+      std::int64_t g_total = 0;
+      std::int64_t b_total = 0;
+      std::int64_t a_total = 0;
+      for (std::int64_t sub_row = 0; sub_row < anti_aliasing_.supersampling;
+           ++sub_row) {
+        for (std::int64_t sub_column = 0;
+             sub_column < anti_aliasing_.supersampling;
+             ++sub_column) {
+          RGBA32 const& sample =
+              samples_[(row * anti_aliasing_.supersampling + sub_row) *
+                           samples_width_ +
+                       column * anti_aliasing_.supersampling + sub_column];
+          r_total += sample.colour.red;
+          g_total += sample.colour.green;
+          b_total += sample.colour.blue;
+          a_total += sample.alpha;
+        }
+      }
+      (*pixels_)[row * width_ + column] = {
+          {static_cast<std::uint8_t>(r_total / sample_count),
+           static_cast<std::uint8_t>(g_total / sample_count),
+           static_cast<std::uint8_t>(b_total / sample_count)},
+          static_cast<std::uint8_t>(a_total / sample_count)};
+    }
+  }
+}
+
+template<affine Abscissa, affine Ordinate>
 std::vector<RGBA32> const& Graph<Abscissa, Ordinate>::pixels() const {
-  return pixels_;
+  if (anti_aliasing_.supersampling == 1) {
+    return samples_;
+  }
+  return *pixels_;
 }
 
 template<affine Abscissa, affine Ordinate>
@@ -143,34 +207,98 @@ std::int64_t Graph<Abscissa, Ordinate>::height() const {
 }
 
 template<affine Abscissa, affine Ordinate>
-std::int64_t Graph<Abscissa, Ordinate>::abscissa_to_pixel(
+std::int64_t Graph<Abscissa, Ordinate>::abscissa_to_sample(
     Abscissa const x) const {
-  return static_cast<std::int64_t>((x - x_range_.min) * inverse_pixel_width_ +
-                                   0.5);
+  return static_cast<std::int64_t>((x - x_range_.min) * inverse_sample_width_ +
+                                   0.5 * anti_aliasing_.supersampling);
 }
 
 template<affine Abscissa, affine Ordinate>
-Interval<Abscissa> Graph<Abscissa, Ordinate>::pixel_to_abscissa(
-    std::int64_t i) const {
-  return {(i - 0.5) * pixel_width_ + x_range_.min,
-          (i + 0.5) * pixel_width_ + x_range_.min};
+Interval<Abscissa> Graph<Abscissa, Ordinate>::sample_to_abscissa_range(
+    std::int64_t const i) const {
+  return {
+      (i - 0.5 * anti_aliasing_.supersampling) * sample_width_ + x_range_.min,
+      (i + 0.5 * anti_aliasing_.supersampling) * sample_width_ + x_range_.min};
 }
 
 template<affine Abscissa, affine Ordinate>
-std::int64_t Graph<Abscissa, Ordinate>::ordinate_to_pixel(
+Abscissa Graph<Abscissa, Ordinate>::sample_to_abscissa(std::int64_t const i) const {
+  return i * sample_width_ + x_range_.min;
+}
+
+template<affine Abscissa, affine Ordinate>
+std::int64_t Graph<Abscissa, Ordinate>::ordinate_to_sample(
     Ordinate const y) const {
-  return static_cast<std::int64_t>((y_range_.max - y) * inverse_pixel_height_ +
-                                   0.5);
+  return static_cast<std::int64_t>((y_range_.max - y) * inverse_sample_height_ +
+                                   0.5 * anti_aliasing_.supersampling);
 }
 
 template<affine Abscissa, affine Ordinate>
-void Graph<Abscissa, Ordinate>::SetPixel(std::int64_t const column,
-                                         std::int64_t const row,
-                                         RGBA32 const pixel) {
-  if (row < 0 || column < 0 || row >= height_ || column >= width_) {
+Ordinate Graph<Abscissa, Ordinate>::sample_to_ordinate(
+    std::int64_t const i) const {
+  return y_range_.max - i * sample_height_;
+}
+
+template<affine Abscissa, affine Ordinate>
+void Graph<Abscissa, Ordinate>::DrawRectangle(Abscissa const x,
+                                              Ordinate const y,
+                                              Difference<Abscissa> const width,
+                                              Difference<Ordinate> const height,
+                                              RGB24 const colour) {
+  std::int64_t const first_row =
+      abscissa_to_sample(x - (width - sample_width_) * 0.5);
+  std::int64_t const last_row =
+      abscissa_to_sample(x + (width - sample_width_) * 0.5);
+  // Note the signs: `ordinate_to_sample` is decreasing.
+  std::int64_t const first_column =
+      ordinate_to_sample(y + (height - sample_height_) * 0.5);
+  std::int64_t const last_column =
+      ordinate_to_sample(y - (height - sample_height_) * 0.5);
+  for (std::int64_t row = first_row; row <= last_row; ++row) {
+    for (std::int64_t column = first_column; column <= last_column; ++column) {
+      SetSample(row, column, Opaque(colour));
+    }
+  }
+}
+
+template<affine Abscissa, affine Ordinate>
+void Graph<Abscissa, Ordinate>::DrawDisk(Abscissa const x,
+                                         Ordinate const y,
+                                         double const r,
+                                         RGB24 const colour) {
+  double const r² = Pow<2>(r);
+  std::int64_t const first_row = abscissa_to_sample(x - r * sample_width_);
+  std::int64_t const last_row = abscissa_to_sample(x + r * sample_width_);
+  // Note the signs: `ordinate_to_sample` is decreasing.
+  std::int64_t const first_column = ordinate_to_sample(y + r * sample_height_);
+  std::int64_t const last_column = ordinate_to_sample(y - r * sample_height_);
+  for (std::int64_t row = first_row; row <= last_row; ++row) {
+    auto const x_sample = sample_to_abscissa(row);
+    for (std::int64_t column = first_column; column <= last_column; ++column) {
+      auto const y_sample = sample_to_ordinate(column);
+      if (Pow<2>((x_sample - x) * inverse_sample_width_) +
+              Pow<2>((y_sample - y) * inverse_sample_height_) <
+          r²) {
+        SetSample(row, column, Opaque(colour));
+      }
+    }
+  }
+}
+
+template<affine Abscissa, affine Ordinate>
+void Graph<Abscissa, Ordinate>::SetSample(std::int64_t const column,
+                                          std::int64_t const row,
+                                          RGBA32 const sample) {
+  if (row < 0 || column < 0 || row >= samples_height_ ||
+      column >= samples_width_) {
     return;
   }
-  pixels_[row * width_ + column] = pixel;
+  samples_[row * samples_width_ + column] = sample;
+}
+
+template<affine Abscissa, affine Ordinate>
+void Graph<Abscissa, Ordinate>::InvalidateAntiAliasing() {
+  pixels_.reset();
 }
 
 }  // namespace internal
