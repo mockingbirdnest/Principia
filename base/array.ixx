@@ -1,18 +1,16 @@
-#pragma once
+export module principia.base.array;
 
-#include <array>
-#include <concepts>
-#include <cstdint>
-#include <cstddef>
-#include <memory>
-#include <string>
-#include <type_traits>
+import std;
+
+import "absl/log/check.h";
+import "absl/log/log.h";
 
 namespace principia {
 namespace base {
 namespace _array {
 namespace internal {
 
+export {
 // A simple container for a pointer and size.  `data` is not owned.
 template<typename Element>
 struct Array final {
@@ -137,13 +135,13 @@ template<std::integral LeftElement,
          std::integral RightElement>
 bool operator==(UniqueArray<LeftElement> const& left,
                 UniqueArray<RightElement> const& right);
-
+}
 }  // namespace internal
 
-using internal::Array;
-using internal::BoundedArray;
-using internal::operator==;
-using internal::UniqueArray;
+export using internal::Array;
+export using internal::BoundedArray;
+export using internal::operator==;
+export using internal::UniqueArray;
 
 }  // namespace _array
 }  // namespace base

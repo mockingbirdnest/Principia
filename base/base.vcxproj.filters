@@ -14,9 +14,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="not_null.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="not_null_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -25,9 +22,6 @@
     </ClInclude>
     <ClInclude Include="unique_ptr_logging_body.hpp">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="macros.hpp">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="mappable.hpp">
       <Filter>Header Files</Filter>
@@ -50,9 +44,6 @@
     <ClInclude Include="map_util.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="pull_serializer.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="pull_serializer_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -61,9 +52,6 @@
     </ClInclude>
     <ClInclude Include="push_deserializer_body.hpp">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="array.hpp">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="array_body.hpp">
       <Filter>Source Files</Filter>
@@ -84,9 +72,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="mod.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="not_constructible.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="function.hpp">
@@ -118,9 +103,6 @@
     </ClInclude>
     <ClInclude Include="ranges_body.hpp">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="sink_source.hpp">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="sink_source_body.hpp">
       <Filter>Source Files</Filter>
@@ -158,9 +140,6 @@
     <ClInclude Include="tags.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="traits.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="flags.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -180,9 +159,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="macos_allocator_replacement.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="cpuid.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="status_utilities.hpp">
@@ -241,97 +217,40 @@
     <ClCompile Include="not_null_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="hexadecimal_test.cpp">
-      <Filter>Test Files</Filter>
+    <ClCompile Include="not_null.ixx">
+      <Filter>Header Files</Filter>
     </ClCompile>
-    <ClCompile Include="pull_serializer_test.cpp">
-      <Filter>Test Files</Filter>
+    <ClCompile Include="array.ixx">
+      <Filter>Header Files</Filter>
     </ClCompile>
-    <ClCompile Include="push_deserializer_test.cpp">
-      <Filter>Test Files</Filter>
+    <ClCompile Include="sink_source.ixx">
+      <Filter>Header Files</Filter>
     </ClCompile>
-    <ClCompile Include="disjoint_sets_test.cpp">
-      <Filter>Test Files</Filter>
+    <ClCompile Include="not_constructible.ixx">
+      <Filter>Header Files</Filter>
     </ClCompile>
-    <ClCompile Include="bundle.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="bundle_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="function_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="version.generated.cc">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="traits.ixx">
+      <Filter>Header Files</Filter>
     </ClCompile>
     <ClCompile Include="array_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="thread_pool_test.cpp">
+    <ClCompile Include="pull_serializer.ixx">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pull_serializer_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="base32768_test.cpp">
-      <Filter>Test Files</Filter>
+    <ClCompile Include="macros.hpp">
+      <Filter>Header Files</Filter>
     </ClCompile>
-    <ClCompile Include="base64_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="flags.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="flags_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="zfp_compressor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="bits_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="macos_allocator_replacement_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="malloc_allocator_test.cpp">
-      <Filter>Test Files</Filter>
+    <ClCompile Include="cpuid.ixx">
+      <Filter>Header Files</Filter>
     </ClCompile>
     <ClCompile Include="cpuid.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="cpuid_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="recurring_thread_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="for_all_of_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="push_pull_callback_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="traits_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="multiprecision_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="algebra_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="stoppable_thread_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="file_log_sink.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="file_log_sink_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="string_log_sink.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="reanimator_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

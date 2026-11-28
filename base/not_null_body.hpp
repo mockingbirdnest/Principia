@@ -1,13 +1,4 @@
-#pragma once
-
-#include "base/not_null.hpp"
-
-#include <algorithm>
-#include <memory>
-#include <utility>
-
-#include "absl/log/check.h"
-#include "absl/log/log.h"
+// Body of link:base/not_null.ixx
 
 namespace principia {
 namespace base {

@@ -1,14 +1,12 @@
-#pragma once
 
-#include <algorithm>
-#include <memory>
-#include <type_traits>
-#include <utility>
+export module principia.base.not_null;
 
-#include "absl/log/check.h"
-#include "absl/log/log.h"
-#include "base/not_constructible.hpp"
-#include "base/traits.hpp"
+import "absl/log/check.h";
+
+import std;
+
+import principia.base.not_constructible;
+import principia.base.traits;
 
 // This file defines a pointer wrapper `not_null` that statically ensures
 // non-nullness where possible, and performs runtime checks at the point of
@@ -81,6 +79,8 @@ namespace internal {
 
 using namespace principia::base::_not_constructible;
 using namespace principia::base::_traits;
+
+export {
 
 template<typename Pointer>
 class not_null;
@@ -359,15 +359,15 @@ not_null<Result> dynamic_cast_not_null(not_null<T*> pointer);
 
 template<typename Result, typename T>
 not_null<Result> dynamic_cast_not_null(not_null<std::unique_ptr<T>>&& pointer);
-
+}
 }  // namespace internal
 
-using internal::check_not_null;
-using internal::dynamic_cast_not_null;
-using internal::make_not_null_shared;
-using internal::make_not_null_unique;
-using internal::not_null;
-using internal::remove_not_null;
+export using internal::check_not_null;
+export using internal::dynamic_cast_not_null;
+export using internal::make_not_null_shared;
+export using internal::make_not_null_unique;
+export using internal::not_null;
+export using internal::remove_not_null;
 
 }  // namespace _not_null
 }  // namespace base

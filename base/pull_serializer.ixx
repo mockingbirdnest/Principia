@@ -1,18 +1,17 @@
-#pragma once
+export module principia.base.pull_serializer;
 
-#include <cstdint>
-#include <functional>
-#include <memory>
-#include <queue>
-#include <thread>
+import std;
 
-#include "absl/base/thread_annotations.h"
-#include "absl/synchronization/mutex.h"
-#include "base/array.hpp"
-#include "base/not_null.hpp"
-#include "gipfeli/compression.h"
-#include "google/protobuf/io/zero_copy_stream.h"
-#include "google/protobuf/message.h"
+import "absl/base/thread_annotations.h";
+import "absl/log/check.h";
+import "absl/synchronization/mutex.h";
+import "gipfeli/compression.h";
+import "google/protobuf/io/zero_copy_stream.h";
+import "google/protobuf/message.h";
+
+import principia.base.array;
+import principia.base.not_null;
+import principia.base.sink_source;
 
 namespace principia {
 namespace base {
@@ -24,6 +23,7 @@ using namespace principia::base::_not_null;
 
 using ::google::compression::Compressor;
 
+export {
 // An output stream based on an array that delegates to a function the handling
 // of the case where one array is full.  It calls the `on_full` function passed
 // at construction and proceeds with filling the array returned by that
@@ -141,9 +141,11 @@ class PullSerializer final {
   std::queue<not_null<std::uint8_t*>> free_ ABSL_GUARDED_BY(lock_);
 };
 
+}
+
 }  // namespace internal
 
-using internal::PullSerializer;
+export using internal::PullSerializer;
 
 }  // namespace _pull_serializer
 }  // namespace base

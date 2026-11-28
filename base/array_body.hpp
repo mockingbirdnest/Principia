@@ -1,13 +1,4 @@
-#pragma once
-
-#include "base/array.hpp"
-
-#include <concepts>
-#include <memory>
-#include <utility>
-
-#include "absl/log/check.h"
-#include "absl/log/log.h"
+// Body of link:base/array.ixx
 
 namespace principia {
 namespace base {
@@ -68,7 +59,7 @@ constexpr Array<Element>::Array(Character (&characters)[size_plus_1])
   if (characters[size] != 0) {
     LOG(FATAL) << "Array constructed with a character array terminated by the "
                << "non-null 0x" << std::noshowbase << std::hex << std::uppercase
-               << static_cast<uint32_t>(characters[size]);
+               << static_cast<std::uint32_t>(characters[size]);
   }
 }
 

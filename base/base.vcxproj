@@ -4,12 +4,10 @@
     <ProjectGuid>{7E7CC89A-FC65-409C-A975-9C3A6A50786B}</ProjectGuid>
     <RootNamespace>base</RootNamespace>
   </PropertyGroup>
-  <Import Project="..\shared\numerics.vcxitems" Label="Shared" />
   <Import Project="$(SolutionDir)principia.props" />
   <ItemGroup>
     <ClInclude Include="algebra.hpp" />
     <ClInclude Include="algebra_body.hpp" />
-    <ClInclude Include="array.hpp" />
     <ClInclude Include="array_body.hpp" />
     <ClInclude Include="base32768.hpp" />
     <ClInclude Include="base32768_body.hpp" />
@@ -20,7 +18,6 @@
     <ClInclude Include="bundle.hpp" />
     <ClInclude Include="concepts.hpp" />
     <ClInclude Include="constant_function.hpp" />
-    <ClInclude Include="cpuid.hpp" />
     <ClInclude Include="disjoint_sets.hpp" />
     <ClInclude Include="disjoint_sets_body.hpp" />
     <ClInclude Include="encoder.hpp" />
@@ -40,6 +37,9 @@
     <ClInclude Include="hexadecimal.hpp" />
     <ClInclude Include="hexadecimal_body.hpp" />
     <ClInclude Include="macos_allocator_replacement.hpp" />
+    <ClCompile Include="cpuid.cpp" />
+    <ClCompile Include="cpuid.ixx" />
+    <ClCompile Include="cpuid_test.cpp" />
     <ClInclude Include="macros.hpp" />
     <ClInclude Include="malloc_allocator.hpp" />
     <ClInclude Include="mappable.hpp" />
@@ -48,10 +48,8 @@
     <ClInclude Include="monostable.hpp" />
     <ClInclude Include="monostable_body.hpp" />
     <ClInclude Include="multiprecision.hpp" />
-    <ClInclude Include="not_null.hpp" />
     <ClInclude Include="not_null_body.hpp" />
     <ClInclude Include="optional_serialization.hpp" />
-    <ClInclude Include="pull_serializer.hpp" />
     <ClInclude Include="pull_serializer_body.hpp" />
     <ClInclude Include="push_deserializer.hpp" />
     <ClInclude Include="push_deserializer_body.hpp" />
@@ -65,9 +63,7 @@
     <ClInclude Include="recurring_thread_body.hpp" />
     <ClInclude Include="serialization.hpp" />
     <ClInclude Include="serialization_body.hpp" />
-    <ClInclude Include="sink_source.hpp" />
     <ClInclude Include="sink_source_body.hpp" />
-    <ClInclude Include="not_constructible.hpp" />
     <ClInclude Include="status_utilities.hpp" />
     <ClInclude Include="stoppable_thread.hpp" />
     <ClInclude Include="stoppable_thread_body.hpp" />
@@ -75,7 +71,6 @@
     <ClInclude Include="tags.hpp" />
     <ClInclude Include="thread_pool.hpp" />
     <ClInclude Include="thread_pool_body.hpp" />
-    <ClInclude Include="traits.hpp" />
     <ClInclude Include="unique_ptr_logging.hpp" />
     <ClInclude Include="unique_ptr_logging_body.hpp" />
     <ClInclude Include="version.hpp" />
@@ -83,37 +78,14 @@
     <ClInclude Include="zfp_compressor_body.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="algebra_test.cpp" />
+    <ClCompile Include="array.ixx" />
     <ClCompile Include="array_test.cpp" />
-    <ClCompile Include="base32768_test.cpp" />
-    <ClCompile Include="base64_test.cpp" />
-    <ClCompile Include="bits_test.cpp" />
-    <ClCompile Include="bundle.cpp" />
-    <ClCompile Include="bundle_test.cpp" />
-    <ClCompile Include="cpuid.cpp" />
-    <ClCompile Include="cpuid_test.cpp" />
-    <ClCompile Include="disjoint_sets_test.cpp" />
-    <ClCompile Include="file_log_sink.cpp" />
-    <ClCompile Include="file_log_sink_test.cpp" />
-    <ClCompile Include="flags.cpp" />
-    <ClCompile Include="flags_test.cpp" />
-    <ClCompile Include="for_all_of_test.cpp" />
-    <ClCompile Include="function_test.cpp" />
-    <ClCompile Include="hexadecimal_test.cpp" />
-    <ClCompile Include="macos_allocator_replacement_test.cpp" />
-    <ClCompile Include="malloc_allocator_test.cpp" />
-    <ClCompile Include="multiprecision_test.cpp" />
+    <ClCompile Include="not_constructible.ixx" />
+    <ClCompile Include="not_null.ixx" />
     <ClCompile Include="not_null_test.cpp" />
+    <ClCompile Include="pull_serializer.ixx" />
     <ClCompile Include="pull_serializer_test.cpp" />
-    <ClCompile Include="push_deserializer_test.cpp" />
-    <ClCompile Include="push_pull_callback_test.cpp" />
-    <ClCompile Include="reanimator_test.cpp" />
-    <ClCompile Include="recurring_thread_test.cpp" />
-    <ClCompile Include="stoppable_thread_test.cpp" />
-    <ClCompile Include="string_log_sink.cpp" />
-    <ClCompile Include="thread_pool_test.cpp" />
-    <ClCompile Include="traits_test.cpp" />
-    <ClCompile Include="version.generated.cc" />
-    <ClCompile Include="zfp_compressor.cpp" />
+    <ClCompile Include="sink_source.ixx" />
+    <ClCompile Include="traits.ixx" />
   </ItemGroup>
 </Project>

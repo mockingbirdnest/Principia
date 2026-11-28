@@ -1,10 +1,8 @@
-#pragma once
+export module principia.base.sink_source;
 
-#include <cstddef>
-#include <cstdint>
+import "gipfeli/sinksource.h";
 
-#include "base/array.hpp"
-#include "gipfeli/sinksource.h"
+import principia.base.array;
 
 namespace principia {
 namespace base {
@@ -12,6 +10,8 @@ namespace _sink_source {
 namespace internal {
 
 using namespace principia::base::_array;
+
+export {
 
 template<typename Element>
 class ArraySource : public google::compression::Source {
@@ -50,11 +50,11 @@ class ArraySink : public google::compression::Sink {
   const Array<Element> array_;
   std::int64_t next_to_write_ = 0;
 };
-
+}
 }  // namespace internal
 
-using internal::ArraySink;
-using internal::ArraySource;
+export using internal::ArraySink;
+export using internal::ArraySource;
 
 }  // namespace _sink_source
 }  // namespace base

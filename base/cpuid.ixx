@@ -1,13 +1,12 @@
-#pragma once
+export module principia.base.cpuid;
 
-#include <cstdint>
-#include <string>
-#include <string_view>
+import std;
 
 namespace principia {
 namespace base {
 namespace _cpuid {
 namespace internal {
+export {
 
 struct CPUIDResult {
   std::uint32_t eax;
@@ -67,14 +66,15 @@ std::string ProcessorBrandString();
 
 std::string CPUFeatures();
 
+}
 }  // namespace internal
 
 #undef PRINCIPIA_CPUID_FLAG
 
-using internal::CPUFeatures;
-using internal::CPUIDFeatureFlag;
-using internal::CPUVendorIdentificationString;
-using internal::ProcessorBrandString;
+export using internal::CPUFeatures;
+export using internal::CPUIDFeatureFlag;
+export using internal::CPUVendorIdentificationString;
+export using internal::ProcessorBrandString;
 
 }  // namespace _cpuid
 }  // namespace base

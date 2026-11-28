@@ -1,12 +1,9 @@
-#include "base/array.hpp"
+import std;
 
-#include <memory>
-#include <ranges>
-#include <string>
-#include <utility>
+import "gmock/gmock.h";
+import "gtest/gtest.h";
 
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
+import principia.base.array;
 
 using ::testing::AllOf;
 using ::testing::ElementsAre;

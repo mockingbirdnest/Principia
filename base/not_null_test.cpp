@@ -1,15 +1,13 @@
-#include "base/not_null.hpp"
+import "absl/hash/hash_testing.h";
+import "base/macros.hpp";  // 🧙 For PRINCIPIA_COMPILER_MSVC.
+import "gmock/gmock.h";
+import "gtest/gtest.h";
 
-#include <memory>
-#include <string>
-#include <type_traits>
-#include <utility>
-#include <vector>
+import "absl/log/check.h";  // Otherwise clang is missing Voidify::operator&&…
 
-#include "absl/hash/hash_testing.h"
-#include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
+import std;
+
+import principia.base.not_null;
 
 using ::testing::Eq;
 

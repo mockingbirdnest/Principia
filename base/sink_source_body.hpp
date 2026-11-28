@@ -1,8 +1,4 @@
-#pragma once
-
-#include "base/sink_source.hpp"
-
-#include <algorithm>
+// Body of link:base/sink_source.ixx
 
 namespace principia {
 namespace base {
