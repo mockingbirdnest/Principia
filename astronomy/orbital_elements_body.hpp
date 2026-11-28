@@ -126,6 +126,7 @@ Graph<Instant, T> OrbitalElements::PlotTimeSeries(
           }),
       line_colour,
       {.joined = true});
+  graph.AntiAlias();
   return graph;
 }
 
@@ -172,6 +173,7 @@ inline Graph<double, double> OrbitalElements::PlotEccentricityVector(
   graph.PlotHorizontalLine(0, axis_colour);
   graph.PlotVerticalLine(0, axis_colour);
   graph.ListPointPlot(eccentricity_vector, line_colour, {.joined = true});
+  graph.AntiAlias();
   return graph;
 }
 
