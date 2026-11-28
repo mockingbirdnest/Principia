@@ -180,6 +180,9 @@ class Modularizer {
           body_principia_includes.GetValueOrDefault(
               hpp_file,
               new List<Include>()));
+      // Don't create an import for our own header, 'cause that would be
+      // circular.
+      all_principia_includes.RemoveAll(inc => inc.is_own_header);
       var all_third_party_includes = new List<Include>(third_party_includes);
       all_third_party_includes.AddRange(
           body_third_party_includes.GetValueOrDefault(
