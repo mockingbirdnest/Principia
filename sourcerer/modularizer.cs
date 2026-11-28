@@ -95,7 +95,13 @@ class Modularizer {
       Namespace? first_namespace =
           outermost_namespaces.Count > 0 ? outermost_namespaces[0] : null;
       var includes = FindIncludes(parser_file, stop: first_namespace);
-      var link = FixOwnHeaderLink(parser_file, includes);
+
+      // No link to our own header for .cpp files, the link is provided by the
+      // module declaration.
+      Node? link = null;
+      if (!parser_file.is_body_cpp) {
+        link = FixOwnHeaderLink(parser_file, includes);
+      }
 
       // Find all the includes and categorize them.
       SplitIncludes(includes,
