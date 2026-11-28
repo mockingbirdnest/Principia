@@ -443,9 +443,9 @@ public class Parser {
         text != null &&
         text.StartsWith("#include \"") &&
         !text.StartsWith("#include \"boost") &&
-        (text.EndsWith(".hpp\"") ||
-         text.EndsWith(".generated.h\"") ||
-         text.EndsWith(".mathematica.h\""));
+        (Regex.IsMatch(text, @"\.hpp"".*$") ||
+         Regex.IsMatch(text, @"\.generated.h"".*$") ||
+         Regex.IsMatch(text, @"\.mathematica.h"".*$"));
 
     public bool is_system =>
         text != null && text.StartsWith("#include <");
