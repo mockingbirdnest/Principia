@@ -286,9 +286,9 @@ constexpr bool TimeOfDay::is_end_of_day() const {
 }
 
 constexpr TimeOfDay::TimeOfDay(int const hour,
-                     int const minute,
-                     int const second,
-                     int const millisecond)
+                               int const minute,
+                               int const second,
+                               int const millisecond)
     : hour_(hour),
       minute_(minute),
       second_(second),
@@ -430,15 +430,6 @@ class DateParser final {
   //   - at most two hyphens;
   //   - at most one 'W'.
   static constexpr DateParser ReadToEnd(std::string_view s);
-  static constexpr DateParser ReadToEnd(std::string_view s,
-                                        std::string_view::const_iterator it,
-                                        std::int64_t digits,
-                                        int digit_count,
-                                        int hyphens,
-                                        int first_hyphen_index,
-                                        int second_hyphen_index,
-                                        bool has_w,
-                                        int w_index);
 
   // Returns a `Date` corresponding to the string that `*this` describes.
   // Fails if the format is invalid or the string represents an invalid date.
@@ -491,87 +482,48 @@ constexpr DateParser::DateParser(std::int64_t const digits,
       has_w_(has_w),
       w_index_(w_index) {}
 
-constexpr DateParser DateParser::ReadToEnd(std::string_view s) {
-  return ReadToEnd(s, s.begin(),
-                   /*digits=*/0,
-                   /*digit_count=*/0,
-                   /*hyphens=*/0,
-                   /*first_hyphen_index=*/-1,
-                   /*second_hyphen_index=*/-1,
-                   /*has_w=*/false,
-                   /*w_index=*/-1);
-}
+constexpr DateParser DateParser::ReadToEnd(std::string_view const s) {
+  std::int64_t digits = 0;
+  int digit_count = 0;
+  int hyphens = 0;
+  int first_hyphen_index = -1;
+  int second_hyphen_index = -1;
+  bool has_w = false;
+  int w_index = -1;
 
-constexpr DateParser DateParser::ReadToEnd(
-    std::string_view const s,
-    std::string_view::const_iterator const it,
-    std::int64_t const digits,
-    int const digit_count,
-    int const hyphens,
-    int const first_hyphen_index,
-    int const second_hyphen_index,
-    bool const has_w,
-    int const w_index) {
-  if (it == s.end()) {
-    return DateParser{digits,
-                      digit_count,
-                      hyphens,
-                      first_hyphen_index,
-                      second_hyphen_index,
-                      has_w,
-                      w_index};
-  } else {
+  for (auto it = s.begin(); it != s.end(); ++it) {
     switch (*it) {
       case '-':
         CONSTEXPR_CHECK(hyphens < 2);
         if (hyphens == 0) {
-          return ReadToEnd(s,
-                           std::next(it),
-                           digits,
-                           digit_count,
-                           hyphens + 1,
-                           /*first_hyphen_index=*/it - s.begin(),
-                           second_hyphen_index,
-                           has_w,
-                           w_index);
+          first_hyphen_index = it - s.begin();
         } else {
-          return ReadToEnd(s,
-                           std::next(it),
-                           digits,
-                           digit_count,
-                           hyphens + 1,
-                           first_hyphen_index,
-                           /*second_hyphen_index=*/it - s.begin(),
-                           has_w,
-                           w_index);
+          second_hyphen_index = it - s.begin();
         }
+        ++hyphens;
+        break;
       case 'W':
         CONSTEXPR_CHECK(!has_w);
-        return ReadToEnd(s,
-                         std::next(it),
-                         digits,
-                         digit_count,
-                         hyphens,
-                         first_hyphen_index,
-                         second_hyphen_index,
-                         /*has_w=*/true,
-                         /*w_index=*/it - s.begin());
+        has_w = true;
+        w_index = it - s.begin();
+        break;
       case '0': case '1': case '2': case '3': case '4':
       case '5': case '6': case '7': case '8': case '9':
-        return ReadToEnd(s,
-                         std::next(it),
-                         digits * 10 + *it - '0',
-                         digit_count + 1,
-                         hyphens,
-                         first_hyphen_index,
-                         second_hyphen_index,
-                         has_w,
-                         w_index);
+        digits = digits * 10 + *it - '0';
+        ++digit_count;
+        break;
       default:
         CONSTEXPR_CHECK(false);
         return DateParser{0, 0, 0, 0, 0, false, 0};
     }
   }
+  return DateParser{digits,
+                    digit_count,
+                    hyphens,
+                    first_hyphen_index,
+                    second_hyphen_index,
+                    has_w,
+                    w_index};
 }
 
 constexpr Date DateParser::ToDate(std::optional<Calendar> const calendar,
@@ -634,15 +586,6 @@ class TimeParser final {
   //   - at most two colons;
   //   - at most one decimal mark ('.' or ',').
   static constexpr TimeParser ReadToEnd(std::string_view s);
-  static constexpr TimeParser ReadToEnd(std::string_view s,
-                                        std::string_view::const_iterator it,
-                                        std::int64_t digits,
-                                        int digit_count,
-                                        int colons,
-                                        int first_colon_index,
-                                        int second_colon_index,
-                                        bool has_decimal_mark,
-                                        int decimal_mark_index);
 
   // Returns a `TimeOfDay` corresponding to the string that `*this` describes.
   // Fails if the format is invalid or the string represents an invalid time.
@@ -684,87 +627,48 @@ constexpr TimeParser::TimeParser(std::int64_t const digits,
       decimal_mark_index_(decimal_mark_index) {}
 
 constexpr TimeParser TimeParser::ReadToEnd(std::string_view const s) {
-  return ReadToEnd(s, s.begin(),
-                   /*digits=*/0,
-                   /*digit_count*/ 0,
-                   /*colons=*/0,
-                   /*first_colon_index=*/-1,
-                   /*second_colon_index=*/-1,
-                   /*has_decimal_mark=*/false,
-                   /*decimal_mark_index=*/-1);
-}
+  std::int64_t digits = 0;
+  int digit_count = 0;
+  int colons = 0;
+  int first_colon_index = -1;
+  int second_colon_index = -1;
+  bool has_decimal_mark = false;
+  int decimal_mark_index = -1;
 
-constexpr TimeParser TimeParser::ReadToEnd(
-    std::string_view const s,
-    std::string_view::const_iterator const it,
-    std::int64_t const digits,
-    int const digit_count,
-    int const colons,
-    int const first_colon_index,
-    int const second_colon_index,
-    bool const has_decimal_mark,
-    int const decimal_mark_index) {
-  if (it == s.end()) {
-    return TimeParser(digits,
-                      digit_count,
-                      colons,
-                      first_colon_index,
-                      second_colon_index,
-                      has_decimal_mark,
-                      decimal_mark_index);
-  } else {
+  for (auto it = s.begin(); it != s.end(); ++it) {
     switch (*it) {
       case ':':
         CONSTEXPR_CHECK(colons < 2);
         if (colons == 0) {
-          return ReadToEnd(s,
-                           std::next(it),
-                           digits,
-                           digit_count,
-                           colons + 1,
-                           /*first_colon_index=*/it - s.begin(),
-                           second_colon_index,
-                           has_decimal_mark,
-                           decimal_mark_index);
+          first_colon_index = it - s.begin();
         } else {
-          return ReadToEnd(s,
-                           std::next(it),
-                           digits,
-                           digit_count,
-                           colons + 1,
-                           first_colon_index,
-                           /*second_colon_index=*/it - s.begin(),
-                           has_decimal_mark,
-                           decimal_mark_index);
+          second_colon_index = it - s.begin();
         }
+        ++colons;
+        break;
       case ',':
       case '.':
         CONSTEXPR_CHECK(!has_decimal_mark);
-        return ReadToEnd(s,
-                         std::next(it),
-                         digits,
-                         digit_count,
-                         colons,
-                         first_colon_index,
-                         second_colon_index,
-                         /*has_decimal_mark=*/true,
-                         /*decimal_mark_index=*/it - s.begin());
+        has_decimal_mark = true;
+        decimal_mark_index = it - s.begin();
+        break;
       case '0': case '1': case '2': case '3': case '4':
       case '5': case '6': case '7': case '8': case '9':
-        return ReadToEnd(s,
-                         std::next(it),
-                         digits * 10 + *it - '0',
-                         digit_count + 1,
-                         colons,
-                         first_colon_index,
-                         second_colon_index,
-                         has_decimal_mark,
-                         decimal_mark_index);
+        digits = digits * 10 + *it - '0';
+        ++digit_count;
+        break;
       default:
         CONSTEXPR_CHECK(false);
         return TimeParser{0, 0, 0, 0, 0, false, 0};
     }
   }
+  return TimeParser{digits,
+                    digit_count,
+                    colons,
+                    first_colon_index,
+                    second_colon_index,
+                    has_decimal_mark,
+                    decimal_mark_index};
 }
 
 constexpr TimeOfDay TimeParser::ToTime() const {
@@ -814,13 +718,6 @@ class JulianDateParser final {
   // string is not of the form [ddd] or [ddd.fff] or if it has too many digits
   // to fit in a std::int64_t.
   static constexpr JulianDateParser ReadToEnd(std::string_view s);
-  static constexpr JulianDateParser ReadToEnd(
-      std::string_view s,
-      std::string_view::const_iterator it,
-      std::int64_t digits,
-      int digit_count,
-      bool has_decimal_mark,
-      int decimal_mark_index);
 
   // Returns a `JulianDate` corresponding to the string that `*this` describes.
   // Fails if the format is invalid.
@@ -852,49 +749,31 @@ constexpr JulianDateParser::JulianDateParser(std::int64_t const digits,
 
 constexpr JulianDateParser JulianDateParser::ReadToEnd(
     std::string_view const s) {
-  return ReadToEnd(s, s.begin(),
-                   /*digits=*/0,
-                   /*digit_count*/ 0,
-                   /*has_decimal_mark=*/false,
-                   /*decimal_mark_index=*/-1);
-}
+  std::int64_t digits = 0;
+  int digit_count = 0;
+  bool has_decimal_mark = false;
+  int decimal_mark_index = -1;
 
-constexpr JulianDateParser JulianDateParser::ReadToEnd(
-    std::string_view const s,
-    std::string_view::const_iterator const it,
-    std::int64_t const digits,
-    int const digit_count,
-    bool const has_decimal_mark,
-    int const decimal_mark_index) {
-  if (it == s.end()) {
-    return JulianDateParser(digits,
-                            digit_count,
-                            decimal_mark_index);
-  } else {
+  for (auto it = s.begin(); it != s.end(); ++it) {
     switch (*it) {
       case '.':
         CONSTEXPR_CHECK(!has_decimal_mark);
-        return ReadToEnd(s,
-                         std::next(it),
-                         digits,
-                         digit_count,
-                         /*has_decimal_mark=*/true,
-                         /*decimal_mark_index=*/it - s.begin());
+        has_decimal_mark = true;
+        decimal_mark_index = it - s.begin();
+        break;
       case '0': case '1': case '2': case '3': case '4':
       case '5': case '6': case '7': case '8': case '9':
         CONSTEXPR_CHECK(digits <=
                         std::numeric_limits<std::int64_t>::max() / 10 - 9);
-        return ReadToEnd(s,
-                         std::next(it),
-                         digits * 10 + *it - '0',
-                         digit_count + 1,
-                         has_decimal_mark,
-                         decimal_mark_index);
+        digits = digits * 10 + *it - '0';
+        ++digit_count;
+        break;
       default:
         CONSTEXPR_CHECK(false);
         return JulianDateParser{0, 0, 0};
     }
   }
+  return JulianDateParser{digits, digit_count, decimal_mark_index};
 }
 
 constexpr JulianDate JulianDateParser::ToJD() const {
