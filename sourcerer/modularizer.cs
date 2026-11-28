@@ -445,8 +445,7 @@ class Modularizer {
                       usage +
                       " link:" +
                       string.Join('/', inc.path) +
-                      "." +
-                      inc.extension,
+                      ".ixx",
                 parent: null);
         file.InsertChild(0, link);
         return EnsureBlankLineAfter(link);
