@@ -85,8 +85,16 @@ void Graph<Abscissa, Ordinate>::Plot(std::function<Ordinate(Abscissa)> const& f,
       f_min = f_x_max;
       f_max = f_x_min;
     }
-    for (auto y = f_min; y <= f_max; y += sample_height_) {
-      DrawDisk(sample_range.midpoint(), y, 0.5 * anti_aliasing_.supersampling, colour);
+    // Draw points equally spaced in ordinate, no further than the sample
+    // spacing, and at both f_min and f_max.
+    Difference<Ordinate> const Δf = f_max - f_min;
+    double const n = std::ceil(Δf / sample_height_);
+    Difference<Ordinate> const df = Δf / n;
+    for (std::int64_t k = 0; k <= n; ++k) {
+      DrawDisk(sample_range.midpoint(),
+               f_min + k * df,
+               0.5 * anti_aliasing_.supersampling,
+               colour);
     }
   }
 }
