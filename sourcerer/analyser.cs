@@ -47,20 +47,26 @@ public class Analyser {
   }
 
   // Returns the list of top-level includes in `file`.
-  public static List<Include> FindIncludes(File file) {
+  public static List<Include> FindIncludes(File file, Node? stop = null) {
     var includes = new List<Include>();
     bool after_cpp_if = false;
+    bool after_cpp_else = false;
     foreach (Node child in file.children) {
-      if (child is PreprocessorDirective cpp) {
+      if (child == stop) {
+        break;
+      } else if (child is PreprocessorDirective cpp) {
         after_cpp_if = cpp.is_if;
+        after_cpp_else = cpp.is_else;
       } else if (child is Include inc) {
         includes.Add(inc);
-        // Mark the includes that occur immediately after a preprocessor #if as
-        // conditional.
-        inc.is_conditional = after_cpp_if;
+        // Mark the includes that occur immediately after a preprocessor #if or
+        // #else as conditional.
+        inc.is_conditional = after_cpp_if || after_cpp_else;
         after_cpp_if = false;
+        after_cpp_else = false;
       } else {
         after_cpp_if = false;
+        after_cpp_else = false;
       }
     }
     return includes;
@@ -83,17 +89,15 @@ public class Analyser {
     return innermost_namespaces;
   }
 
-  // Returns the last outermost namespace found in `file`.
-  // TODO(phl): This should probably be changed to return all the outermost
-  // namespaces.
-  public static Namespace? FindLastOutermostNamespace(File file) {
-    Namespace? last_outermost_namespace = null;
+  // Returns the list of outermost namespaces found in `file`.
+  public static List<Namespace> FindOutermostNamespaces(File file) {
+    var outermost_namespaces = new List<Namespace>();
     foreach (Node child in file.children) {
       if (child is Namespace ns) {
-        last_outermost_namespace = ns;
+        outermost_namespaces.Add(ns);
       }
     }
-    return last_outermost_namespace;
+    return outermost_namespaces;
   }
 
   // Returns the legacy internal namespaces found in `node` and it descendants.
@@ -114,8 +118,8 @@ public class Analyser {
   }
 
   // Returns the using declarations found in `node` and its descendants.  If
-  // `internal_only` is true, internal namespaces are ignored (that is, only the
-  // exported using declarations are returned).
+  // `internal_only` is true, only using declarations from internal namespaces
+  // are returned.
   public static List<UsingDeclaration> FindUsingDeclarations(
       Node node,
       bool internal_only) {
@@ -137,8 +141,8 @@ public class Analyser {
   }
 
   // Returns the using directives found in `node` and its descendants.  If
-  // `internal_only` is true, internal namespaces are ignored (that is, only the
-  // exported using directives are returned).
+  // `internal_only` is true, only using declarations from internal namespaces
+  // are returned.
   public static List<UsingDirective> FindUsingDirectives(
       Node node,
       bool internal_only) {

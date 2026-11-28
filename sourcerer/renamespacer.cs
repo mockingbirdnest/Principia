@@ -61,9 +61,10 @@ class Renamespacer {
       file_info_to_file.Add(input_file, parser_file);
     }
 
-    // First collect all the declarations.  We'll them to rewrite the clients.
-    // This must happen before we restructure any namespace, as the namespace
-    // names will change and would confuse our super-fancy name resolution.
+    // First collect all the declarations.  We'll need them to rewrite the
+    // clients.  This must happen before we restructure any namespace, as the
+    // namespace names will change and would confuse our super-fancy name
+    // resolution.
     var declaration_to_file = new Dictionary<Parser.Declaration, Parser.File>();
     foreach (FileInfo input_file in hpp_files) {
       if (excluded.Contains(input_file.Name) ||
@@ -118,7 +119,7 @@ class Renamespacer {
       Parser.File parser_file = file_info_to_file[input_file];
       FixLegacyInternalNamespaces(parser_file);
       FixMissingInternalNamespaces(parser_file,
-                                            insert_using_declarations: true);
+                                   insert_using_declarations: true);
       FixCompatibilityNamespace(parser_file);
       RewriteFile(input_file, parser_file, dry_run);
     }
@@ -135,7 +136,7 @@ class Renamespacer {
       } else {
         FixLegacyInternalNamespaces(parser_file);
         FixMissingInternalNamespaces(parser_file,
-                                              insert_using_declarations: false);
+                                     insert_using_declarations: false);
       }
       RewriteFile(input_file, parser_file, dry_run);
     }
@@ -187,7 +188,9 @@ class Renamespacer {
   }
 
   private static void FixCompatibilityNamespace(Parser.File file) {
-    var last_namespace = FindLastOutermostNamespace(file);
+    var outermost_namespaces = FindOutermostNamespaces(file);
+    var last_namespace =
+        outermost_namespaces.Count > 0 ? outermost_namespaces[^1] : null;
     if (last_namespace == null) {
       // Strange file with no namespace at all, inserting into ::.
       return;

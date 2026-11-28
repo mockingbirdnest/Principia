@@ -22,10 +22,13 @@ public class Parser {
       string line = reader.ReadLine()!;
       string uncommented_line = Uncomment(line, ref in_comment);
       if (IsInclude(uncommented_line)) {
+        ParseIncludedPath(uncommented_line,
+                          out string[] path,
+                          out string extension);
         var include = new Include(line,
                                   parent: current,
-                                  ParseIncludedPath(uncommented_line),
-                                  extension: "hpp",
+                                  path,
+                                  extension,
                                   file_info);
       } else if (IsPreprocessorDirective(uncommented_line)) {
         var preprocessor_directive =
@@ -57,6 +60,10 @@ public class Parser {
         var function = new Function(line,
                                     parent: current,
                                     ParseFunction(uncommented_line));
+      } else if (IsImport(uncommented_line)) {
+        var import = new Import(line,
+                                parent: current,
+                                ParseImport(uncommented_line));
       } else if (IsStruct(uncommented_line)) {
         var strukt = new Struct(line,
                                 parent: current,
@@ -71,10 +78,17 @@ public class Parser {
             parent: current,
             ParseUsingDirective(uncommented_line));
       } else if (IsUsingDeclaration(uncommented_line)) {
-        var using_declaration = new UsingDeclaration(
-            line,
-            parent: current,
-            ParseUsingDeclaration(uncommented_line));
+        ParseUsingDeclaration(uncommented_line,
+                              out bool is_exported,
+                              out string full_name);
+        if (is_exported) {
+          var export = new Export(parent: current);
+          var using_declaration =
+              new UsingDeclaration(line, parent: export, full_name);
+        } else {
+          var using_declaration =
+              new UsingDeclaration(line, parent: current, full_name);
+        }
       } else {
         var text = new Text(line, parent: current);
       }
@@ -108,6 +122,43 @@ public class Parser {
       }
     }
 
+    public void InsertChild(int position, Node child) {
+      child.parent = this;
+      child.position_in_parent = position;
+      children.Insert(position, child);
+      for (int i = position + 1; i < children.Count; ++i) {
+        children[i].position_in_parent = i;
+      }
+    }
+
+    public void RemoveChild(Node child) {
+      int removed_position_in_parent = -1;
+      for (int i = 0; i < children.Count; ++i) {
+        if (children[i] == child) {
+          removed_position_in_parent = i;
+          break;
+        }
+      }
+      RemoveChild(removed_position_in_parent);
+    }
+
+    public Node RemoveChild(int removed_position_in_parent) {
+      Debug.Assert(removed_position_in_parent >= 0);
+      Node child = children[removed_position_in_parent];
+      children.RemoveAt(removed_position_in_parent);
+      child.parent = null;
+      for (int i = removed_position_in_parent; i < children.Count; ++i) {
+        children[i].position_in_parent = i;
+      }
+      return child;
+    }
+
+    public void RemoveChildren(List<Node> children_to_remove) {
+      foreach (Node child in children_to_remove) {
+        RemoveChild(child);
+      }
+    }
+
     public virtual string Cxx() {
       throw new InvalidOperationException();
     }
@@ -122,6 +173,8 @@ public class Parser {
       }
     }
 
+    public bool is_blank_line => this is Text{ text: "" } ;
+
     public int position_in_parent { get ; private set; } = -1;
 
     public string? text { get ; protected set; }
@@ -133,12 +186,12 @@ public class Parser {
   }
 
   public abstract class Declaration : Node {
-    protected Declaration(Node parent, string name) : this(
+    protected Declaration(Node? parent, string name) : this(
         text: null,
         parent,
         name) {}
 
-    protected Declaration(string? text, Node parent, string name) : base(
+    protected Declaration(string? text, Node? parent, string name) : base(
         text,
         parent) {
       name_ = name;
@@ -170,10 +223,53 @@ public class Parser {
     public Constant(string text, Node parent, string name) : base(
         text,
         parent,
-        name) { }
+        name) {}
 
     public override void WriteNode(string indent = "") {
       Console.WriteLine(indent + "Constant " + name);
+    }
+  }
+
+  public class Export : Node {
+    public Export(Node? parent) : this(text: null, parent) {}
+
+    public Export(string? text, Node? parent) : base(text, parent) {}
+
+    public override string Cxx() {
+      Debug.Assert(must_rewrite, "inconsistent rewrite");
+      Debug.Assert(children.Count == 1, "Export must have exactly one child");
+      return "export " + children[0].Cxx();
+    }
+
+    public override void WriteNode(string indent = "") {
+      Console.WriteLine(indent + "Export");
+      children[0].WriteNode(indent + "  ");
+    }
+  }
+
+  public class ExportSequence : Scope {
+    public ExportSequence(Node? parent) : this(text: null, parent) {}
+
+    public ExportSequence(string? text, Node? parent) : base(
+        text,
+        parent,
+        name: "") {}
+
+    public override string Cxx() {
+      Debug.Assert(must_rewrite, "inconsistent rewrite");
+      return "export {";
+    }
+
+    public override string ClosingCxx() {
+      Debug.Assert(must_rewrite, "inconsistent rewrite");
+      return "}  // export";
+    }
+
+    public override void WriteNode(string indent = "") {
+      Console.WriteLine(indent + "Export");
+      if (children.Count > 0) {
+        children[0].WriteNode(indent + "  ");
+      }
     }
   }
 
@@ -182,20 +278,21 @@ public class Parser {
     public File(FileInfo file_info, bool is_body) : base(parent: null) {
       this.file_info = file_info;
       if (is_body) {
-        file_namespace_simple_name = "_" +
-                                     Regex.Replace(file_info.Name,
-                                                   @"(_body|_test)?\.[hc]pp",
-                                                   "");
+        file_module_simple_name =
+            Regex.Replace(file_info.Name, @"(_body|_test)?\.[hc]pp", "");
+        file_namespace_simple_name = "_" + file_module_simple_name;
       } else {
-        file_namespace_simple_name = "_" +
-                                     Regex.Replace(file_info.Name,
-                                                   @"\.hpp",
-                                                   "");
+        file_module_simple_name = Regex.Replace(file_info.Name, @"\.hpp", "");
+        file_namespace_simple_name = "_" + file_module_simple_name;
       }
       project_namespace_full_name = "principia::" + file_info.Directory!.Name;
-      file_namespace_full_name = project_namespace_full_name +
-                                 "::" +
-                                 file_namespace_simple_name;
+      file_namespace_full_name =
+          project_namespace_full_name + "::" + file_namespace_simple_name;
+      file_module_full_name =
+          "principia." +
+          file_info.Directory!.Name +
+          "." +
+          file_module_simple_name;
     }
 
     public override void WriteNode(string indent = "") {
@@ -205,7 +302,17 @@ public class Parser {
     public FileInfo file_info { get; }
     public string file_namespace_full_name { get; }
     public string file_namespace_simple_name { get; }
+    public string file_module_full_name { get; }
+    public string file_module_simple_name { get; }
     public string project_namespace_full_name { get; }
+    public bool is_benchmark => file_info.Name.EndsWith("_benchmark.cpp");
+
+    public bool is_body_hpp => file_info.Name.EndsWith("_body.hpp");
+
+    public bool is_body_cpp => (!is_benchmark &&
+                                !is_test &&
+                                file_info.Name.EndsWith(".cpp"));
+    public bool is_test => file_info.Name.EndsWith("_test.cpp");
   }
 
   public class Function : Declaration {
@@ -214,9 +321,37 @@ public class Parser {
         parent,
         name) { }
 
+    public override string Cxx() {
+      Debug.Assert(must_rewrite, "inconsistent rewrite");
+      return "import " + name + ";";
+    }
+
     public override void WriteNode(string indent = "") {
       Console.WriteLine(indent + "Function " + name);
     }
+  }
+
+  public class Import : Declaration {
+    public Import(Node? parent, string name) : this(
+        text: null,
+        parent,
+        name) {}
+
+    public Import(string? text, Node? parent, string name) : base(
+        text,
+        parent,
+        name) {}
+
+    public override string Cxx() {
+      Debug.Assert(must_rewrite, "inconsistent rewrite");
+      return "import " + name + ";" + comment;
+    }
+
+    public override void WriteNode(string indent = "") {
+      Console.WriteLine(indent + "Import " + name);
+    }
+
+    public string comment = "";
   }
 
   public class Include : Node {
@@ -236,6 +371,16 @@ public class Parser {
                    string[] path,
                    string extension,
                    FileInfo file_info) : base(text, parent) {
+      if (text != null) {
+        raw_path =
+            Regex.Replace(Regex.Replace(text, @"^#include ([""<])", "$1"),
+                          @"(["">]).*$", "$1");
+        comment = Regex.Replace(text, @"^.*  //", "  //");
+        if (comment == text) {
+          // The substitution changed nothing, so there is no comment after all.
+          comment = "";
+        }
+      }
       this.path = path;
       extension_ = extension;
       file_info_ = file_info;
@@ -258,7 +403,10 @@ public class Parser {
       Console.WriteLine(indent + "Include " + string.Join(", ", path));
     }
 
+    public string comment = "";
+    public string? raw_path;
     public string[] path;
+    public string extension => extension_;
 
     public bool is_blessed_by_sourcerer =>
         text != null && Regex.IsMatch(text, @"// 🧙 .+$");
@@ -295,9 +443,9 @@ public class Parser {
         text != null &&
         text.StartsWith("#include \"") &&
         !text.StartsWith("#include \"boost") &&
-        (text.EndsWith(".hpp\"") ||
-         text.EndsWith(".generated.h\"") ||
-         text.EndsWith(".mathematica.h\""));
+        (Regex.IsMatch(text, @"\.hpp"".*$") ||
+         Regex.IsMatch(text, @"\.generated.h"".*$") ||
+         Regex.IsMatch(text, @"\.mathematica.h"".*$"));
 
     public bool is_system =>
         text != null && text.StartsWith("#include <");
@@ -313,7 +461,7 @@ public class Parser {
     private readonly string own_header_directory_;
   }
 
-  public class Namespace : Declaration {
+  public class Namespace : Scope {
     public Namespace(Node parent, string name) :
         this(text: null, parent, name) { }
 
@@ -333,7 +481,7 @@ public class Parser {
       return "namespace " + name + " {";
     }
 
-    public string ClosingCxx() {
+    public override string ClosingCxx() {
       Debug.Assert(must_rewrite, "inconsistent rewrite");
       return "}  // namespace " + name;
     }
@@ -348,7 +496,22 @@ public class Parser {
     // The compatibility namespace is identified by its ::.
     public bool is_compatibility_namespace => name.Contains("::");
     public bool is_internal = false;
-    public string? closing_text;
+  }
+
+  public class Module : Declaration {
+    public Module(Node? parent, string name) : base(
+        text: null,
+        parent,
+        name) {}
+
+    public override string Cxx() {
+      Debug.Assert(must_rewrite, "inconsistent rewrite");
+      return "module " + name + ";";
+    }
+
+    public override void WriteNode(string indent = "") {
+      Console.WriteLine(indent + "Module " + name);
+    }
   }
 
   public class PreprocessorDirective : Node {
@@ -365,6 +528,24 @@ public class Parser {
     }
 
     public bool is_if => text?.StartsWith("#if") == true;
+    public bool is_else => text?.StartsWith("#else") == true;
+    public bool is_pragma_once => text?.StartsWith("#pragma once") == true;
+      }
+
+  public abstract class Scope : Declaration {
+    protected Scope(Node? parent, string name) :
+        this(text: null, parent, name) { }
+
+    protected Scope(string? text, Node? parent, string name) : base(
+        text,
+        parent,
+        name) { }
+
+    public virtual string ClosingCxx() {
+      throw new InvalidOperationException();
+    }
+
+    public string? closing_text;
   }
 
   public class Struct : Declaration {
@@ -379,7 +560,7 @@ public class Parser {
   }
 
   public class Text : Node {
-    public Text(string text, Node parent) : base(text, parent) {
+    public Text(string text, Node? parent) : base(text, parent) {
       if (text == null) {
         throw new ArgumentNullException();
       }
@@ -387,6 +568,14 @@ public class Parser {
 
     public override void WriteNode(string indent = "") {
       Console.WriteLine(indent + "Text (" + text + ")");
+    }
+
+    public static Text Blank() {
+      return new Text("", parent: null);
+    }
+
+    public static Text Blank(Node parent) {
+      return new Text("", parent: parent);
     }
   }
 
@@ -448,7 +637,8 @@ public class Parser {
     }
 
     public override bool must_rewrite =>
-        declared_in_namespace is { must_rewrite: true };
+        declared_in_namespace is { must_rewrite: true } ||
+        parent is Export{ must_rewrite: true } ;
 
     public string full_name;
     public Namespace? declared_in_namespace;
@@ -500,6 +690,10 @@ public class Parser {
             Regex.IsMatch(line, @"^[A-Z][a-z]\w+\(.*$"));
   }
 
+  private static bool IsImport(string line) {
+    return Regex.IsMatch(line, @"^ *import +\w+;$");
+  }
+
   private static bool IsInclude(string line) {
     return Regex.IsMatch(line, @"^#include [^ ]+$");
   }
@@ -525,7 +719,9 @@ public class Parser {
   private static bool IsUsingDeclaration(string line) {
     return !IsUsingDirective(line) &&
            (Regex.IsMatch(line, @"^using +[\w:]+;$") ||
-            Regex.IsMatch(line, @"^using +[\w:]+operator.*$"));
+            Regex.IsMatch(line, @"^using +[\w:]+operator.*$") ||
+            Regex.IsMatch(line, @"^export using +[\w:]+;$") ||
+            Regex.IsMatch(line, @"^export using +[\w:]+operator.*$"));
   }
 
   private static bool IsUsingDirective(string line) {
@@ -556,9 +752,18 @@ public class Parser {
     return Regex.Replace(Regex.Replace(line, @"\(.*$", ""), @"^.+ ", "");
   }
 
-  private static string[] ParseIncludedPath(string line) {
-    string path = line.Replace("#include \"", "").Replace(".hpp\"", "");
-    return path.Split('/');
+  private static void ParseIncludedPath(string line,
+                                        out string[] path,
+                                        out string extension) {
+    string[] fragments = line.Split('.');
+    extension = fragments[^1].Replace("\"", "");
+    path = fragments[0].Replace("#include \"", "").Split('/');
+  }
+
+  private static string ParseImport(string line) {
+    string module = Regex.Replace(line, @"^ *import +", "");
+    module = Regex.Replace(module, @";$", "");
+    return module;
   }
 
   private static string ParseOpeningNamespace(string line) {
@@ -573,8 +778,13 @@ public class Parser {
     return Regex.Replace(Regex.Replace(line, @"using +", ""), @" +=.*$", "");
   }
 
-  private static string ParseUsingDeclaration(string line) {
-    return Regex.Replace(line, @"using +", "").Replace(";", "");
+  private static void ParseUsingDeclaration(string line,
+                                            out bool is_exported,
+                                            out string full_name) {
+    is_exported = line.StartsWith("export ");
+    full_name =
+        Regex.Replace(line.Replace("export ", ""), @"using +", "").
+            Replace(";", "");
   }
 
   private static string ParseUsingDirective(string line) {

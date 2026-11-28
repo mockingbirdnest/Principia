@@ -151,12 +151,12 @@ class IncludeWhatYouUsing {
       }
 
       foreach (FileInfo input_file in all_files) {
-          var parser_file = file_info_to_file[input_file];
-          FixIncludes(parser_file,
-                      include_paths_to_file_info,
-                      special_own_headers);
-          FixUsingDirectivesOrdering(parser_file);
-          RewriteFile(input_file, parser_file, dry_run);
+        var parser_file = file_info_to_file[input_file];
+        FixIncludes(parser_file,
+                    include_paths_to_file_info,
+                    special_own_headers);
+        FixUsingDirectivesOrdering(parser_file);
+        RewriteFile(input_file, parser_file, dry_run);
       }
     }
   }
