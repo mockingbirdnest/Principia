@@ -50,6 +50,11 @@ struct Label {
 
 struct ListPointPlotOptions {
   bool joined = false;
+  double thickness_in_pixels = joined ? 1.0 : 2.0;
+};
+
+struct PlotOptions {
+  double thickness_in_pixels = 1;
 };
 
 template<affine Abscissa, affine Ordinate>
@@ -95,12 +100,14 @@ class Graph {
 
   void Plot(std::function<Ordinate(Abscissa)> const& f,
             Interval<Abscissa> const& range,
-            RGB24 colour);
+            RGB24 colour,
+            PlotOptions options = {});
   void PlotVerticalLine(
       Abscissa x,
       RGB24 colour,
-      std::optional<Interval<Ordinate>> y_range = std::nullopt);
-  void PlotHorizontalLine(Ordinate y, RGB24 colour);
+      std::optional<Interval<Ordinate>> y_range = std::nullopt,
+      PlotOptions options = {});
+  void PlotHorizontalLine(Ordinate y, RGB24 colour, PlotOptions options = {});
 
   // The string is passed by value and moved into this object.
   template<graph_point<Abscissa, Ordinate> Point>

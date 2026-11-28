@@ -52,7 +52,8 @@ void Graph<Abscissa, Ordinate>::ListPointPlot(
           Plot([xᵢ₋₁ = *xᵢ₋₁, yᵢ₋₁ = *yᵢ₋₁, slope](
                    Abscissa const& x) { return yᵢ₋₁ + (x - xᵢ₋₁) * slope; },
                {std::min(*xᵢ₋₁, xᵢ), std::max(*xᵢ₋₁, xᵢ)},
-               colour);
+               colour,
+               {.thickness_in_pixels = options.thickness_in_pixels});
         }
       }
       xᵢ₋₁ = xᵢ;
@@ -60,7 +61,10 @@ void Graph<Abscissa, Ordinate>::ListPointPlot(
     }
   } else {
     for (auto const& [x, y] : points) {
-      DrawDisk(x, y, anti_aliasing_.supersampling, colour);
+      DrawDisk(x,
+               y,
+               0.5 * anti_aliasing_.supersampling * options.thickness_in_pixels,
+               colour);
     }
   }
 }
@@ -68,7 +72,8 @@ void Graph<Abscissa, Ordinate>::ListPointPlot(
 template<affine Abscissa, affine Ordinate>
 void Graph<Abscissa, Ordinate>::Plot(std::function<Ordinate(Abscissa)> const& f,
                                      Interval<Abscissa> const& range,
-                                     RGB24 const colour) {
+                                     RGB24 const colour,
+                                     PlotOptions options) {
   InvalidateAntiAliasing();
   for (std::int64_t i = abscissa_to_sample(range.min);
        i <= abscissa_to_sample(range.max);
@@ -93,7 +98,7 @@ void Graph<Abscissa, Ordinate>::Plot(std::function<Ordinate(Abscissa)> const& f,
     for (std::int64_t k = 0; k <= n; ++k) {
       DrawDisk(sample_range.midpoint(),
                f_min + k * df,
-               0.5 * anti_aliasing_.supersampling,
+               0.5 * anti_aliasing_.supersampling * options.thickness_in_pixels,
                colour);
     }
   }
@@ -103,24 +108,26 @@ template<affine Abscissa, affine Ordinate>
 void Graph<Abscissa, Ordinate>::PlotVerticalLine(
     Abscissa const x,
     RGB24 const colour,
-    std::optional<Interval<Ordinate>> const y_range) {
+    std::optional<Interval<Ordinate>> const y_range,
+    PlotOptions options) {
   InvalidateAntiAliasing();
   auto const& range = y_range.value_or(y_range_);
   DrawRectangle(x,
                 range.midpoint(),
-                pixel_width_,
+                pixel_width_ * options.thickness_in_pixels,
                 range.measure() + pixel_height_,
                 colour);
 }
 
 template<affine Abscissa, affine Ordinate>
 void Graph<Abscissa, Ordinate>::PlotHorizontalLine(Ordinate const y,
-                                                   RGB24 const colour) {
+                                                   RGB24 const colour,
+                                                   PlotOptions options) {
   InvalidateAntiAliasing();
   DrawRectangle(x_range_.midpoint(),
                 y,
                 x_range_.measure() + pixel_width_,
-                pixel_height_,
+                pixel_height_ * options.thickness_in_pixels,
                 colour);
 }
 
@@ -257,9 +264,8 @@ void Graph<Abscissa, Ordinate>::DrawRectangle(Abscissa const x,
 template<affine Abscissa, affine Ordinate>
 void Graph<Abscissa, Ordinate>::DrawDisk(Abscissa const x,
                                          Ordinate const y,
-                                         double r,
+                                         double const r,
                                          RGB24 const colour) {
-  r *= 1;
   double const r² = Pow<2>(r);
   std::int64_t const first_row = abscissa_to_sample(x - r * sample_width_);
   std::int64_t const last_row = abscissa_to_sample(x + r * sample_width_);
