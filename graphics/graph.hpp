@@ -62,7 +62,7 @@ class Graph {
  public:
   struct Options {
     struct AntiAliasing {
-      std::int64_t supersampling = 1;
+      std::int64_t supersampling = 4;
     };
     AntiAliasing anti_aliasing;
   };
@@ -102,12 +102,18 @@ class Graph {
             Interval<Abscissa> const& range,
             RGB24 colour,
             PlotOptions options = {});
+  // The axis-aligned lines default to a thickness of 1.75, not 1, so as not to
+  // turn from a crisp one-pixel line when they line up with a pixel to a
+  // two-pixel blurry mess when they lie exactly between two pixels (which
+  // happens often for axes in graphs whose size is even).
   void PlotVerticalLine(
       Abscissa x,
       RGB24 colour,
       std::optional<Interval<Ordinate>> y_range = std::nullopt,
-      PlotOptions options = {});
-  void PlotHorizontalLine(Ordinate y, RGB24 colour, PlotOptions options = {});
+      PlotOptions options = {.thickness_in_pixels = 1.75});
+  void PlotHorizontalLine(Ordinate y,
+                          RGB24 colour,
+                          PlotOptions options = {.thickness_in_pixels = 1.75});
 
   // The string is passed by value and moved into this object.
   template<graph_point<Abscissa, Ordinate> Point>

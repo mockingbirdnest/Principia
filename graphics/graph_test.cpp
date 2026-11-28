@@ -37,10 +37,16 @@ TEST_F(GraphTest, Frame) {
         {-1.0, 1.0},
         /*background=*/Opaque(xkcd::red),
         {.anti_aliasing = {.supersampling = supersampling}});
-    graph.PlotHorizontalLine(-1.0, xkcd::blue);
-    graph.PlotHorizontalLine(1.0, xkcd::blue);
-    graph.PlotVerticalLine(-2 * π * Radian, xkcd::blue);
-    graph.PlotVerticalLine(2 * π * Radian, xkcd::blue);
+    graph.PlotHorizontalLine(-1.0, xkcd::blue, {.thickness_in_pixels = 1.0});
+    graph.PlotHorizontalLine(1.0, xkcd::blue, {.thickness_in_pixels = 1.0});
+    graph.PlotVerticalLine(-2 * π * Radian,
+                           xkcd::blue,
+                           /*y_range=*/std::nullopt,
+                           {.thickness_in_pixels = 1.0});
+    graph.PlotVerticalLine(2 * π * Radian,
+                           xkcd::blue,
+                           /*y_range=*/std::nullopt,
+                           {.thickness_in_pixels = 1.0});
     graph.AntiAlias();
     EXPECT_GOLDEN_GRAPH(graph, "frame");
   }
@@ -51,7 +57,8 @@ TEST_F(GraphTest, Sinusoid) {
                              100,
                              {-2 * π * Radian, 2 * π * Radian},
                              {-1.0, 1.0},
-                             /*background=*/Opaque(xkcd::black));
+                             /*background=*/Opaque(xkcd::black),
+                             {.anti_aliasing={.supersampling = 1}});
   Graph<Angle, double> anti_aliased_graph(std::round(100 * φ),
                              100,
                              {-2 * π * Radian, 2 * π * Radian},
